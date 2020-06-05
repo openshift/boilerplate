@@ -119,6 +119,11 @@ overwritten the next time you update) or opting out of the convention.
     PRE` _before_ copying files, and `update POST` _after_ copying
     files. (You may wish to ignore a phase, e.g. via
     `[[ "$1" == "PRE" ]] && exit 0`.)
+    - **Note:** We always run the *new* version of the `update` script.
+    - **Note:** The entire convention directory is wiped out and
+      replaced between `PRE` and `POST`, so e.g. don't try to store any
+      information there.
+    is replaced
   - It must indicate success or failure by exiting with zero or nonzero
     status, respectively. Failure will cause the main driver to abort.
   - The main driver exports the following variables for use by
