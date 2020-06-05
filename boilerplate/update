@@ -18,17 +18,20 @@ if [ "$1" ]; then
   OUT=$1
   # Let's make sure this was really a re-exec and not some other
   # weirdness.
-  if ! [[ -d "$OUT" ]] || ! diff -q "$0" "$OUT/boilerplate/boilerplate/update"; then
+  if ! [[ -d "$OUT" ]] || ! diff -q "$0" "$OUT/boilerplate/update"; then
     echo "Something went wrong! I was invoked with '$OUT'!"
     exit 2
   fi
 else
+  if [ -z "$BOILERPLATE_GIT_CLONE" ]; then
+    BOILERPLATE_GIT_CLONE="git clone git@gitlab.cee.redhat.com:service/boilerplate.git"
+  fi
   OUT="$(mktemp -d)"
-  git clone git@gitlab.cee.redhat.com:service/boilerplate.git "${OUT}"
+  $BOILERPLATE_GIT_CLONE "${OUT}"
   echo "Updating the update script."
-  cp "${OUT}/boilerplate/boilerplate/update" "$0"
+  cp "${OUT}/boilerplate/update" "$0"
   echo "Copying utilities"
-  cp -r ${OUT}/boilerplate/boilerplate/_* $DIR
+  cp -r ${OUT}/boilerplate/_* $DIR
   echo "Reinvoking..."
   echo ""
   exec "$0" "$OUT"
@@ -77,7 +80,7 @@ while read directory junk; do
     exit 1
   fi
 
-  dir_path="${OUT}/boilerplate/boilerplate/${directory}"
+  dir_path="${OUT}/boilerplate/${directory}"
   # Make sure the directory exists
   if ! [[ -d "$dir_path" ]]; then
     echo "Invalid convention directory: '$directory'"

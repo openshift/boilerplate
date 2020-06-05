@@ -18,7 +18,7 @@ cat <<EOF> $TMPD/Makefile
 include boilerplate/openshift/golang_osd_cluster_operator/includes.mk
 EOF
 # Remove any existing imports from this boilerplate (but leave others in place)
-sed -e '/\bboilerplate\/openshift/golang_osd_cluster_operator\b/d' $REPO_ROOT/Makefile >> $TMPD/Makefile
+sed -e '/\bboilerplate\/openshift\/golang_osd_cluster_operator\b/d' $REPO_ROOT/Makefile >> $TMPD/Makefile
 cp $TMPD/Makefile $REPO_ROOT/Makefile
 
 echo "Copying .codecov.yml to your repository root."
