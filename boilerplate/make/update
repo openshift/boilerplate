@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-source $STANDARDS_ROOT/_lib/common.sh
+source $CONVENTION_ROOT/_lib/common.sh
 
 # No PRE
 [[ "$1" == "PRE" ]] && exit 0
@@ -12,9 +12,9 @@ echo "Updating the main repo's Makefile to include rollup includes.mk as the fir
 TMPD=$(mktemp -d)
 trap "rm -fr $TMPD" EXIT
 cat <<EOF> $TMPD/Makefile
-# Injected by standards/make/update
-include standards/make/includes.mk
+# Injected by boilerplate/make/update
+include boilerplate/make/includes.mk
 EOF
-# Remove any existing imports from standards (but leave others in place)
-sed -e '/\bstandards\/make\b/d' $REPO_ROOT/Makefile >> $TMPD/Makefile
+# Remove any existing imports from boilerplate (but leave others in place)
+sed -e '/\bboilerplate\/make\b/d' $REPO_ROOT/Makefile >> $TMPD/Makefile
 cp $TMPD/Makefile $REPO_ROOT/Makefile

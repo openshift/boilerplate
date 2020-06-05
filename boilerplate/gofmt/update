@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source $STANDARDS_ROOT/_lib/common.sh
+source $CONVENTION_ROOT/_lib/common.sh
 
 # No PRE
 [[ "$1" == "PRE" ]] && exit 0
@@ -10,4 +10,4 @@ source $STANDARDS_ROOT/_lib/common.sh
 
 echo "Copying gofmt's golint.sh into hack/"
 mkdir -p $REPO_ROOT/hack
-cp $STANDARDS_ROOT/gofmt/golint.sh $REPO_ROOT/hack
+cp $CONVENTION_ROOT/gofmt/golint.sh $REPO_ROOT/hack
