@@ -20,23 +20,25 @@ here and compiling it at the target via your `update`.)
 
 ## Mechanism
 
-A "convention" lives in a subdirectory of `boilerplate` and is identified by
-the subdirectory's name. For example, standard Makefile content lives
-under `boilerplate/make` and is identified as `make`.
+A "convention" lives in a subdirectory hierarchy of `boilerplate` and is
+identified by the subdirectory's path. For example, conventions around
+cluster-deployed OSD operators written in Go lives under
+`boilerplate/openshift/golang_osd_cluster_operator` and is identified as
+`openshift/golang_osd_cluster_operator`.
 
 A convention comprises:
 
 - Files, which are copied verbatim into the consuming repository at
   update time, replacing whatever was there before. The source directory
   structure is mirrored in the consuming repository -- e.g.
-  `boilerplate/boilerplate/make/*` is copied into
-  `${TARGET_REPO}/boilerplate/make/*`.
+  `boilerplate/boilerplate/openshift/golang_osd_cluster_operator*` is copied into
+  `${TARGET_REPO}/boilerplate/golang_osd_cluster_operator/*`.
 - An `update` script (which can be any kind of executable, but please
   keep portability in mind). If present, this script is invoked twice
   during an update:
   - Once _before_ files are copied, with the command line argument
     `PRE`. This can be used to prepare for the copy and/or validate that
-    it is allowed to happen. If the script exits nonzero, the update is
+    it is allowed to happen. If the program exits nonzero, the update is
     aborted.
   - Once _after_ files are copied, with the command line argument
     `POST`. This can be used to perform any configuration required after
@@ -71,21 +73,24 @@ to look for available updates.
 
 ### Configure
 
-The `update` script looks for a configuration file at
+The `update` program looks for a configuration file at
 `boilerplate/update.cfg`. It contains a list of conventions, which are
-simply the names of subdirectories under `boilerplate`, one per line.
+simply the names of subdirectory paths under `boilerplate`, one per line.
 Whitespace and `#`-style comments are allowed. For example, to adopt the
-`make` and `gofmt` conventions, your `boilerplate/update.cfg` may look like:
+`openshift/golang_osd_hive_operator` convention, your
+`boilerplate/update.cfg` may look like:
 
 ```
-# Use common makefile targets and functions
-make
-
-# Enforce golang style using our gofmt configuration
-gofmt
+# Use standards for hive-deployed Go operators
+openshift/golang_osd_hive_operator
 ```
+
 Opt into updates of a convention by including it in the file; otherwise
 you are opted out, even if you had previously used a given convention.
+
+**Note:** If you opt out of a previously-used convention by removing it
+from your config, you are responsible for cleaning up; the main `update`
+driver doesn't do it for you.
 
 **Note:** Updates are applied in the order in which they are listed in
 the configuration. If conventions need to be applied in a certain order
@@ -104,10 +109,10 @@ overwritten the next time you update) or opting out of the convention.
 
 ## Contributing
 
-- Create a subdirectory under `boilerplate`. The name of the directory is
-  the name of your convention. By convention, do not prefix your convention
-  name with an underscore; such subdirectories are reserved for use by
-  the infrastructure. In your subdirectory:
+- Create a subdirectory structure under `boilerplate`. The path of the
+  directory is the name of your convention. Do not prefix your
+  convention name with an underscore; such subdirectories are reserved
+  for use by the infrastructure. In your leaf directory:
 - Add a `README.md` describing what your convention does and how it works.
 - Add any files that need to be copied into consuming repositories.
   (Optional -- you might have a convention that only needs to run
@@ -123,7 +128,6 @@ overwritten the next time you update) or opting out of the convention.
     - **Note:** The entire convention directory is wiped out and
       replaced between `PRE` and `POST`, so e.g. don't try to store any
       information there.
-    is replaced
   - It must indicate success or failure by exiting with zero or nonzero
     status, respectively. Failure will cause the main driver to abort.
   - The main driver exports the following variables for use by
