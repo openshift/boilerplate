@@ -1,0 +1,13 @@
+#!/bin/bash
+
+source $STANDARDS_ROOT/_lib/common.sh
+
+# No PRE
+[[ "$1" == "PRE" ]] && exit 0
+
+# Expect POST
+[[ "$1" == "POST" ]] || err "Got a parameter I don't understand: '$1'. Did the infrastructure change?"
+
+echo "Copying gofmt's golint.sh into hack/"
+mkdir -p $REPO_ROOT/hack
+cp $STANDARDS_ROOT/gofmt/golint.sh $REPO_ROOT/hack
