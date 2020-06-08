@@ -10,16 +10,20 @@ HERE=${0%/*}
 # Expect POST
 [[ "$1" == "POST" ]] || err "Got a parameter I don't understand: '$1'. Did the infrastructure change?"
 
-echo "Updating the main repo's Makefile to include rollup includes.mk as the first thing it does"
-TMPD=$(mktemp -d)
-trap "rm -fr $TMPD" EXIT
-cat <<EOF> $TMPD/Makefile
-# Injected by boilerplate/openshift/golang_osd_cluster_operator/update
-include boilerplate/openshift/golang_osd_cluster_operator/includes.mk
-EOF
-# Remove any existing imports from this boilerplate (but leave others in place)
-sed -e '/\bboilerplate\/openshift\/golang_osd_cluster_operator\b/d' $REPO_ROOT/Makefile >> $TMPD/Makefile
-cp $TMPD/Makefile $REPO_ROOT/Makefile
-
 echo "Copying .codecov.yml to your repository root."
 cp ${HERE}/.codecov.yml $REPO_ROOT
+
+echo <<EOF
+=====================
+THINGS YOU NEED TO DO
+=====================
+- Make sure the following line is in your base Makefile:
+
+include boilerplate/openshift/golang_osd_cluster_operator/includes.mk
+
+- Remove any other 'include' lines, unless they're for things truly
+  unique to your repository. (Otherwise, consider proposing them to
+  boilerplate.)
+
+- Delete any obsolete files you're no longer including.
+EOF

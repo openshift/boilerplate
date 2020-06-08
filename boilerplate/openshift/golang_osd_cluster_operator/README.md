@@ -3,7 +3,7 @@
 The following components are included:
 
 ## `make` targets and functions.
-Your repository's main `Makefile` is edited to include these libraries.
+**Note:** Your repository's main `Makefile` needs to be edited to include these libraries.
 
 ## Code coverage
 - A `codecov.sh` script, referenced by the `coverage` `make` target, to
