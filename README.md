@@ -18,6 +18,42 @@ insignificant. (Don't use this for huge binary blobs. If you need to
 boilerplate a compiled binary or similar, consider storing the _source_
 here and compiling it at the target via your `update`.)
 
+For more discussion of the motivation behind copying rather than using
+remote sources on the fly, see
+[lyft's README](https://github.com/lyft/boilerplate/#why-clone-files).
+
+### A Pretty Picture
+The lifecycle from the consuming repository's perspective:
+
+```
+   +----------+      +------+          +-------------+
+   |Start Here|      |      |          |             |
+   +-----+----+      |      v          v             |
+         |           |   +--+----------+---+         |
+         v           |   |Subscribe to     |         |
+    +----+----+      |   |a convention     |         |
+    |Download |      |   |(edit update.cfg)|         |
+    |update.sh|      |   +--+--------------+  +----+ |
+    +----+----+      |      |                 |    | |
+         |           |      v                 v    | |
+         v           |   +--+-----------------+--+ | |
++--------+---------+ |   |make update_boilerplate| | |
+|Create            | |   +--+--------------------+ | |
+|update_boilerplate| |      |                      | |
+|make target       | |      v                      | |
++--------+---------+ |   +--+-----+                | |
+         |           |   |Validate|                | |
+         v           |   |changes |                | |
+    +----+-----+     |   +--+-----+                | |
+    |Touch     |     |      |                      | |
+    |update.cfg+-----+      v                      | |
+    +----+-----+         +--+---+  periodic update | |
+         |               |Commit+------------------+ |
+         +-------------->+Push  |                    |
+          bootstrap only |Etc.  +--------------------+
+                         +------+  new convention
+```
+
 ## Mechanism
 
 A "convention" lives in a subdirectory hierarchy of `boilerplate` and is
@@ -69,7 +105,10 @@ update_boilerplate:
 name, because (eventually) there may be automated jobs that use it
 to look for available updates.
 
-3. Commit the above.
+3. Touch (create empty) the configuration file `boilerplate/update.cfg`.
+   This will be use [later](#configure).
+
+4. Commit the above changes.
 
 ### Configure
 
@@ -108,6 +147,7 @@ itself_ before resorting to local snowflake fixups (which will be
 overwritten the next time you update) or opting out of the convention.
 
 ## Contributing
+In your fork of this repository (not a consuming repository):
 
 - Create a subdirectory structure under `boilerplate`. The path of the
   directory is the name of your convention. Do not prefix your
