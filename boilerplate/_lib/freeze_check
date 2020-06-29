@@ -28,7 +28,7 @@ fi
 # and reapply the diff? Messy and error-prone -- and I would be
 # seriously ticked off if something went wrong and lost my in-flight
 # changes.
-if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
+if ! [ -z "$(git status --porcelain)" ]; then
   echo "Can't validate boilerplate in a dirty repository. Please commit your changes and try again."
   exit 1
 fi
