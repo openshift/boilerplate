@@ -23,15 +23,18 @@ if [ "$1" ]; then
     exit 2
   fi
 else
+  if [ -z "$BOILERPLATE_GIT_REPO" ]; then
+    BOILERPLATE_GIT_REPO=git@gitlab.cee.redhat.com:service/boilerplate.git
+  fi
   if [ -z "$BOILERPLATE_GIT_CLONE" ]; then
-    BOILERPLATE_GIT_CLONE="git clone git@gitlab.cee.redhat.com:service/boilerplate.git"
+    BOILERPLATE_GIT_CLONE="git clone $BOILERPLATE_GIT_REPO"
   fi
   OUT="$(mktemp -d)"
   $BOILERPLATE_GIT_CLONE "${OUT}"
   echo "Updating the update script."
-  cp "${OUT}/boilerplate/update" "$0"
+  cp --preserve=mode "${OUT}/boilerplate/update" "$0"
   echo "Copying utilities"
-  cp -r ${OUT}/boilerplate/_* $DIR
+  cp --preserve=mode -r ${OUT}/boilerplate/_* $DIR
   echo "Reinvoking..."
   echo ""
   exec "$0" "$OUT"
@@ -94,13 +97,13 @@ while read directory junk; do
   if [ -f "${dir_path}/update" ]; then
     # Always run the *new* update script
     mkdir -p "${DIR}/${directory}"
-    cp "${dir_path}/update" "${DIR}/${directory}"
+    cp --preserve=mode "${dir_path}/update" "${DIR}/${directory}"
     echo "executing ${DIR}/${directory}/update PRE"
     "${DIR}/${directory}/update" PRE
   fi
   rm -rf "${DIR}/${directory}"
   mkdir -p $(dirname "${DIR}/${directory}")
-  cp -r "$dir_path" "${DIR}/${directory}"
+  cp --preserve=mode -r "$dir_path" "${DIR}/${directory}"
   if [ -f "${DIR}/${directory}/update" ]; then
     echo "executing ${DIR}/${directory}/update POST"
     "${DIR}/${directory}/update" POST
@@ -108,3 +111,11 @@ while read directory junk; do
   echo "***********************************************************************************"
   echo ""
 done < "$CONFIG_FILE"
+
+# If all that went well, lay down the last_boilerplate_commit file,
+# which allows freeze_check to work.
+echo "Registering commit hash..."
+mkdir -p ${DIR}/_data
+bp_commit=$(cd ${OUT} && git rev-parse HEAD)
+echo ${bp_commit} > ${DIR}/_data/last_boilerplate_commit
+echo "Done"
