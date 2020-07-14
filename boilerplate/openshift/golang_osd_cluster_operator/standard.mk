@@ -31,7 +31,9 @@ MAINPACKAGE=./cmd/manager
 # Containers may default GOFLAGS=-mod=vendor which would break us since
 # we're using modules.
 unexport GOFLAGS
-GOENV=GOOS=linux GOARCH=amd64 CGO_ENABLED=0 GOFLAGS=
+GOOS?=linux
+GOARCH?=amd64
+GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=
 
 GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPATH}"
 
