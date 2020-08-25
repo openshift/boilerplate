@@ -32,9 +32,9 @@ else
   OUT="$(mktemp -d)"
   $BOILERPLATE_GIT_CLONE "${OUT}"
   echo "Updating the update script."
-  cp --preserve=mode "${OUT}/boilerplate/update" "$0"
+  rsync -a "${OUT}/boilerplate/update" "$0"
   echo "Copying utilities"
-  cp --preserve=mode -r ${OUT}/boilerplate/_* $DIR
+  rsync -a -r ${OUT}/boilerplate/_* $DIR
   echo "Reinvoking..."
   echo ""
   exec "$0" "$OUT"
@@ -97,13 +97,13 @@ while read directory junk; do
   if [ -f "${dir_path}/update" ]; then
     # Always run the *new* update script
     mkdir -p "${DIR}/${directory}"
-    cp --preserve=mode "${dir_path}/update" "${DIR}/${directory}"
+    rsync -a "${dir_path}/update" "${DIR}/${directory}"
     echo "executing ${DIR}/${directory}/update PRE"
     "${DIR}/${directory}/update" PRE
   fi
   rm -rf "${DIR}/${directory}"
   mkdir -p $(dirname "${DIR}/${directory}")
-  cp --preserve=mode -r "$dir_path" "${DIR}/${directory}"
+  rsync -a -r "$dir_path" "${DIR}/${directory}"
   if [ -f "${DIR}/${directory}/update" ]; then
     echo "executing ${DIR}/${directory}/update POST"
     "${DIR}/${directory}/update" POST
