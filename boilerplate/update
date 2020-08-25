@@ -27,7 +27,7 @@ else
     BOILERPLATE_GIT_REPO=git@gitlab.cee.redhat.com:service/boilerplate.git
   fi
   if [ -z "$BOILERPLATE_GIT_CLONE" ]; then
-    BOILERPLATE_GIT_CLONE="git clone $BOILERPLATE_GIT_REPO"
+    BOILERPLATE_GIT_CLONE="git clone --branch=golangci-lint $BOILERPLATE_GIT_REPO"
   fi
   OUT="$(mktemp -d)"
   $BOILERPLATE_GIT_CLONE "${OUT}"

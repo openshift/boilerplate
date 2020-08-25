@@ -71,8 +71,7 @@ docker-push: push
 
 .PHONY: gocheck
 gocheck: ## Lint code
-	boilerplate/openshift/golang_osd_cluster_operator/golint.sh
-	${GOENV} go vet ./cmd/... ./pkg/...
+	golangci-lint run -c boilerplate/openshift/golang_osd_cluster_operator/golangci.yml ./...
 
 .PHONY: gogenerate
 gogenerate:
