@@ -24,7 +24,7 @@ if [ "$1" ]; then
   fi
 else
   if [ -z "$BOILERPLATE_GIT_REPO" ]; then
-    BOILERPLATE_GIT_REPO=git@gitlab.cee.redhat.com:service/boilerplate.git
+    BOILERPLATE_GIT_REPO=git@github.com:openshift/boilerplate.git
   fi
   if [ -z "$BOILERPLATE_GIT_CLONE" ]; then
     BOILERPLATE_GIT_CLONE="git clone $BOILERPLATE_GIT_REPO"
@@ -57,7 +57,7 @@ fi
 export REPO_ROOT=$(git rev-parse --show-toplevel)
 
 CONFIG_FILE="${DIR}/update.cfg"
-README="https://gitlab.cee.redhat.com/service/boilerplate/blob/master/README.md"
+README="https://github.com/openshift/boilerplate/blob/master/README.md"
 
 if [ ! -f "$CONFIG_FILE" ]; then
   echo "$CONFIG_FILE not found."

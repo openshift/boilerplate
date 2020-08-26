@@ -46,7 +46,7 @@ LBC=$(cat $LBCF)
 
 # Download just that commit
 if [ -z "$BOILERPLATE_GIT_REPO" ]; then
-  BOILERPLATE_GIT_REPO=git@gitlab.cee.redhat.com:service/boilerplate.git
+  BOILERPLATE_GIT_REPO=git@github.com:openshift/boilerplate.git
 fi
 echo "Fetching $LBC from $BOILERPLATE_GIT_REPO"
 # boilerplate/update cleans up this temp dir
