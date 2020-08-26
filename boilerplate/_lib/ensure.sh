@@ -12,4 +12,8 @@ case "${DEPENDENCY}" in
             curl -sfL "${DOWNLOAD_URL}" | tar -C "${GOPATH}/bin" -zx --strip-components=1 "golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint"
         fi
     ;;
+    *)
+        echo "Unknown dependency: ${DEPENDENCY}"
+        exit 1
+    ;;
 esac
