@@ -125,7 +125,8 @@ while read directory junk; do
   fi
   echo "adding makefile includes."
   for inc in $(find "${DIR}/${directory}" -type f -name '*.mk' | sort); do
-    echo "include ${inc#$REPO_ROOT/}" >> "${NEXUS_MK}"
+    real_include=`realpath $inc`
+    echo "include ${real_include#$REPO_ROOT/}" >> "${NEXUS_MK}"
   done
   echo "***********************************************************************************"
   echo ""

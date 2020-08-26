@@ -28,4 +28,14 @@ run code coverage analysis per [this SOP](https://github.com/openshift/ops-sop/b
 - runs it against
 - a `golangci.yml` config.
 
+## Checks on generated code
+
+The convention embed default checks on generated code to ensure generation is updated and committed.
+To trigger the check, you can use `make check_generation` provided your Makefile properly include the boilerplate-generated include `boilerplate/generated-includes.mk`.
+
+Checks consist in : 
+* Checking all files are committed to ensure a safe point to revert to in case of error
+* Running the `make gogenerate` command to regenerate the needed code
+* Checking if there is any new uncommitted file in the git project or if all is clean.
+
 ## More coming soon

@@ -44,6 +44,31 @@ empty_repo() {
     echo $tmpd
 }
 
+## bootstrap_project PATH TEST_PROJECT INITIAL_CONVENTION
+#
+# Build a temp boilerplated git project containing test_project files
+# - Copies in boilerplate/update from $REPO_ROOT
+# - Creates an empty boilerplate/update.cfg
+# It does not run the update.
+#
+# :param PATH: the test_project (from boilerplate/test/test_projects)
+bootstrap_project() {
+    repodir=$1
+    test_project=$2
+    (
+        cp -R $REPO_ROOT/test/test_projects/$test_project/* $repodir/.
+        pushd $repodir > /dev/null
+        mkdir boilerplate
+        cp $REPO_ROOT/boilerplate/update boilerplate
+        touch boilerplate/update.cfg
+        for convention in $3 ; do
+            add_convention . $convention
+        done
+        sh boilerplate/update
+        popd $repodir/$test_project > /dev/null
+    )
+}
+
 ## bootstrap_repo PATH
 #
 # Gets a git repo ready for boilerplate:

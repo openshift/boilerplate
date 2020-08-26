@@ -110,7 +110,14 @@ envtest: isclean
 	@eval $$($(MAKE) env --no-print-directory) || (echo 'Unable to evaulate output of `make env`.  This breaks osd-operators-registry.' >&2 && exit 1)
 
 .PHONY: test
-test: envtest gotest yaml-validate
+test: envtest gotest yaml-validate check_generation
+
+.PHONY: check_generation
+check_generation: 
+	@$(MAKE) -s isclean --no-print-directory || (echo 'check_generation requires a clean project to run. Please commit or revert you changes first.' >&2 && exit 1) 
+	@$(MAKE) -s generate --no-print-directory
+	@$(MAKE) -s isclean --no-print-directory || (echo 'Files after generation are different than committed one. Please commit updated and unaltered generated files' >&2 && exit 1)
+	@echo "All generated files are up-to-date and unaltered" 
 
 .PHONY: env
 .SILENT: env
