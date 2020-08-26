@@ -17,6 +17,6 @@ esac
 
 echo "Validating variables exported from the main update driver"
 [[ -z "$REPO_ROOT" ]] && err "Bad REPO_ROOT: '$REPO_ROOT'"
-[[ "$CONVENTION_ROOT" == "$REPO_ROOT/boilerplate" ]] || err "Bad CONVENTION_ROOT: '$CONVENTION_ROOT'"
+[[ "$CONVENTION_ROOT" == "$REPO_ROOT/boilerplate" ]] || err "Bad CONVENTION_ROOT: '$CONVENTION_ROOT' ; expected $REPO_ROOT/boilerplate"
 # Test framework sets this via the `empty_repo` helper.
 [[ "$REPO_NAME" == "test-repo" ]] || err "Bad REPO_NAME: '$REPO_NAME'"
