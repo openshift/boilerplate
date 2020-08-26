@@ -182,3 +182,15 @@ In your fork of this repository (not a consuming repository):
       `update` driver and the convention subdirectories themselves. Of
       note, `${CONVENTION_ROOT}/_lib/` contains some utilities that may
       be useful for `update`s.
+
+### Tests
+Test cases are executed by running `make test`. This must be done on a
+clean git repository; otherwise the tests will not be using your
+uncommitted changes.
+
+Add new test cases by creating executable files in the [test/case](test/case)
+subdirectory. These are discovered and executed in lexicographic order by
+`make test`. Your test case should exit zero to indicate success; nonzero to
+indicate failure. The [test/lib.sh](test/lib.sh) library defines convenient
+variables and functions you can use if your test case is written in `bash`.
+See existing test cases for examples.

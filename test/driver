@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Runs executable files under the `case` subdirectory, in alpha order.
+#
+# If $PRESERVE_TEMP_DIRS is set, temporary directories created by test
+# cases are preserved; otherwise they are deleted.
+
+HERE=${0%/*}
+
+source $HERE/lib.sh
+
+_PASS_COUNT=0
+_FAIL_COUNT=0
+
+main() {
+    cd "$HERE/case"
+    # TODO: Add support for running just certain cases
+    cases=$(find . -type f -perm /111 | sort)
+
+    echo "Will run test cases:"
+    echo "$cases"
+
+    for c in $cases; do
+        echo
+        hr
+        echo "Running test case $c"
+        hr
+        source ./$c
+        RC=$?
+        hr
+        if [[ $RC -eq 0 ]]; then
+            echo PASS
+            _PASS_COUNT=$((_PASS_COUNT+1))
+        else
+            echo "FAIL with RC=$RC"
+            _FAIL_COUNT=$((_FAIL_COUNT+1))
+        fi
+        echo
+    done
+
+    hr
+    cat <<EOF
+PASS: $_PASS_COUNT
+FAIL: $_FAIL_COUNT
+EOF
+    hr
+    if [[ $_FAIL_COUNT -ne 0 ]]; then
+        exit 1
+    fi
+    exit 0
+}
+
+main
