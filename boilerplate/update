@@ -103,7 +103,7 @@ while read directory junk; do
   fi
   rm -rf "${DIR}/${directory}"
   mkdir -p $(dirname "${DIR}/${directory}")
-  rsync -a -r "$dir_path" "${DIR}/${directory}"
+  rsync -a -r "$dir_path" $(dirname "${DIR}/${directory}")
   if [ -f "${DIR}/${directory}/update" ]; then
     echo "executing ${DIR}/${directory}/update POST"
     "${DIR}/${directory}/update" POST
