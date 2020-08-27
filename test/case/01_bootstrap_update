@@ -1,0 +1,20 @@
+#!/bin/bash -xe
+
+HERE=${0%/*}
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+repo=$(empty_repo)
+add_cleanup $repo
+
+bootstrap_repo $repo
+
+cd $repo
+
+# TODO: test REPO_NAME detection by setting an appropriately-formatted
+# git remote
+export REPO_NAME=${0##*/}
+
+make update_boilerplate

@@ -52,6 +52,10 @@ export CONVENTION_ROOT=$DIR
 if [ -z "$REPO_NAME" ]; then
   # This is a tad ambitious, but it should usually work.
   export REPO_NAME=$(git remote get-url origin | sed 's,.*/,,; s/\.git$//')
+  # If that still didn't work, warn (but proceed)
+  if [ -z "$REPO_NAME" ]; then
+    echo 'Failed to discover repository name! $REPO_NAME not set!'
+  fi
 fi
 
 export REPO_ROOT=$(git rev-parse --show-toplevel)
