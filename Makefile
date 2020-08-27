@@ -6,7 +6,7 @@ isclean:
 
 .PHONY: test
 test: isclean
-	test/driver
+	test/driver >${ARTIFACT_DIR}/pr-check.log 2>&1
 
 .PHONY: pr-check
 pr-check: test
