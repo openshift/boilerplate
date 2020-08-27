@@ -9,42 +9,49 @@ HERE=${0%/*}
 
 source $HERE/lib.sh
 
-_PASS_COUNT=0
-_FAIL_COUNT=0
+_PASS=()
+_FAIL=()
 
 main() {
     cd "$HERE/case"
     # TODO: Add support for running just certain cases
     cases=$(find . -type f -perm /111 | sort)
+    if [[ -z "$cases" ]]; then
+        echo "No test cases found! Something is wrong!"
+        exit 1
+    fi
 
     echo "Will run test cases:"
     echo "$cases"
 
-    for c in $cases; do
+    for test_case_executable in $cases; do
         echo
         hr
-        echo "Running test case $c"
+        echo "Running test case $test_case_executable"
         hr
-        source ./$c
+        # Invoke
+        $test_case_executable
         RC=$?
         hr
         if [[ $RC -eq 0 ]]; then
             echo PASS
-            _PASS_COUNT=$((_PASS_COUNT+1))
+            _PASS+=($test_case_executable)
         else
             echo "FAIL with RC=$RC"
-            _FAIL_COUNT=$((_FAIL_COUNT+1))
+            _FAIL+=($test_case_executable)
         fi
         echo
     done
 
     hr
-    cat <<EOF
-PASS: $_PASS_COUNT
-FAIL: $_FAIL_COUNT
-EOF
+    echo "PASS: ${#_PASS[@]}"
+    echo -n "  "
+    echo ${_PASS[@]} | sed 's/ /\n  /g'
+    echo "FAIL: ${#_FAIL[@]}"
+    echo -n "  "
+    echo ${_FAIL[@]} | sed 's/ /\n  /g'
     hr
-    if [[ $_FAIL_COUNT -ne 0 ]]; then
+    if [[ ${#_FAIL[@]} -ne 0 ]]; then
         exit 1
     fi
     exit 0

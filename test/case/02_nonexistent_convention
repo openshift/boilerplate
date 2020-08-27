@@ -1,0 +1,43 @@
+#!/bin/bash -x
+
+echo "Validate that a nonexistent convention causes update to fail."
+
+HERE=${0%/*}
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+repo=$(empty_repo)
+add_cleanup $repo
+
+bootstrap_repo $repo
+
+cd $repo
+# Subscribe to a "convention" that doesn't exist upstream
+echo "bogus/convention" >> boilerplate/update.cfg
+
+# TODO: test REPO_NAME detection by setting an appropriately-formatted
+# git remote
+export REPO_NAME=${0##*/}
+
+LOG=${0##*/}.log
+
+# A little cheat so we can get the RC from `make`
+make update_boilerplate >$LOG 2>&1
+rc=$?
+cat $LOG
+
+if [[ $rc -eq 0 ]]; then
+    echo "Expected update to fail!"
+    exit 1
+fi
+expected="Invalid convention directory: 'bogus/convention'"
+if ! grep -q "$expected" $LOG; then
+    echo "Expected update output to contain:"
+    echo "  $expected"
+    echo "...but it didn't. See above."
+    exit 1
+fi
+
+exit 0
