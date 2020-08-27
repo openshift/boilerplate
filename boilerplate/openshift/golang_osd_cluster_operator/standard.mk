@@ -71,8 +71,10 @@ docker-push: push
 
 .PHONY: gocheck
 gocheck: ## Lint code
-	boilerplate/openshift/golang_osd_cluster_operator/golint.sh
-	${GOENV} go vet ./cmd/... ./pkg/...
+	boilerplate/_lib/ensure.sh golangci-lint
+	# GOLANGCI_LINT_CACHE needs to be set to a directory which is writeable
+	# Relevant issue - https://github.com/golangci/golangci-lint/issues/734
+	GOLANGCI_LINT_CACHE=/tmp/golangci-cache golangci-lint run -c boilerplate/openshift/golang_osd_cluster_operator/golangci.yml ./...
 
 .PHONY: gogenerate
 gogenerate:
