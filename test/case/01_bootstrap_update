@@ -18,4 +18,7 @@ cd $repo
 export REPO_NAME=${0##*/}
 
 make update_boilerplate
+
+check_update 
+
 exit $?
