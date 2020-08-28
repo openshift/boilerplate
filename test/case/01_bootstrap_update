@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -x
 
 HERE=${0%/*}
 
@@ -18,3 +18,4 @@ cd $repo
 export REPO_NAME=${0##*/}
 
 make update_boilerplate
+exit $?
