@@ -26,7 +26,7 @@ add_cleanup() {
 }
 
 empty_repo() {
-    tmpd=$(mktemp -d)
+    tmpd=$(mktemp -d -t boilerplate_test_XXXXXXXX)
     git init $tmpd >&2
     echo $tmpd
 }
@@ -139,7 +139,7 @@ add_convention() {
 # Make a new clone of boilerplate, checking out POS (may it be branch or commit ID)
 # :param POS: The position in the git repository to checkout (branch or commit ID)
 new_boilerplate_repo() {
-	pushd $(mktemp -d -t boilerplate-clone-) > /dev/null
+	pushd $(mktemp -d -t boilerplate-clone-XXXXXXXX) > /dev/null
 	pwd
 	git clone https://github.com/openshift/boilerplate.git > /dev/null
 	if [ $# = 1 ] ; then
