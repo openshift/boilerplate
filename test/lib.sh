@@ -119,7 +119,7 @@ check_update() {
 	
 	handle_error_counter CHECK
 	
-	return $?
+	exit $?
 }
 
 ## add_convention CONVENTION
@@ -148,9 +148,9 @@ handle_error_counter() {
 	elif [ $1 = "CHECK" ] ; then 
 		if [ ! $error_counter = 0 ] ; then 
 			echo "$error_counter differences have been detected between the project and the convention"
-			return 1
+			exit 1
 		fi
 	fi
 	
-	return 0
+	exit 0
 }
