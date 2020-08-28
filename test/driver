@@ -15,7 +15,7 @@ _FAIL=()
 main() {
     cd "$HERE/case"
     # TODO: Add support for running just certain cases
-    cases=$(find . -type f -perm -u+x | sort)
+    cases=$(find . -type f -perm /111 | sort)
     if [[ -z "$cases" ]]; then
         echo "No test cases found! Something is wrong!"
         exit 1
