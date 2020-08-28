@@ -21,4 +21,13 @@ make update_boilerplate
 
 check_update 
 
+if [ $? -ne 0 ] ; then
+	exit $?
+fi
+
+add_convention test/test_base_convention
+make update_boilerplate
+
+check_update
+
 exit $?
