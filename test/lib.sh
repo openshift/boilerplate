@@ -88,6 +88,7 @@ diff() {
 compare() {
 	if [ $1 = "_data" ] ; then
 		if [ ! -f $repo/boilerplate/_data/last_boilerplate_commit ] ; then
+			# TODO: Check the content of the file to ensure it contains the proper commit in addition to the file existence
 			handle_error_counter INC
 		fi
 	else
