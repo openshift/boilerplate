@@ -17,7 +17,7 @@ _cleanup() {
         rm -fr $_BP_TEST_TEMP_DIRS
 		rm -rf $LOG_DIR
     else
-        echo "Preserving temporary directories: $_BP_TEST_TEMP_DIRS"
+        echo "Preserving temporary directories: $_BP_TEST_TEMP_DIRS $LOG_DIR"
     fi
 }
 trap _cleanup EXIT
@@ -72,10 +72,14 @@ compare() {
 	if [ $1 = "_data" ] ; then
 		if [ ! -f $repo/boilerplate/_data/last_boilerplate_commit ] ; then
 			# TODO: Check the content of the file to ensure it contains the proper commit in addition to the file existence
-			echo "$repo/boilerplate/_data/last_boilerplate_commit" >> $LOG_FILE
+			echo "$repo/boilerplate/_data/last_boilerplate_commit does not exist" >> $LOG_FILE
 		fi
 	else
-		diff --recursive -q $1 $BOILERPLATE_GIT_REPO/boilerplate/$1 >> $LOG_FILE
+		if [ -d $1 ] ; then
+			diff --recursive -q $1 $BOILERPLATE_GIT_REPO/boilerplate/$1 >> $LOG_FILE
+		else
+			echo "`pwd`/$1 does not exist" >> $LOG_FILE
+		fi
 	fi
 }
 
@@ -106,7 +110,7 @@ check_update() {
 	
 	popd > /dev/null
 	
-	if [ `cat $LOG_FILE | wc -l` != 0 ] ; do
+	if [ `cat $LOG_FILE | wc -l` != 0 ] ; then
 		cat $LOG_FILE
 		return 1
 	else
