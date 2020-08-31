@@ -139,7 +139,7 @@ add_convention() {
 # Make a new clone of boilerplate, checking out POS (may it be branch or commit ID)
 # :param POS: The position in the git repository to checkout (branch or commit ID)
 new_boilerplate_repo() {
-	pushd $(mktemp -d -t boilerplate-clone-XXXXXXXX) > /dev/null
+	pushd $(mktemp -d -t boilerplate_clone_XXXXXXXX) > /dev/null
 	pwd
 	git clone https://github.com/openshift/boilerplate.git > /dev/null
 	if [ $# = 1 ] ; then
