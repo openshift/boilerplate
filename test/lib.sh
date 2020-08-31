@@ -62,7 +62,7 @@ hr() {
     echo "========================="
 }
 
-## compare FOLDER LOG_DIR
+## compare FOLDER LOG_FILE
 #
 # Check FOLDER is properly sync'ed, determining the reference base on FOLDER 
 #
@@ -83,20 +83,21 @@ compare() {
 	fi
 }
 
-## check_update PREFIX
+## check_update LOG_FILE
 #
 # Check the boilerplate synchronization is properly working, covering generics and convention
 # specific parts
-# :param PREFIX: Logs prefix (optional)
+# :param LOG_FILE: Log file name (optional). If none is provided, a name will be generated. 
+# If file isn't empty, it will be deleted.
 check_update() {
 	pushd $repo/boilerplate > /dev/null
 	
 	if [ $# = 1 ] ; then
 		LOG_FILE=$LOG_DIR/$1
-		rm $LOG_FILE
+		rm -f $LOG_FILE
 	else 
-		log=`cat /dev/urandom | env LC_CTYPE=C tr -cd 'a-f0-9' | head -c 10`
-		LOG_FILE=$LOG_DIR/$log
+		log_file=`cat /dev/urandom | env LC_CTYPE=C tr -cd 'a-f0-9' | head -c 10`
+		LOG_FILE=$LOG_DIR/$log_file
 	fi
 	
 	compare _data $LOG_FILE
@@ -105,6 +106,8 @@ check_update() {
 	while read convention ; do
 	  if [ -d $BOILERPLATE_GIT_REPO/boilerplate/$convention ] ; then
 		  compare $convention $LOG_FILE
+	  else
+		  echo "$BOILERPLATE_GIT_REPO/boilerplate/$convention is not a directory" >> $LOG_FILE
 	  fi
 	done < $repo/boilerplate/update.cfg
 	
@@ -120,7 +123,7 @@ check_update() {
 
 ## add_convention CONVENTION
 #
-# Add a convention and run the update script for the project to pick it up
+# Add a convention if not already present
 # :param CONVENTION: An existing convention
 add_convention() {
 	if ! grep -q "^$1\$" $repo/boilerplate/update.cfg ; then
