@@ -3,6 +3,7 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
 export BOILERPLATE_GIT_REPO=$REPO_ROOT
+export LOG_DIR=$(mktemp -d -t boilerplate_logs_XXXXXXXX)
 
 _BP_TEST_TEMP_DIRS=
 
@@ -14,6 +15,7 @@ _cleanup() {
     if [ -z "$PRESERVE_TEMP_DIRS" ]; then
         echo "Removing temporary directories"
         rm -fr $_BP_TEST_TEMP_DIRS
+		rm -rf $LOG_DIR
     else
         echo "Preserving temporary directories: $_BP_TEST_TEMP_DIRS"
     fi
@@ -60,66 +62,56 @@ hr() {
     echo "========================="
 }
 
-## diff BASELINE
-#
-# Recursively compare the current repository content to the BASELINE repository
-#
-# :param BASELINE: An existing directory used as reference to compared sync'ed files
-diff() {
-	for file in `ls` ; do 
-		if [ -d $file ] ; then 
-			pushd $file  > /dev/null
-			diff $1/$file 
-			popd  > /dev/null
-		elif [ -f $file ] ; then
-			cmp $file $1/$file
-			if [ ! $? = 0 ] ; then
-				handle_error_counter INC
-			fi
-		fi
-	done
-}
-
-## compare FOLDER
+## compare FOLDER LOG_DIR
 #
 # Check FOLDER is properly sync'ed, determining the reference base on FOLDER 
 #
 # :param FOLDER: An existing directory sync'ed by boilerplate and to be checked
+# :param LOG_FILE: The log file used to aggregate the output of the `diff` calls
 compare() {
 	if [ $1 = "_data" ] ; then
 		if [ ! -f $repo/boilerplate/_data/last_boilerplate_commit ] ; then
 			# TODO: Check the content of the file to ensure it contains the proper commit in addition to the file existence
-			handle_error_counter INC
+			echo "$repo/boilerplate/_data/last_boilerplate_commit" >> $LOG_FILE
 		fi
 	else
-		pushd $1  > /dev/null
-		diff $BOILERPLATE_GIT_REPO/boilerplate/$1
-		popd > /dev/null
+		diff --recursive -q $1 $BOILERPLATE_GIT_REPO/boilerplate/$1 >> $LOG_FILE
 	fi
 }
 
-## check_update
+## check_update PREFIX
 #
 # Check the boilerplate synchronization is properly working, covering generics and convention
 # specific parts
+# :param PREFIX: Logs prefix (optional)
 check_update() {
-	handle_error_counter INIT
 	pushd $repo/boilerplate > /dev/null
 	
-	compare _data
-	compare _lib
+	if [ $# = 1 ] ; then
+		LOG_FILE=$LOG_DIR/$1
+		rm $LOG_FILE
+	else 
+		log=`cat /dev/urandom | env LC_CTYPE=C tr -cd 'a-f0-9' | head -c 10`
+		LOG_FILE=$LOG_DIR/$log
+	fi
+	
+	compare _data $LOG_FILE
+	compare _lib $LOG_FILE
 	
 	while read convention ; do
 	  if [ -d $BOILERPLATE_GIT_REPO/boilerplate/$convention ] ; then
-		  compare $convention
+		  compare $convention $LOG_FILE
 	  fi
 	done < $repo/boilerplate/update.cfg
 	
 	popd > /dev/null
 	
-	handle_error_counter CHECK
-	
-	exit $?
+	if [ `cat $LOG_FILE | wc -l` != 0 ] ; do
+		cat $LOG_FILE
+		return 1
+	else
+		return 0
+	fi
 }
 
 ## add_convention CONVENTION
@@ -127,30 +119,7 @@ check_update() {
 # Add a convention and run the update script for the project to pick it up
 # :param CONVENTION: An existing convention
 add_convention() {
-	if grep -q "^$1\$" $repo/boilerplate/update.cfg ; then
+	if ! grep -q "^$1\$" $repo/boilerplate/update.cfg ; then
 		echo $1 >> $repo/boilerplate/update.cfg
 	fi
-}
-
-## handle_error_counter FUNCTION
-#
-# Function managing the error counter to increment in case of diff found for a file and print before returning
-# :param FUNCTION: action to be done on the error counter
-#  - RESET : Initilize the error counter to 0 
-#  - INC : Increment the internal counter by 1
-#  - CHECK : Check the number of diff is 0. If it is not, returns 1 and print the number of errors found
-handle_error_counter() {
-	declare -i error_counter
-	if [ $1 = "RESET" ] ; then 
-		error_counter=0
-	elif [ $1 = "INC" ] ; then
-		error_counter=`expr $error_counter+1`
-	elif [ $1 = "CHECK" ] ; then 
-		if [ ! $error_counter = 0 ] ; then 
-			echo "$error_counter differences have been detected between the project and the convention"
-			exit 1
-		fi
-	fi
-	
-	exit 0
 }
