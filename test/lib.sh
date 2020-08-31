@@ -79,7 +79,7 @@ compare() {
     fi
 }
 
-## check_update REPO LOG_FILE
+## check_update REPO (LOG_FILE)
 #
 # Check the boilerplate synchronization is properly working, covering generics and convention
 # specific parts
@@ -87,6 +87,10 @@ compare() {
 # :param LOG_FILE: Log file name (optional). If none is provided, a name will be generated. 
 # If file isn't empty, it will be truncated.
 check_update() {
+    if [ $# -le 2 ] ; then
+        echo "Usage: check_update REPO (LOG_FILE)"
+    fi
+    
     REPO=$1
     pushd $REPO/boilerplate > /dev/null
     
