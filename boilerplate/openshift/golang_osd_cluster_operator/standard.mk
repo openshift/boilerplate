@@ -37,6 +37,10 @@ GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=
 
 GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPATH}"
 
+# GOLANGCI_LINT_CACHE needs to be set to a directory which is writeable
+# Relevant issue - https://github.com/golangci/golangci-lint/issues/734
+GOLANGCI_LINT_CACHE ?= /tmp/golangci-cache
+
 TESTTARGETS := $(shell ${GOENV} go list -e ./... | egrep -v "/(vendor)/")
 # ex, -v
 TESTOPTS :=
@@ -71,10 +75,8 @@ docker-push: push
 
 .PHONY: gocheck
 gocheck: ## Lint code
-	boilerplate/_lib/ensure.sh golangci-lint
-	# GOLANGCI_LINT_CACHE needs to be set to a directory which is writeable
-	# Relevant issue - https://github.com/golangci/golangci-lint/issues/734
-	GOLANGCI_LINT_CACHE=/tmp/golangci-cache golangci-lint run -c boilerplate/openshift/golang_osd_cluster_operator/golangci.yml ./...
+	GOOS=${GOOS} boilerplate/_lib/ensure.sh golangci-lint
+	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c boilerplate/openshift/golang_osd_cluster_operator/golangci.yml ./...
 
 .PHONY: gogenerate
 gogenerate:
