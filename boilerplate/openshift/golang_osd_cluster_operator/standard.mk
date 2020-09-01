@@ -28,8 +28,6 @@ OPERATOR_DOCKERFILE ?=build/Dockerfile
 BINFILE=build/_output/bin/$(OPERATOR_NAME)
 MAINPACKAGE=./cmd/manager
 
-CRDS_PATH ?= deploy/crds
-
 # Containers may default GOFLAGS=-mod=vendor which would break us since
 # we're using modules.
 unexport GOFLAGS
@@ -122,4 +120,4 @@ env: isclean
 
 .PHONY: yaml-validate
 yaml-validate:
-	python boilerplate/openshift/golang_osd_cluster_operator/validate_yaml.py ${CRDS_PATH}
+	python3 boilerplate/openshift/golang_osd_cluster_operator/validate_yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
