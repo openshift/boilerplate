@@ -108,7 +108,7 @@ envtest: isclean
 	@eval $$($(MAKE) env --no-print-directory) || (echo 'Unable to evaulate output of `make env`.  This breaks osd-operators-registry.' >&2 && exit 1)
 
 .PHONY: test
-test: envtest gotest
+test: envtest gotest yaml-validate
 
 .PHONY: env
 .SILENT: env
@@ -117,3 +117,7 @@ env: isclean
 	echo OPERATOR_NAMESPACE=$(OPERATOR_NAMESPACE)
 	echo OPERATOR_VERSION=$(OPERATOR_VERSION)
 	echo OPERATOR_IMAGE_URI=$(OPERATOR_IMAGE_URI)
+
+.PHONY: yaml-validate
+yaml-validate:
+	python3 boilerplate/openshift/golang_osd_cluster_operator/validate_yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
