@@ -93,7 +93,7 @@ check_update() {
     if [ $# = 2 ] ; then
         LOG_FILE=$LOG_DIR/$2
         rm -f $LOG_FILE
-		touch $LOG_FILE
+        touch $LOG_FILE
     else 
         LOG_FILE=`mktemp $LOG_DIR/log.XXXXXXXX`
     fi
