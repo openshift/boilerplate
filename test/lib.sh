@@ -15,7 +15,7 @@ _cleanup() {
     if [ -z "$PRESERVE_TEMP_DIRS" ]; then
         echo "Removing temporary directories"
         rm -fr $_BP_TEST_TEMP_DIRS
-		rm -rf $LOG_DIR
+        rm -rf $LOG_DIR
     else
         echo "Preserving temporary directories: $_BP_TEST_TEMP_DIRS $LOG_DIR"
     fi
@@ -52,7 +52,7 @@ bootstrap_repo() {
         cat <<EOF > Makefile
 .PHONY: update_boilerplate
 update_boilerplate:
-	@boilerplate/update
+		@boilerplate/update
 EOF
         > boilerplate/update.cfg
     )
@@ -69,64 +69,63 @@ hr() {
 # :param FOLDER: An existing directory sync'ed by boilerplate and to be checked
 # :param LOG_FILE: The log file used to aggregate the output of the `diff` calls
 compare() {
-	if [ $1 = "_data" ] ; then
-		if [ ! -f $repo/boilerplate/_data/last_boilerplate_commit ] ; then
-			# TODO: Check the content of the file to ensure it contains the proper commit in addition to the file existence
-			echo "$repo/boilerplate/_data/last_boilerplate_commit does not exist" >> $LOG_FILE
-		fi
-	else
-		if [ -d $1 ] ; then
-			diff --recursive -q $1 $BOILERPLATE_GIT_REPO/boilerplate/$1 >> $LOG_FILE
-		else
-			echo "`pwd`/$1 does not exist" >> $LOG_FILE
-		fi
-	fi
+    if [ $1 = "_data" ] ; then
+        if [ ! -f _data/last_boilerplate_commit ] ; then
+            # TODO: Check the content of the file to ensure it contains the proper commit in addition to the file existence
+            echo "$repo/boilerplate/_data/last_boilerplate_commit does not exist" >> $LOG_FILE
+        fi
+    else
+        diff --recursive -q $1 $BOILERPLATE_GIT_REPO/boilerplate/$1 >> $LOG_FILE 2>&1
+    fi
 }
 
-## check_update LOG_FILE
+## check_update REPO LOG_FILE
 #
 # Check the boilerplate synchronization is properly working, covering generics and convention
 # specific parts
+# :param REPO: The boilerplate repository to be checked
 # :param LOG_FILE: Log file name (optional). If none is provided, a name will be generated. 
-# If file isn't empty, it will be deleted.
+# If file isn't empty, it will be truncated.
 check_update() {
-	pushd $repo/boilerplate > /dev/null
-	
-	if [ $# = 1 ] ; then
-		LOG_FILE=$LOG_DIR/$1
-		rm -f $LOG_FILE
-	else 
-		log_file=`cat /dev/urandom | env LC_CTYPE=C tr -cd 'a-f0-9' | head -c 10`
-		LOG_FILE=$LOG_DIR/$log_file
-	fi
-	
-	compare _data $LOG_FILE
-	compare _lib $LOG_FILE
-	
-	while read convention ; do
-	  if [ -d $BOILERPLATE_GIT_REPO/boilerplate/$convention ] ; then
-		  compare $convention $LOG_FILE
-	  else
-		  echo "$BOILERPLATE_GIT_REPO/boilerplate/$convention is not a directory" >> $LOG_FILE
-	  fi
-	done < $repo/boilerplate/update.cfg
-	
-	popd > /dev/null
-	
-	if [ `cat $LOG_FILE | wc -l` != 0 ] ; then
-		cat $LOG_FILE
-		return 1
-	else
-		return 0
-	fi
+    REPO=$1
+    pushd $REPO/boilerplate > /dev/null
+    
+    if [ $# = 2 ] ; then
+        LOG_FILE=$LOG_DIR/$2
+        rm -f $LOG_FILE
+    else 
+        log_file=`cat /dev/urandom | env LC_CTYPE=C tr -cd 'a-f0-9' | head -c 10`
+        LOG_FILE=$LOG_DIR/$log_file
+    fi
+    
+    compare _data $LOG_FILE
+    compare _lib $LOG_FILE
+    
+    while read convention ; do
+      if [ -d $BOILERPLATE_GIT_REPO/boilerplate/$convention ] ; then
+          compare $convention $LOG_FILE
+      else
+          echo "$BOILERPLATE_GIT_REPO/boilerplate/$convention is not a directory" >> $LOG_FILE
+      fi
+    done < $REPO/boilerplate/update.cfg
+    
+    popd > /dev/null
+    
+    if [[ -s $LOG_FILE ]] ; then
+        cat $LOG_FILE
+        return 1
+    else
+        return 0
+    fi
 }
 
 ## add_convention CONVENTION
 #
-# Add a convention if not already present
+# Add a convention if not already present in the TARGET repository
+# :param TARGET: The target repository
 # :param CONVENTION: An existing convention
 add_convention() {
-	if ! grep -q "^$1\$" $repo/boilerplate/update.cfg ; then
-		echo $1 >> $repo/boilerplate/update.cfg
-	fi
+    if ! grep -q "^$2\$" $1/boilerplate/update.cfg ; then
+        echo $2 >> $1/boilerplate/update.cfg
+    fi
 }
