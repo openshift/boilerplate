@@ -3,6 +3,7 @@ set -euo pipefail
 
 GOLANGCI_LINT_VERSION="1.30.0"
 DEPENDENCY=${1:-}
+GOOS=${GOOS:-linux}
 
 case "${DEPENDENCY}" in
 golangci-lint)
