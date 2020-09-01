@@ -75,7 +75,7 @@ docker-push: push
 
 .PHONY: gocheck
 gocheck: ## Lint code
-	GOOS=${GOOS} boilerplate/_lib/ensure.sh golangci-lint
+	boilerplate/_lib/ensure.sh golangci-lint
 	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c boilerplate/openshift/golang_osd_cluster_operator/golangci.yml ./...
 
 .PHONY: gogenerate
