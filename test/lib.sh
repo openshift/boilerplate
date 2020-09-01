@@ -52,7 +52,7 @@ bootstrap_repo() {
         cat <<EOF > Makefile
 .PHONY: update_boilerplate
 update_boilerplate:
-		@boilerplate/update
+	@boilerplate/update
 EOF
         > boilerplate/update.cfg
     )
@@ -93,9 +93,9 @@ check_update() {
     if [ $# = 2 ] ; then
         LOG_FILE=$LOG_DIR/$2
         rm -f $LOG_FILE
+		touch $LOG_FILE
     else 
-        log_file=`cat /dev/urandom | env LC_CTYPE=C tr -cd 'a-f0-9' | head -c 10`
-        LOG_FILE=$LOG_DIR/$log_file
+        LOG_FILE=`mktemp $LOG_DIR/log.XXXXXXXX`
     fi
     
     compare _data $LOG_FILE
