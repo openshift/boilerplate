@@ -1,0 +1,51 @@
+#!/bin/bash -e
+
+cat <<EOF
+TEMPORARY!
+
+Currently the openshift/golang_osd_cluster_operator and
+openshift/golang_osd_hive_operator conventions are identical (except for
+one line in their READMEs). For the moment, we're simply maintaining two
+copies of the content. At some point in the future, there will be
+smarter management of the common pieces. But until then, this test just
+makes sure that you didn't forget to update both at the same time.
+
+EOF
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+source $REPO_ROOT/test/lib.sh
+
+tmpd=$(mktemp -d)
+add_cleanup "$tmpd"
+
+# We expect the conventions to differ only in the README title
+cat <<EOF>$tmpd/expected_diff
+diff --recursive golang_osd_cluster_operator/README.md golang_osd_hive_operator/README.md
+1c1
+< # Conventions for cluster-deployed OSD operators written in Go
+---
+> # Conventions for hive-deployed OSD operators written in Go
+EOF
+
+cd $REPO_ROOT/boilerplate/openshift
+# Don't let this die from -e
+diff --recursive golang_osd_cluster_operator golang_osd_hive_operator > $tmpd/actual_diff 2>&1 || true
+
+# Diff of diffs
+if ! diff -q $tmpd/expected_diff $tmpd/actual_diff; then
+  echo
+  echo ">>EXPECTED DIFF>>"
+  cat $tmpd/expected_diff
+  echo "<<EXPECTED DIFF<<"
+  echo
+  echo ">>ACTUAL DIFF>>"
+  cat $tmpd/actual_diff
+  echo "<<ACTUAL DIFF<<"
+  echo
+  echo ">>DIFF OF DIFFS>>"
+  diff $tmpd/expected_diff $tmpd/actual_diff || true
+  echo "<<DIFF OF DIFFS<<"
+  echo
+  echo "You need to keep openshift/golang_osd_cluster_operator and openshift/golang_osd_hive_operator in sync!"
+  exit 1
+fi
