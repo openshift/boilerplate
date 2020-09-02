@@ -1,5 +1,3 @@
-#!/bin/bash
-
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
 export BOILERPLATE_GIT_REPO=$REPO_ROOT
@@ -75,7 +73,9 @@ compare() {
             echo "$repo/boilerplate/_data/last_boilerplate_commit does not exist" >> $LOG_FILE
         fi
     else
-        diff --recursive -q $1 $BOILERPLATE_GIT_REPO/boilerplate/$1 >> $LOG_FILE 2>&1
+        # Don't let this kill tests using -e. The failure is detected
+        # later based on the $LOG_FILE being nonempty.
+        diff --recursive -q $1 $BOILERPLATE_GIT_REPO/boilerplate/$1 >> $LOG_FILE 2>&1 || true
     fi
 }
 
@@ -87,7 +87,7 @@ compare() {
 # :param LOG_FILE: Log file name (optional). If none is provided, a name will be generated. 
 # If file isn't empty, it will be truncated.
 check_update() {
-    if [ $# -le 2 ] ; then
+    if [ $# -lt 2 ] ; then
         echo "Usage: check_update REPO (LOG_FILE)"
     fi
     

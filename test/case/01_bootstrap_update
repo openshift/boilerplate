@@ -1,7 +1,5 @@
 #!/bin/bash -xe
 
-HERE=${0%/*}
-
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
 source $REPO_ROOT/test/lib.sh
