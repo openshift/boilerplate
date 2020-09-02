@@ -2,8 +2,6 @@
 
 echo "Validate that a nonexistent convention causes update to fail."
 
-HERE=${0%/*}
-
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
 source $REPO_ROOT/test/lib.sh
