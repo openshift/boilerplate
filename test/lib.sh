@@ -47,14 +47,14 @@ bootstrap_repo() {
     repodir=$1
     (
         cd $repodir
-        mkdir boilerplate
-        cp $REPO_ROOT/boilerplate/update boilerplate
+        git submodule add "$REPO_ROOT" boilerplate
         cat <<EOF > Makefile
 .PHONY: update_boilerplate
 update_boilerplate:
-	@boilerplate/update
+	@git submodule update --init --recursive
+	@make -C boilerplate update_boilerplate
 EOF
-        > boilerplate/update.cfg
+        > boilerplate.cfg
     )
 }
 
