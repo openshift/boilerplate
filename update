@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# WARNING: THIS FILE IS MANAGED IN THE 'boilerplate' REPO AND COPIED TO OTHER REPOSITORIES.
+# ONLY EDIT THIS FILE FROM WITHIN THE 'boilerplate' REPOSITORY.
+# 
+# TO OPT OUT OF UPDATES, SEE THE README.
+
+# This script updates itself, and then re-execs itself if it has
+# changed. This is in case updates to conventions rely on updates to this
+# script.
+
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+git fetch origin
+git reset origin/master --hard
+"$DIR/update_stage2"

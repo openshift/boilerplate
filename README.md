@@ -87,25 +87,27 @@ A convention comprises:
 
 ### Bootstrap
 
-1. Copy the main [update script](boilerplate/update) into your repo as
-   `boilerplate/update`. Make sure it is executable (`chmod +x`).
-
-**Note:** It is important that the `update` script be at the expected
-path, because one of the things it does is update itself!
+1. Add this repository as submodule into the `boilerplate` directory
+   of your repository
+   
+```bash
+git submodule add https://github.com/openshift/boilerplate boilerplate
+```
 
 2. Create a `Makefile` target as follows:
 
 ```makefile
 .PHONY: update_boilerplate
 update_boilerplate:
-	@boilerplate/update
+  git submodule update --init --recursive
+  make -C boilerplate
 ```
 
 **Note:** It is important that the `Makefile` target have the expected
 name, because (eventually) there may be automated jobs that use it
 to look for available updates.
 
-3. Touch (create empty) the configuration file `boilerplate/update.cfg`.
+3. Touch (create empty) the configuration file `boilerplate.cfg`.
    This will be use [later](#configure).
 
 4. Commit the above changes.
@@ -113,11 +115,11 @@ to look for available updates.
 ### Configure
 
 The `update` program looks for a configuration file at
-`boilerplate/update.cfg`. It contains a list of conventions, which are
+`boilerplate.cfg`. It contains a list of conventions, which are
 simply the names of subdirectory paths under `boilerplate`, one per line.
 Whitespace and `#`-style comments are allowed. For example, to adopt the
 `openshift/golang_osd_hive_operator` convention, your
-`boilerplate/update.cfg` may look like:
+`boilerplate.cfg` may look like:
 
 ```
 # Use standards for hive-deployed Go operators

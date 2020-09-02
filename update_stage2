@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+# The directory in which this conventions live is the CONVENTION_ROOT. Export
+# this for individual `update` scripts.
+export CONVENTION_ROOT="$DIR/conventions"
+
+# Allow this to be overridden by the environment, in case some bizarre
+# repo doesn't have an `origin` remote.
+REPO_NAME=${REPO_NAME:-}
+if [ -z "$REPO_NAME" ]; then
+  pushd ..
+  # This is a tad ambitious, but it should usually work.
+  REPO_NAME=$(git remote get-url origin | sed 's,.*/,,; s/\.git$//')
+  export REPO_NAME
+  # If that still didn't work, warn (but proceed)
+  if [ -z "$REPO_NAME" ]; then
+    echo 'Failed to discover repository name! $REPO_NAME not set!'
+  fi
+  popd
+fi
+
+export REPO_ROOT="$DIR/.."
+
+CONFIG_FILE="${DIR}/../boilerplate.cfg"
+README="https://github.com/openshift/boilerplate/blob/master/README.md"
+
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo "$CONFIG_FILE not found."
+  echo "This file is required in order to select which features to include." 
+  echo "See $README for more details."
+  exit 1
+fi
+
+while read directory junk; do
+  # Skip comment lines (which can have leading whitespace)
+  if [[ "$directory" == '#'* ]]; then
+    continue
+  fi
+  # Skip blank or whitespace-only lines
+  if [[ "$directory" == "" ]]; then
+    continue
+  fi
+  # Lines like
+  #    valid/path  other_junk
+  # are not acceptable, unless `other_junk` is a comment
+  if [[ "$junk" != "" ]] && [[ "$junk" != '#'* ]]; then
+    echo "Invalid config! Only one directory is allowed per line. Found '$junk'"
+    exit 1
+  fi
+
+  dir_path="${CONVENTION_ROOT}/${directory}"
+  echo "using conventions from $dir_path"
+  # Make sure the directory exists
+  if ! [[ -d "$dir_path" ]]; then
+    echo "Invalid convention directory: '$directory'"
+    exit 1
+  fi
+
+  echo "***********************************************************************************"
+  echo "$directory is configured in boilerplate.cfg."
+  echo "-----------------------------------------------------------------------------------"
+  echo "syncing files from source."
+  if [ -f "${dir_path}/update" ]; then
+    "${dir_path}/update" PRE
+  fi
+  rsync -a -r "$dir_path/" "${REPO_ROOT}"
+  if [ -f "${DIR}/${directory}/update" ]; then
+    "${dir_path}/update" POST
+  fi
+  echo "***********************************************************************************"
+  echo ""
+done < "$CONFIG_FILE"

@@ -38,11 +38,7 @@ fi
 # `update` driver each time it runs.
 REPO_ROOT=$(git rev-parse --show-toplevel)
 LBCF=${REPO_ROOT}/boilerplate/_data/last_boilerplate_commit
-if ! [[ -f "$LBCF" ]]; then
-  echo "Couldn't discover last boilerplate commit! Assuming you're bootstrapping."
-  exit 0
-fi
-LBC=$(cat $LBCF)
+LBC=$(cd ${REPO_ROOT}/boilerplate && git rev-parse HEAD)
 
 # Download just that commit
 if [ -z "$BOILERPLATE_GIT_REPO" ]; then
@@ -62,7 +58,7 @@ git reset --hard FETCH_HEAD
 # already downloaded what we want
 echo "Running update"
 cd $REPO_ROOT
-boilerplate/update $TMPD
+make -C boilerplate stage2
 
 # Okay, if anything has changed, that's bad.
 if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
