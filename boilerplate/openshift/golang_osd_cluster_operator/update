@@ -17,7 +17,7 @@ THINGS YOU NEED TO DO
 =====================
 - Make sure the following line is in your base Makefile:
 
-include boilerplate/$CONVENTION_NAME/includes.mk
+include boilerplate/generated-includes.mk
 
 - Remove any other 'include' lines, unless they're for things truly
   unique to your repository. (Otherwise, consider proposing them to
