@@ -14,9 +14,11 @@ run code coverage analysis per [this SOP](https://github.com/openshift/ops-sop/b
   this is copied into the repository root, because that's
   [where codecov.io expects it](https://docs.codecov.io/docs/codecov-yaml#can-i-name-the-file-codecovyml).
 
-## Linting with `gofmt`
+## Linting and other static analysis with `golangci-lint`
 
-A `golint.sh`, referenced by the `gocheck` `make` target, to use `gofmt`
-with the configuration found here (currently the default).
+- A `gocheck` `make` target, which
+- ensures the proper version of `golangci-lint` is installed, and
+- runs it against
+- a `golangci.yml` config.
 
 ## More coming soon
