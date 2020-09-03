@@ -37,9 +37,9 @@ The lifecycle from the consuming repository's perspective:
     +----+----+      |      |                 |    | |
          |           |      v                 v    | |
          v           |   +--+-----------------+--+ | |
-+--------+---------+ |   |make update_boilerplate| | |
++--------+---------+ |   |make update-boilerplate| | |
 |Create            | |   +--+--------------------+ | |
-|update_boilerplate| |      |                      | |
+|update-boilerplate| |      |                      | |
 |make target       | |      v                      | |
 +--------+---------+ |   +--+-----+                | |
          |           |   |Validate|                | |
@@ -59,16 +59,16 @@ The lifecycle from the consuming repository's perspective:
 A "convention" lives in a subdirectory hierarchy of `boilerplate` and is
 identified by the subdirectory's path. For example, conventions around
 cluster-deployed OSD operators written in Go lives under
-`boilerplate/openshift/golang_osd_cluster_operator` and is identified as
-`openshift/golang_osd_cluster_operator`.
+`boilerplate/openshift/golang-osd-cluster-operator` and is identified as
+`openshift/golang-osd-cluster-operator`.
 
 A convention comprises:
 
 - Files, which are copied verbatim into the consuming repository at
   update time, replacing whatever was there before. The source directory
   structure is mirrored in the consuming repository -- e.g.
-  `boilerplate/boilerplate/openshift/golang_osd_cluster_operator*` is copied into
-  `${TARGET_REPO}/boilerplate/golang_osd_cluster_operator/*`.
+  `boilerplate/boilerplate/openshift/golang-osd-cluster-operator*` is copied into
+  `${TARGET_REPO}/boilerplate/golang-osd-cluster-operator/*`.
 - An `update` script (which can be any kind of executable, but please
   keep portability in mind). If present, this script is invoked twice
   during an update:
@@ -96,8 +96,8 @@ path, because one of the things it does is update itself!
 2. Create a `Makefile` target as follows:
 
 ```makefile
-.PHONY: update_boilerplate
-update_boilerplate:
+.PHONY: update-boilerplate
+update-boilerplate:
 	@boilerplate/update
 ```
 
@@ -116,12 +116,12 @@ The `update` program looks for a configuration file at
 `boilerplate/update.cfg`. It contains a list of conventions, which are
 simply the names of subdirectory paths under `boilerplate`, one per line.
 Whitespace and `#`-style comments are allowed. For example, to adopt the
-`openshift/golang_osd_hive_operator` convention, your
+`openshift/golang-osd-hive-operator` convention, your
 `boilerplate/update.cfg` may look like:
 
 ```
 # Use standards for hive-deployed Go operators
-openshift/golang_osd_hive_operator
+openshift/golang-osd-hive-operator
 ```
 
 Opt into updates of a convention by including it in the file; otherwise
@@ -138,7 +138,7 @@ in their respective READMEs.
 
 ### Update
 
-Periodically, run `make update_boilerplate` on a clean branch in your
+Periodically, run `make update-boilerplate` on a clean branch in your
 consuming repository. If it succeeds, commit the changes, being sure to
 notice if any new files were created. **Sanity check the changes against
 your specific repository to ensure they didn't break anything.** If they

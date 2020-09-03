@@ -15,17 +15,17 @@ cd $repo
 # git remote
 export REPO_NAME=${0##*/}
 
-make update_boilerplate
+make update-boilerplate
 
-check_update $repo 01_no_convention
+check_update $repo 01-no-convention
 
 if [ $? -ne 0 ] ; then
 	exit $?
 fi
 
-add_convention $repo test/test_base_convention
-make update_boilerplate
+add_convention $repo test/test-base-convention
+make update-boilerplate
 
-check_update $repo 01_with_convention
+check_update $repo 01-with-convention
 
 exit $?

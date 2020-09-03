@@ -5,7 +5,7 @@ fi
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
 export BOILERPLATE_GIT_REPO=$REPO_ROOT
-export LOG_DIR=$(mktemp -d -t boilerplate_logs_XXXXXXXX)
+export LOG_DIR=$(mktemp -d -t boilerplate-logs-XXXXXXXX)
 
 # Location of the convention config, relative to the repo root
 export UPDATE_CFG=boilerplate/update.cfg
@@ -35,7 +35,7 @@ add_cleanup() {
 }
 
 empty_repo() {
-    tmpd=$(mktemp -d -t boilerplate_test_XXXXXXXX)
+    tmpd=$(mktemp -d -t boilerplate-test-XXXXXXXX)
     git init $tmpd >&2
     echo $tmpd
 }
@@ -44,7 +44,7 @@ empty_repo() {
 #
 # Gets a git repo ready for boilerplate:
 # - Copies in boilerplate/update from $REPO_ROOT
-# - Seeds the Makefile with the update_boilerplate target
+# - Seeds the Makefile with the update-boilerplate target
 # - Creates an empty boilerplate/update.cfg
 # It does not run the update.
 #
@@ -57,8 +57,8 @@ bootstrap_repo() {
         mkdir -p boilerplate
         cp $REPO_ROOT/boilerplate/update boilerplate
         cat <<EOF > Makefile
-.PHONY: update_boilerplate
-update_boilerplate:
+.PHONY: update-boilerplate
+update-boilerplate:
 	@boilerplate/update
 EOF
         > $UPDATE_CFG
@@ -77,9 +77,9 @@ hr() {
 # :param LOG_FILE: The log file used to aggregate the output of the `diff` calls
 compare() {
     if [ $1 = "_data" ] ; then
-        if [ ! -f _data/last_boilerplate_commit ] ; then
+        if [ ! -f _data/last-boilerplate-commit ] ; then
             # TODO: Check the content of the file to ensure it contains the proper commit in addition to the file existence
-            echo "$repo/boilerplate/_data/last_boilerplate_commit does not exist" >> $LOG_FILE
+            echo "$repo/boilerplate/_data/last-boilerplate-commit does not exist" >> $LOG_FILE
         fi
     else
         # Don't let this kill tests using -e. The failure is detected
@@ -177,7 +177,7 @@ ensure_nexus_makefile_include() {
 # Make a new clone of boilerplate, checking out POS (may it be branch or commit ID)
 # :param POS: The position in the git repository to checkout (branch or commit ID)
 new_boilerplate_repo() {
-	pushd $(mktemp -d -t boilerplate_clone_XXXXXXXX) > /dev/null
+	pushd $(mktemp -d -t boilerplate-clone-XXXXXXXX) > /dev/null
 	pwd
 	git clone https://github.com/openshift/boilerplate.git > /dev/null
 	if [ $# = 1 ] ; then

@@ -1,5 +1,5 @@
 # Usage
-# python validate_yaml.py path/to/file/or/dir
+# python validate-yaml.py path/to/file/or/dir
 
 import sys
 import yaml

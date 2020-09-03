@@ -22,7 +22,7 @@ export REPO_NAME=${0##*/}
 LOG=${0##*/}.log
 
 # A little cheat so we can get the RC from `make`
-make update_boilerplate >$LOG 2>&1
+make update-boilerplate >$LOG 2>&1
 rc=$?
 cat $LOG
 

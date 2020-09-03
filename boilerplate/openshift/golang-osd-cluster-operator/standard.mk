@@ -76,7 +76,7 @@ docker-push: push
 .PHONY: gocheck
 gocheck: ## Lint code
 	boilerplate/_lib/ensure.sh golangci-lint
-	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c boilerplate/openshift/golang_osd_cluster_operator/golangci.yml ./...
+	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c boilerplate/openshift/golang-osd-cluster-operator/golangci.yml ./...
 
 .PHONY: gogenerate
 gogenerate:
@@ -102,7 +102,7 @@ gotest:
 
 .PHONY: coverage
 coverage:
-	boilerplate/openshift/golang_osd_cluster_operator/codecov.sh
+	boilerplate/openshift/golang-osd-cluster-operator/codecov.sh
 
 .PHONY: envtest
 envtest: isclean
@@ -122,4 +122,4 @@ env: isclean
 
 .PHONY: yaml-validate
 yaml-validate:
-	python3 boilerplate/openshift/golang_osd_cluster_operator/validate_yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
+	python3 boilerplate/openshift/golang-osd-cluster-operator/validate-yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
