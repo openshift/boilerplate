@@ -1,7 +1,16 @@
+if [ "$BOILERPLATE_SET_X" ]; then
+    set -x
+fi
+
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
 export BOILERPLATE_GIT_REPO=$REPO_ROOT
 export LOG_DIR=$(mktemp -d -t boilerplate_logs_XXXXXXXX)
+
+# Location of the convention config, relative to the repo root
+export UPDATE_CFG=boilerplate/update.cfg
+# Location of the nexus Makefile include, relative to a repo root
+export NEXUS_MK=boilerplate/generated-includes.mk
 
 _BP_TEST_TEMP_DIRS=
 
@@ -45,14 +54,14 @@ bootstrap_repo() {
     repodir=$1
     (
         cd $repodir
-        mkdir boilerplate
+        mkdir -p boilerplate
         cp $REPO_ROOT/boilerplate/update boilerplate
         cat <<EOF > Makefile
 .PHONY: update_boilerplate
 update_boilerplate:
 	@boilerplate/update
 EOF
-        > boilerplate/update.cfg
+        > $UPDATE_CFG
     )
 }
 
@@ -87,8 +96,11 @@ compare() {
 # :param LOG_FILE: Log file name (optional). If none is provided, a name will be generated. 
 # If file isn't empty, it will be truncated.
 check_update() {
-    if [ $# -lt 2 ] ; then
+    local convention
+
+    if [ $# -gt 2 ] ; then
         echo "Usage: check_update REPO (LOG_FILE)"
+        return 1
     fi
     
     REPO=$1
@@ -111,7 +123,7 @@ check_update() {
       else
           echo "$BOILERPLATE_GIT_REPO/boilerplate/$convention is not a directory" >> $LOG_FILE
       fi
-    done < $REPO/boilerplate/update.cfg
+    done < $REPO/$UPDATE_CFG
     
     popd > /dev/null
     
@@ -123,13 +135,39 @@ check_update() {
     fi
 }
 
-## add_convention CONVENTION
+## _is_line_in_file LINE FILE
+# Succeeds if LINE exists (anywhere) in FILE; fails otherwise.
+# :param LINE: The complete line of text to search for. Note that this
+# is processed with `grep`, so regexes should be escaped if it matters.
+# :param FILE: The path to the file to search.
+_is_line_in_file() {
+    grep -q "^$1\$" "$2" 2>/dev/null
+}
+
+## add_convention TARGET CONVENTION
 #
 # Add a convention if not already present in the TARGET repository
 # :param TARGET: The target repository
 # :param CONVENTION: An existing convention
 add_convention() {
-    if ! grep -q "^$2\$" $1/boilerplate/update.cfg ; then
-        echo $2 >> $1/boilerplate/update.cfg
+    file="$1/$UPDATE_CFG"
+    if ! _is_line_in_file "$2" "$file" ; then
+        echo "$2" >> "$file"
+    fi
+}
+
+## ensure_nexus_makefile_include
+#
+# Make sure the base Makefile in the TARGET repository includes the
+# nexus Makefile include.
+# :param TARGET: The target repository
+ensure_nexus_makefile_include() {
+    file=$1/Makefile
+    # NOTE: Escape the period for `grep` (paranoid), but collapse it for `sed`.
+    line='include boilerplate/generated-includes\.mk'
+
+    if ! _is_line_in_file $line $file; then
+        # Put the line at the top.
+        sed -i "1s,^,$line\n\n," $file
     fi
 }
