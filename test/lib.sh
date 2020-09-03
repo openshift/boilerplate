@@ -34,6 +34,10 @@ add_cleanup() {
     _BP_TEST_TEMP_DIRS="$_BP_TEST_TEMP_DIRS $1"
 }
 
+## empty_repo
+#
+# Creates a temporary directory and initializes it as a git repository.
+# Outputs the directory. Does not register it for cleanup.
 empty_repo() {
     tmpd=$(mktemp -d -t boilerplate-test-XXXXXXXX)
     git init $tmpd >&2
@@ -172,33 +176,42 @@ ensure_nexus_makefile_include() {
     fi
 }
 
-## new_boilerplate_repo POS
+## new_boilerplate_clone POS
 #
-# Make a new clone of boilerplate, checking out POS (may it be branch or commit ID)
+# Make a new clone of boilerplate, checking out POS (may it be branch or
+# commit ID). The directory is registered for cleanup on exit.
 # :param POS: The position in the git repository to checkout (branch or commit ID)
-new_boilerplate_repo() {
-	pushd $(mktemp -d -t boilerplate-clone-XXXXXXXX) > /dev/null
-	pwd
-	git clone https://github.com/openshift/boilerplate.git > /dev/null
-	if [ $# = 1 ] ; then
-		git checkout $1
-	fi
-	popd > /dev/null
+#
+# Outputs the path to the new clone.
+new_boilerplate_clone() {
+    local clone=$(mktemp -d -t boilerplate-clone-XXXXXXXX)
+    add_cleanup $clone
+    git clone https://github.com/openshift/boilerplate.git $clone >&2
+    if [ $# = 1 ] ; then
+        pushd $clone > /dev/null
+        git checkout $1
+        popd > /dev/null
+    fi
+    # Print the directory. (It is important that nothing else above
+    # prints to stdout.)
+    echo $clone
 }
 
-## override_boilerplate_version NEW_PATH
+## override_boilerplate_repo NEW_PATH
 #
-# Override the boilerplate version to be used for the testing. 
+# Override the boilerplate repository to be used for the testing. 
 # :param NEW_PATH: A clone of boilerplate to be used for the future steps
-override_boilerplate_version() {
-	if [ -d $1 ] ; then
-		BOILERPLATE_GIT_REPO=$1
-	fi
+override_boilerplate_repo() {
+    if ! [ -d $1 ] ; then
+        echo "$1: Not a directory"
+        return 1
+    fi
+    BOILERPLATE_GIT_REPO=$1
 }
 
-## reset_boilerplate_version 
+## reset_boilerplate_repo 
 #
-# Reset the boilerplate version to be used to the 'tested' clone. 
-reset_boilerplate_version() {
-	BOILERPLATE_GIT_REPO=$REPO_ROOT
+# Reset the boilerplate repository to be used to the 'tested' clone. 
+reset_boilerplate_repo() {
+    BOILERPLATE_GIT_REPO=$REPO_ROOT
 }
