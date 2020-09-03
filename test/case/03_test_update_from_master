@@ -1,0 +1,63 @@
+#!/bin/bash -xe
+
+HERE=${0%/*}
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+repo=$(empty_repo)
+add_cleanup $repo
+
+bootstrap_repo $repo
+
+cd $repo
+
+# TODO: test REPO_NAME detection by setting an appropriately-formatted
+# git remote
+export REPO_NAME=${0##*/}
+LOG=${0##*/}.log
+
+boilerplate_master=$(new_boilerplate_repo)
+
+override_boilerplate_version $boilerplate_master/boilerplate
+add_convention $repo test/test_base_convention
+
+make update_boilerplate >$LOG 2>&1
+rc=$?
+cat $LOG
+if [ $rc -ne 0 ] ; then
+	exit $rc
+fi
+check_update $repo 03_check_after_init
+
+if [ $? -ne 0 ] ; then
+	exit $rc
+fi
+
+reset_boilerplate_version
+
+make update_boilerplate >${LOG}2 2>&1
+rc=$?
+cat ${LOG}2
+if [ $rc -ne 0 ] ; then
+	exit $?
+fi
+
+check_update $repo 03_check_new_version_update
+if [ $? -ne 0 ] ; then
+	exit $rc
+fi
+
+override_boilerplate_version $boilerplate_master/boilerplate
+
+make update_boilerplate >${LOG}2 2>&1
+rc=$?
+cat ${LOG}2
+if [ $rc -ne 0 ] ; then
+	exit $?
+fi
+
+check_update $repo 03_check_new_version_update
+
+exit $?

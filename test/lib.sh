@@ -35,7 +35,7 @@ add_cleanup() {
 }
 
 empty_repo() {
-    tmpd=$(mktemp -d)
+    tmpd=$(mktemp -d -t boilerplate_test_XXXXXXXX)
     git init $tmpd >&2
     echo $tmpd
 }
@@ -170,4 +170,35 @@ ensure_nexus_makefile_include() {
         # Put the line at the top.
         sed -i "1s,^,$line\n\n," $file
     fi
+}
+
+## new_boilerplate_repo POS
+#
+# Make a new clone of boilerplate, checking out POS (may it be branch or commit ID)
+# :param POS: The position in the git repository to checkout (branch or commit ID)
+new_boilerplate_repo() {
+	pushd $(mktemp -d -t boilerplate_clone_XXXXXXXX) > /dev/null
+	pwd
+	git clone https://github.com/openshift/boilerplate.git > /dev/null
+	if [ $# = 1 ] ; then
+		git checkout $1
+	fi
+	popd > /dev/null
+}
+
+## override_boilerplate_version NEW_PATH
+#
+# Override the boilerplate version to be used for the testing. 
+# :param NEW_PATH: A clone of boilerplate to be used for the future steps
+override_boilerplate_version() {
+	if [ -d $1 ] ; then
+		BOILERPLATE_GIT_REPO=$1
+	fi
+}
+
+## reset_boilerplate_version 
+#
+# Reset the boilerplate version to be used to the 'tested' clone. 
+reset_boilerplate_version() {
+	BOILERPLATE_GIT_REPO=$REPO_ROOT
 }
