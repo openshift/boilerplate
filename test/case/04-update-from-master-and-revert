@@ -1,0 +1,46 @@
+#!/bin/bash -e
+
+cat <<EOF
+Tests updating from the current boilerplate master to the current
+commit, and then reverting to the master.
+EOF
+
+# TODO: This test requires an active network connection to access the
+# actual boilerplate github repository. We should label it as such and
+# make a granny switch to disable all such tests.
+
+HERE=${0%/*}
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+repo=$(empty_repo)
+add_cleanup $repo
+
+bootstrap_repo $repo
+
+cd $repo
+
+# TODO: test REPO_NAME detection by setting an appropriately-formatted
+# git remote
+export REPO_NAME=${0##*/}
+LOG=${0##*/}.log
+
+boilerplate_master=$(new_boilerplate_clone)
+
+override_boilerplate_repo $boilerplate_master || exit $?
+
+add_convention $repo test/test-base-convention
+make update-boilerplate || exit $?
+check_update $repo 03-check-after-init || exit $?
+
+reset_boilerplate_repo
+
+make update-boilerplate || exit $?
+check_update $repo 03-check-new-version-update || exit $?
+
+override_boilerplate_repo $boilerplate_master || exit $?
+
+make update-boilerplate || exit $?
+check_update $repo 03-check-new-version-update || exit $?
