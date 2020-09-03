@@ -18,17 +18,11 @@ cd $repo
 export REPO_NAME=${0##*/}
 LOG=${0##*/}.log
 
-override_boilerplate_version $(new_boilerplate_repo)/boilerplate
+boilerplate_master=$(new_boilerplate_repo)
 
-make update_boilerplate
-
-check_update $repo 03_initial_check
-
-if [ $? -ne 0 ] ; then
-	exit $?
-fi
-
+override_boilerplate_version $boilerplate_master/boilerplate
 add_convention $repo test/test_base_convention
+
 make update_boilerplate >$LOG 2>&1
 rc=$?
 cat $LOG
@@ -42,12 +36,28 @@ if [ $? -ne 0 ] ; then
 fi
 
 reset_boilerplate_version
+
 make update_boilerplate >${LOG}2 2>&1
 rc=$?
 cat ${LOG}2
 if [ $rc -ne 0 ] ; then
 	exit $?
 fi
+
+check_update $repo 03_check_new_version_update
+if [ $? -ne 0 ] ; then
+	exit $rc
+fi
+
+override_boilerplate_version $boilerplate_master/boilerplate
+
+make update_boilerplate >${LOG}2 2>&1
+rc=$?
+cat ${LOG}2
+if [ $rc -ne 0 ] ; then
+	exit $?
+fi
+
 check_update $repo 03_check_new_version_update
 
 exit $?
