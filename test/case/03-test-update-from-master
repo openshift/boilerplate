@@ -21,15 +21,15 @@ LOG=${0##*/}.log
 boilerplate_master=$(new_boilerplate_repo)
 
 override_boilerplate_version $boilerplate_master/boilerplate
-add_convention $repo test/test_base_convention
+add_convention $repo test/test-base-convention
 
-make update_boilerplate >$LOG 2>&1
+make update-boilerplate >$LOG 2>&1
 rc=$?
 cat $LOG
 if [ $rc -ne 0 ] ; then
 	exit $rc
 fi
-check_update $repo 03_check_after_init
+check_update $repo 03-check-after-init
 
 if [ $? -ne 0 ] ; then
 	exit $rc
@@ -37,27 +37,27 @@ fi
 
 reset_boilerplate_version
 
-make update_boilerplate >${LOG}2 2>&1
+make update-boilerplate >${LOG}2 2>&1
 rc=$?
 cat ${LOG}2
 if [ $rc -ne 0 ] ; then
 	exit $?
 fi
 
-check_update $repo 03_check_new_version_update
+check_update $repo 03-check-new-version-update
 if [ $? -ne 0 ] ; then
 	exit $rc
 fi
 
 override_boilerplate_version $boilerplate_master/boilerplate
 
-make update_boilerplate >${LOG}2 2>&1
+make update-boilerplate >${LOG}2 2>&1
 rc=$?
 cat ${LOG}2
 if [ $rc -ne 0 ] ; then
 	exit $?
 fi
 
-check_update $repo 03_check_new_version_update
+check_update $repo 03-check-new-version-update
 
 exit $?

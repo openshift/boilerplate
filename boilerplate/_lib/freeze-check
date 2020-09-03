@@ -34,10 +34,10 @@ if ! [ -z "$(git status --porcelain)" ]; then
 fi
 
 # We glean the last boilerplate commit from the
-# last_boilerplate_commit file, which gets laid down by the main
+# last-boilerplate-commit file, which gets laid down by the main
 # `update` driver each time it runs.
 REPO_ROOT=$(git rev-parse --show-toplevel)
-LBCF=${REPO_ROOT}/boilerplate/_data/last_boilerplate_commit
+LBCF=${REPO_ROOT}/boilerplate/_data/last-boilerplate-commit
 if ! [[ -f "$LBCF" ]]; then
   echo "Couldn't discover last boilerplate commit! Assuming you're bootstrapping."
   exit 0

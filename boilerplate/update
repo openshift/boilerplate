@@ -131,10 +131,10 @@ while read directory junk; do
   echo ""
 done < "$CONFIG_FILE"
 
-# If all that went well, lay down the last_boilerplate_commit file,
-# which allows freeze_check to work.
+# If all that went well, lay down the last-boilerplate-commit file,
+# which allows freeze-check to work.
 echo "Registering commit hash..."
 mkdir -p ${DIR}/_data
 bp_commit=$(cd ${OUT} && git rev-parse HEAD)
-echo ${bp_commit} > ${DIR}/_data/last_boilerplate_commit
+echo ${bp_commit} > ${DIR}/_data/last-boilerplate-commit
 echo "Done"
