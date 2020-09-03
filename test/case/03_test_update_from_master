@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -xe
 
 HERE=${0%/*}
 
@@ -16,20 +16,38 @@ cd $repo
 # TODO: test REPO_NAME detection by setting an appropriately-formatted
 # git remote
 export REPO_NAME=${0##*/}
+LOG=${0##*/}.log
 
 override_boilerplate_version $(new_boilerplate_repo)/boilerplate
 
 make update_boilerplate
 
-check_update 
+check_update $repo 03_initial_check
 
 if [ $? -ne 0 ] ; then
 	exit $?
 fi
 
-add_convention test/test_base_convention
-make update_boilerplate
+add_convention $repo test/test_base_convention
+make update_boilerplate >$LOG 2>&1
+rc=$?
+cat $LOG
+if [ $rc -ne 0 ] ; then
+	exit $rc
+fi
+check_update $repo 03_check_after_init
 
-check_update
+if [ $? -ne 0 ] ; then
+	exit $rc
+fi
+
+reset_boilerplate_version
+make update_boilerplate >${LOG}2 2>&1
+rc=$?
+cat ${LOG}2
+if [ $rc -ne 0 ] ; then
+	exit $?
+fi
+check_update $repo 03_check_new_version_update
 
 exit $?
