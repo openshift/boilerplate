@@ -40,7 +40,11 @@ add_cleanup() {
 # Outputs the directory. Does not register it for cleanup.
 empty_repo() {
     tmpd=$(mktemp -d -t boilerplate-test-XXXXXXXX)
-    git init $tmpd >&2
+    pushd $tmpd >&2
+    git init >&2
+    # Add a remote for REPO_NAME discovery
+    git remote add origin git@example.com:example-org/test-repo.git
+    popd >&2
     echo $tmpd
 }
 

@@ -54,7 +54,7 @@ export CONVENTION_ROOT=$DIR
 # repo doesn't have an `origin` remote.
 if [ -z "$REPO_NAME" ]; then
   # This is a tad ambitious, but it should usually work.
-  export REPO_NAME=$(git remote get-url origin | sed 's,.*/,,; s/\.git$//')
+  export REPO_NAME=$(git config --get remote.origin.url | sed 's,.*/,,; s/\.git$//')
   # If that still didn't work, warn (but proceed)
   if [ -z "$REPO_NAME" ]; then
     echo 'Failed to discover repository name! $REPO_NAME not set!'
