@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: file-generate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: file-generate
+  template:
+    metadata:
+      labels:
+        name: file-generate
+    spec:
+      serviceAccountName: file-generate
+      containers:
+        - name: file-generate
+          # Replace this with the built image name
+          image: REPLACE_IMAGE
+          command:
+          - file-generate
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "file-generate"

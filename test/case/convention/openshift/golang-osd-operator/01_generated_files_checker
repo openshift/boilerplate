@@ -1,0 +1,51 @@
+#!/bin/bash -x
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+repo=$(empty_repo)
+add_cleanup $repo
+test_project="file-generate"
+
+# TODO: test REPO_NAME detection by setting an appropriately-formatted
+# git remote
+export REPO_NAME=${0##*/}
+
+bootstrap_project $repo ${test_project} openshift/golang-osd-operator
+cd $repo
+export GOPATH=$GOPATH:`pwd`
+
+make update_boilerplate
+make check-generate
+if [ $? = 0 ] ; then 
+    echo "No error detected while checking on uncommitted project"
+    exit 1
+else
+    echo "Project is not committed. Checks failed as expected"
+fi
+
+git add -A
+git commit -m "initial commit"
+
+echo $GOPATH
+
+make check-generate
+if [ $? = 0 ] ; then 
+    echo "Error not detected while the generated files have not beent added/committed"
+    exit 1
+else
+    echo "Generated files are not committed. Checks failed as expected"
+fi
+
+if [ ! -f src/test/test-generation ] || [ ! -f src/test/subfolder/test-generation-subfolder ] ; then
+    echo "Generation didn't work properly"
+    exit 1
+fi
+
+git add -A
+git commit -m "commit generated files"
+
+make check-generate
+
+exit 0
