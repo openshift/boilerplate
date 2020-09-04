@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# Runs executable files under the `case` subdirectory, in alpha order.
+# driver [GLOB]
+#
+# Runs executable files (matching GLOB) under the `case` subdirectory,
+# in alpha order.
 #
 # If $PRESERVE_TEMP_DIRS is set, temporary directories created by test
 # cases are preserved; otherwise they are deleted.
@@ -14,20 +17,22 @@ _FAIL=()
 
 main() {
     cd "$HERE/case"
-    # TODO: Add support for running just certain cases
-    cases=$(find . -type f -perm /111 | sort)
+    local name_glob='*'
+    [[ -n "$1" ]] && name_glob="$1"
+    cases=$(find . -type f -perm /111 -name "$name_glob" | sort)
     if [[ -z "$cases" ]]; then
         echo "No test cases found! Something is wrong!"
         exit 1
     fi
 
     echo "Will run test cases:"
-    echo "$cases"
+    echo "$cases" | sed 's,^./,  ,'
 
     for test_case_executable in $cases; do
+        test_case_name=${test_case_executable#./}
         echo
         hr
-        echo "Running test case $test_case_executable"
+        echo "Running test case $test_case_name"
         hr
         # Invoke
         $test_case_executable
@@ -35,10 +40,10 @@ main() {
         hr
         if [[ $RC -eq 0 ]]; then
             echo PASS
-            _PASS+=($test_case_executable)
+            _PASS+=($test_case_name)
         else
             echo "FAIL with RC=$RC"
-            _FAIL+=($test_case_executable)
+            _FAIL+=($test_case_name)
         fi
         echo
     done
@@ -57,4 +62,4 @@ main() {
     exit 0
 }
 
-main
+main "$@"
