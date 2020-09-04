@@ -1,9 +1,16 @@
-# Conventions for cluster-deployed OSD operators written in Go
+# Conventions for OSD operators written in Go
+
+This convention is suitable for both cluster- and hive-deployed operators.
 
 The following components are included:
 
 ## `make` targets and functions.
-**Note:** Your repository's main `Makefile` needs to be edited to include these libraries.
+**Note:** Your repository's main `Makefile` needs to be edited to include the
+"nexus makefile include":
+
+```
+include boilerplate/generated-includes.mk
+```
 
 ## Code coverage
 - A `codecov.sh` script, referenced by the `coverage` `make` target, to

@@ -57,18 +57,17 @@ The lifecycle from the consuming repository's perspective:
 ## Mechanism
 
 A "convention" lives in a subdirectory hierarchy of `boilerplate` and is
-identified by the subdirectory's path. For example, conventions around
-cluster-deployed OSD operators written in Go lives under
-`boilerplate/openshift/golang-osd-cluster-operator` and is identified as
-`openshift/golang-osd-cluster-operator`.
+identified by the subdirectory's path. For example, conventions around OSD
+operators written in Go lives under `boilerplate/openshift/golang-osd-operator`
+and is identified as `openshift/golang-osd-operator`.
 
 A convention comprises:
 
 - Files, which are copied verbatim into the consuming repository at
   update time, replacing whatever was there before. The source directory
   structure is mirrored in the consuming repository -- e.g.
-  `boilerplate/boilerplate/openshift/golang-osd-cluster-operator*` is copied into
-  `${TARGET_REPO}/boilerplate/golang-osd-cluster-operator/*`.
+  `boilerplate/boilerplate/openshift/golang-osd-operator/*` is copied into
+  `${TARGET_REPO}/boilerplate/golang-osd-operator/*`.
 - An `update` script (which can be any kind of executable, but please
   keep portability in mind). If present, this script is invoked twice
   during an update:
@@ -116,12 +115,12 @@ The `update` program looks for a configuration file at
 `boilerplate/update.cfg`. It contains a list of conventions, which are
 simply the names of subdirectory paths under `boilerplate`, one per line.
 Whitespace and `#`-style comments are allowed. For example, to adopt the
-`openshift/golang-osd-hive-operator` convention, your
-`boilerplate/update.cfg` may look like:
+`openshift/golang-osd-operator` convention, your `boilerplate/update.cfg` may
+look like:
 
 ```
-# Use standards for hive-deployed Go operators
-openshift/golang-osd-hive-operator
+# Use standards for Go-based OSD operators
+openshift/golang-osd-operator
 ```
 
 Opt into updates of a convention by including it in the file; otherwise
