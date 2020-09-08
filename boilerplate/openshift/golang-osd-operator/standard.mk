@@ -122,4 +122,5 @@ env: isclean
 
 .PHONY: yaml-validate
 yaml-validate:
+	python3 -mpip install pyyaml
 	python3 boilerplate/openshift/golang-osd-operator/validate-yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
