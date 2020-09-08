@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -e
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
@@ -16,27 +16,13 @@ bootstrap_project $repo ${test_project} openshift/golang-osd-operator
 cd $repo
 export GOPATH=$GOPATH:`pwd`
 
-make update_boilerplate
-make check-generate
-if [ $? = 0 ] ; then 
-    echo "No error detected while checking on uncommitted project"
-    exit 1
-else
-    echo "Project is not committed. Checks failed as expected"
-fi
+make update-boilerplate
+make check-generate || echo "Project is not committed. Checks failed as expected"
 
 git add -A
 git commit -m "initial commit"
 
-echo $GOPATH
-
-make check-generate
-if [ $? = 0 ] ; then 
-    echo "Error not detected while the generated files have not beent added/committed"
-    exit 1
-else
-    echo "Generated files are not committed. Checks failed as expected"
-fi
+make check-generate || echo "Generated files are not committed. Checks failed as expected"
 
 if [ ! -f src/test/test-generation ] || [ ! -f src/test/subfolder/test-generation-subfolder ] ; then
     echo "Generation didn't work properly"
@@ -47,5 +33,3 @@ git add -A
 git commit -m "commit generated files"
 
 make check-generate
-
-exit 0

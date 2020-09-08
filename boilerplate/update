@@ -14,7 +14,7 @@ if [ "$BOILERPLATE_SET_X" ]; then
     set -x
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+DIR="$(realpath $(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd ))"
 
 # Were we re-exec'd?
 if [ "$1" ]; then
@@ -125,8 +125,7 @@ while read directory junk; do
   fi
   echo "adding makefile includes."
   for inc in $(find "${DIR}/${directory}" -type f -name '*.mk' | sort); do
-    real_include=`realpath $inc`
-    echo "include ${real_include#$REPO_ROOT/}" >> "${NEXUS_MK}"
+    echo "include ${inc#$REPO_ROOT/}" >> "${NEXUS_MK}"
   done
   echo "***********************************************************************************"
   echo ""

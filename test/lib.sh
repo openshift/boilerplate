@@ -56,7 +56,7 @@ bootstrap_project() {
     repodir=$1
     test_project=$2
     (
-        cp -R $REPO_ROOT/test/test_projects/$test_project/* $repodir/.
+        cp -R $REPO_ROOT/test/projects/$test_project/* $repodir/.
         pushd $repodir > /dev/null
         mkdir boilerplate
         cp $REPO_ROOT/boilerplate/update boilerplate
