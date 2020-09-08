@@ -183,17 +183,17 @@ In your fork of this repository (not a consuming repository):
       be useful for `update`s.
 
 ### Environment setup
-To test your changes, you can use the `BOILERPLATE_GIT_REPO` environment 
-variable and set it to your local clone in order to override the version of 
-boilerplate used (Example: `export BOILERPLATE_GIT_REPO=~/git/boilerplate`). 
+To test your changes, you can use the `BOILERPLATE_GIT_REPO` environment
+variable and set it to your local clone in order to override the version of
+boilerplate used (Example: `export BOILERPLATE_GIT_REPO=~/git/boilerplate`).
 
 
-Default `update` behaviour consists of cloning the git repo, so ensure you have 
-your changes locally committed for your testing. 
-Alternatively, you can use the `BOILERPLATE_GIT_CLONE` variable to override the base 
+Default `update` behaviour consists of cloning the git repo, so ensure you have
+your changes locally committed for your testing.
+Alternatively, you can use the `BOILERPLATE_GIT_CLONE` variable to override the base
 command used for cloning the project. Example of usecases :
 - Add some flags to the git clone command
-- Replace `git clone` by a copy command such as `rsync` or `cp` in order to 
+- Replace `git clone` by a copy command such as `rsync` or `cp` in order to
 avoid having to regularly commit changes
 
 ### Tests
