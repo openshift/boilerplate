@@ -61,7 +61,7 @@ isclean:
 	@(test "$(ALLOW_DIRTY_CHECKOUT)" != "false" || test 0 -eq $$(git status --porcelain | wc -l)) || (echo "Local git checkout is not clean, commit changes and try again." >&2 && exit 1)
 
 .PHONY: build
-build: isclean envtest
+build: isclean
 	${CONTAINER_ENGINE} build . -f $(OPERATOR_DOCKERFILE) -t $(OPERATOR_IMAGE_URI)
 	${CONTAINER_ENGINE} tag $(OPERATOR_IMAGE_URI) $(OPERATOR_IMAGE_URI_LATEST)
 
@@ -107,21 +107,8 @@ gotest:
 coverage:
 	boilerplate/openshift/golang-osd-operator/codecov.sh
 
-.PHONY: envtest
-envtest: isclean
-	@# test that the env target can be evaluated, required by osd-operators-registry
-	@eval $$($(MAKE) env --no-print-directory) || (echo 'Unable to evaulate output of `make env`.  This breaks osd-operators-registry.' >&2 && exit 1)
-
 .PHONY: test
-test: envtest gotest yaml-validate
-
-.PHONY: env
-.SILENT: env
-env: isclean
-	echo OPERATOR_NAME=$(OPERATOR_NAME)
-	echo OPERATOR_NAMESPACE=$(OPERATOR_NAMESPACE)
-	echo OPERATOR_VERSION=$(OPERATOR_VERSION)
-	echo OPERATOR_IMAGE_URI=$(OPERATOR_IMAGE_URI)
+test: gotest yaml-validate
 
 .PHONY: yaml-validate
 yaml-validate:
