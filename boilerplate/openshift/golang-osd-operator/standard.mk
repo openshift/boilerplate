@@ -111,7 +111,7 @@ coverage:
 	${CONVENTION_DIR}/codecov.sh
 
 .PHONY: test
-test: gotest yaml-validate
+test: gotest validate-olm-deploy-yaml
 
 .PHONY: python-venv
 python-venv:
@@ -121,3 +121,7 @@ python-venv:
 .PHONY: yaml-validate
 yaml-validate: python-venv
 	${PYTHON} ${CONVENTION_DIR}/validate-yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
+
+.PHONY: validate-olm-deploy-yaml
+validate-olm-deploy-yaml: python-venv
+	${PYTHON} ${CONVENTION_DIR}/validate-yaml.py $(shell git ls-files 'deploy/*.yaml' 'deploy/*.yml')
