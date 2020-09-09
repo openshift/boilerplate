@@ -82,8 +82,16 @@ hr() {
 compare() {
     if [ $1 = "_data" ] ; then
         if [ ! -f _data/last-boilerplate-commit ] ; then
-            # TODO: Check the content of the file to ensure it contains the proper commit in addition to the file existence
-            echo "$repo/boilerplate/_data/last-boilerplate-commit does not exist" >> $LOG_FILE
+            echo "_data/last-boilerplate-commit does not exist" >> $LOG_FILE
+        fi
+        local expected=$(cd $BOILERPLATE_GIT_REPO; git rev-parse HEAD)
+        local actual=$(cat _data/last-boilerplate-commit)
+        if [[  $actual != $expected ]]; then
+            cat <<EOF >> $LOG_FILE
+Bad last-boilerplate-commit.
+Expected: $expected
+Actual:   $actual
+EOF
         fi
     else
         # Don't let this kill tests using -e. The failure is detected
