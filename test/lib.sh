@@ -75,7 +75,7 @@ hr() {
 
 ## compare FOLDER LOG_FILE
 #
-# Check FOLDER is properly sync'ed, determining the reference base on FOLDER 
+# Check FOLDER is properly sync'ed, determining the reference base on FOLDER
 #
 # :param FOLDER: An existing directory sync'ed by boilerplate and to be checked
 # :param LOG_FILE: The log file used to aggregate the output of the `diff` calls
@@ -97,7 +97,7 @@ compare() {
 # Check the boilerplate synchronization is properly working, covering generics and convention
 # specific parts
 # :param REPO: The boilerplate repository to be checked
-# :param LOG_FILE: Log file name (optional). If none is provided, a name will be generated. 
+# :param LOG_FILE: Log file name (optional). If none is provided, a name will be generated.
 # If file isn't empty, it will be truncated.
 check_update() {
     local convention
@@ -106,21 +106,21 @@ check_update() {
         echo "Usage: check_update REPO (LOG_FILE)"
         return 1
     fi
-    
+
     REPO=$1
     pushd $REPO/boilerplate > /dev/null
-    
+
     if [ $# = 2 ] ; then
         LOG_FILE=$LOG_DIR/$2
         rm -f $LOG_FILE
         touch $LOG_FILE
-    else 
+    else
         LOG_FILE=`mktemp $LOG_DIR/log.XXXXXXXX`
     fi
-    
+
     compare _data $LOG_FILE
     compare _lib $LOG_FILE
-    
+
     while read convention ; do
       if [ -d $BOILERPLATE_GIT_REPO/boilerplate/$convention ] ; then
           compare $convention $LOG_FILE
@@ -128,9 +128,9 @@ check_update() {
           echo "$BOILERPLATE_GIT_REPO/boilerplate/$convention is not a directory" >> $LOG_FILE
       fi
     done < $REPO/$UPDATE_CFG
-    
+
     popd > /dev/null
-    
+
     if [[ -s $LOG_FILE ]] ; then
         cat $LOG_FILE
         return 1
@@ -199,7 +199,7 @@ new_boilerplate_clone() {
 
 ## override_boilerplate_repo NEW_PATH
 #
-# Override the boilerplate repository to be used for the testing. 
+# Override the boilerplate repository to be used for the testing.
 # :param NEW_PATH: A clone of boilerplate to be used for the future steps
 override_boilerplate_repo() {
     if ! [ -d $1 ] ; then
@@ -209,9 +209,9 @@ override_boilerplate_repo() {
     BOILERPLATE_GIT_REPO=$1
 }
 
-## reset_boilerplate_repo 
+## reset_boilerplate_repo
 #
-# Reset the boilerplate repository to be used to the 'tested' clone. 
+# Reset the boilerplate repository to be used to the 'tested' clone.
 reset_boilerplate_repo() {
     BOILERPLATE_GIT_REPO=$REPO_ROOT
 }

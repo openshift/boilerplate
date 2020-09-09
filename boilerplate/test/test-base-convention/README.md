@@ -1,4 +1,4 @@
-# Basic test convention 
+# Basic test convention
 
 The following components are included:
 
