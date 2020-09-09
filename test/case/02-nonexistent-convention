@@ -15,10 +15,6 @@ cd $repo
 # Subscribe to a "convention" that doesn't exist upstream
 echo "bogus/convention" >> boilerplate/update.cfg
 
-# TODO: test REPO_NAME detection by setting an appropriately-formatted
-# git remote
-export REPO_NAME=${0##*/}
-
 LOG=${0##*/}.log
 
 # A little cheat so we can get the RC from `make`

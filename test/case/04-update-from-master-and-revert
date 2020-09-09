@@ -22,11 +22,6 @@ bootstrap_repo $repo
 
 cd $repo
 
-# TODO: test REPO_NAME detection by setting an appropriately-formatted
-# git remote
-export REPO_NAME=${0##*/}
-LOG=${0##*/}.log
-
 boilerplate_master=$(new_boilerplate_clone)
 
 override_boilerplate_repo $boilerplate_master || exit $?

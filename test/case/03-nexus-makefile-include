@@ -35,10 +35,6 @@ bootstrap_repo $repo
 
 cd $repo
 
-# TODO: test REPO_NAME detection by setting an appropriately-formatted
-# git remote
-export REPO_NAME=${0##*/}
-
 sub_hdr "Baseline"
 make update-boilerplate
 check_update $repo
