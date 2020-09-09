@@ -50,6 +50,9 @@ TESTOPTS :=
 
 ALLOW_DIRTY_CHECKOUT?=false
 
+# TODO: Figure out how to discover this dynamically
+CONVENTION_DIR := boilerplate/openshift/golang-osd-operator
+
 default: gobuild
 
 .PHONY: clean
@@ -79,7 +82,7 @@ docker-push: push
 .PHONY: gocheck
 gocheck: ## Lint code
 	boilerplate/_lib/ensure.sh golangci-lint
-	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c boilerplate/openshift/golang-osd-operator/golangci.yml ./...
+	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${CONVENTION_DIR}/golangci.yml ./...
 
 .PHONY: gogenerate
 gogenerate:
@@ -105,12 +108,20 @@ gotest:
 
 .PHONY: coverage
 coverage:
-	boilerplate/openshift/golang-osd-operator/codecov.sh
+	${CONVENTION_DIR}/codecov.sh
 
 .PHONY: test
-test: gotest yaml-validate
+test: gotest validate-olm-deploy-yaml
+
+.PHONY: python-venv
+python-venv:
+	boilerplate/_lib/ensure.sh venv ${CONVENTION_DIR}/py-requirements.txt
+	$(eval PYTHON := .venv/bin/python3)
 
 .PHONY: yaml-validate
-yaml-validate:
-	python3 -mpip install pyyaml
-	python3 boilerplate/openshift/golang-osd-operator/validate-yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
+yaml-validate: python-venv
+	${PYTHON} ${CONVENTION_DIR}/validate-yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
+
+.PHONY: validate-olm-deploy-yaml
+validate-olm-deploy-yaml: python-venv
+	${PYTHON} ${CONVENTION_DIR}/validate-yaml.py $(shell git ls-files 'deploy/*.yaml' 'deploy/*.yml')
