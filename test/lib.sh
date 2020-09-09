@@ -49,15 +49,19 @@ empty_repo() {
 # Build a temp boilerplated git project containing test_project files
 # - Copies in boilerplate/update from $REPO_ROOT
 # - Creates an empty boilerplate/update.cfg
-# It does not run the update.
+# It DOES run the update in order to allow using boilerplate/generated-includes.mk
 #
-# :param PATH: the test_project (from boilerplate/test/test_projects)
+# :param PATH: An existing directory that has been `git init`ed, like
+#       what you get when you run `empty_repo`.
+# :pranm TEST_PROJECT: the test_project (from boilerplate/test/test_projects)
+# :param INITIAL_CONVENTION: The convention(s) to be used for initializing the 
+#       project
 bootstrap_project() {
     repodir=$1
     test_project=$2
     (
         cp -R $REPO_ROOT/test/projects/$test_project/* $repodir/.
-        pushd $repodir > /dev/null
+        pushd $repodir
         mkdir boilerplate
         cp $REPO_ROOT/boilerplate/update boilerplate
         touch boilerplate/update.cfg
@@ -65,7 +69,7 @@ bootstrap_project() {
             add_convention . $convention
         done
         sh boilerplate/update
-        popd $repodir/$test_project > /dev/null
+        popd $repodir/$test_project
     )
 }
 
