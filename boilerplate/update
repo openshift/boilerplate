@@ -37,7 +37,7 @@ else
   echo "Updating the update script."
   rsync -a "${OUT}/boilerplate/update" "$0"
   echo "Copying utilities"
-  rsync -a -r ${OUT}/boilerplate/_* $DIR
+  rsync -a -r --delete ${OUT}/boilerplate/_* $DIR
   echo "Reinvoking..."
   echo ""
   exec "$0" "$OUT"
@@ -118,7 +118,7 @@ while read directory junk; do
   fi
   rm -rf "${DIR}/${directory}"
   mkdir -p $(dirname "${DIR}/${directory}")
-  rsync -a -r "$dir_path" $(dirname "${DIR}/${directory}")
+  rsync -a -r --delete "$dir_path" $(dirname "${DIR}/${directory}")
   if [ -f "${DIR}/${directory}/update" ]; then
     echo "executing ${DIR}/${directory}/update POST"
     "${DIR}/${directory}/update" POST
