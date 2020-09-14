@@ -12,6 +12,25 @@ The following components are included:
 include boilerplate/generated-includes.mk
 ```
 
+One of the primary purposes of these `make` targets is to allow you to
+standardize your prow and app-sre pipeline configurations. They should be as
+follows:
+
+### Prow
+
+| Test name / `make` target | Purpose                                                                                                         |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------|
+| `validate`                | Ensure code generation has not been forgotten; and ensure generated and boilerplate code has not been modified. |
+| `lint`                    | Perform static analysis.                                                                                        |
+| `test`                    | "Local" unit and functional testing.                                                                            |
+| `coverage`                | (Code coverage)[#code-coverage] analysis and reporting.                                                         |
+| `build`                   | Code compilation and bundle generation.                                                                         |
+
+### app-sre
+
+The `build-push` target builds and pushes the operator and OLM registry images,
+ready to be SaaS-deployed.
+
 ## Code coverage
 - A `codecov.sh` script, referenced by the `coverage` `make` target, to
 run code coverage analysis per [this SOP](https://github.com/openshift/ops-sop/blob/ff297220d1a6ac5d3199d242a1b55f0d4c433b87/services/codecov.md).

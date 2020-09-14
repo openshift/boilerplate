@@ -24,4 +24,7 @@ include boilerplate/generated-includes.mk
   boilerplate.)
 
 - Delete any obsolete files you're no longer including.
+
+- Make sure your prow and app-sre pipeline configurations use the standard
+  targets described in the README.
 EOF
