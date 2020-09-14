@@ -1,0 +1,112 @@
+# List of repositories consuming, or wishing to consume, boilerplate
+# conventions.
+#
+# Note:
+# - This file is currently maintained by hand (not by tooling). It's
+#   YAML so it can used by tooling in the future.
+# - At the time of this writing, there is only one convention:
+#   openshift/golang-osd-operator.
+# - At the time of this writing, the subscribers[].conventions[].status
+#   "automated" isn't a thing yet.
+#
+# Pseudo-schema:
+#   subscribers: List of dicts, each representing the state of a
+#                repository subscribing, or wishing to subscribe, to one
+#                or more boilerplate conventions.
+#     - name: The org/name of the consuming repository.
+#       conventions: List of conventions and the state of this
+#                    repository's subscription.
+#         - name: The name of the convention.
+#           status: One of:
+#                   "candidate": We expect this repository to subscribe
+#                       to boilerplate eventually, but nothing has been
+#                       done yet.
+#                   "proposed": At least one PR is proposed to onboard
+#                       the convention, but none have merged.
+#                   "manual": The repository has merged one or more
+#                       PRs subscribing to the convention. However,
+#                       updates must still be performed manually.
+#                   "automated": Tooling automatically proposes changes
+#                       to the repository when changes to the subscribed
+#                       convention and/or boilerplate framework merge.
+
+subscribers:
+  - name: app-sre/deployment-validation-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+
+  - name: openshift/aws-account-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: proposed
+
+  - name: openshift/aws-efs-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: candidate
+
+  - name: openshift/certman-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: candidate
+
+  - name: openshift/cloud-ingress-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: candidate
+
+  - name: openshift/configure-alertmanager-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+
+  - name: openshift/custom-domains-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+
+  - name: openshift/deadmanssnitch-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+
+  - name: openshift/gcp-project-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: proposed
+
+  - name: openshift/managed-upgrade-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: candidate
+
+  - name: openshift/managed-velero-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+
+  - name: openshift/must-gather-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+
+  - name: openshift/osd-metrics-exporter
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+
+  - name: openshift/pagerduty-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+
+  - name: openshift/rbac-permissions-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: candidate
+
+  - name: openshift/route-monitor-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: proposed
