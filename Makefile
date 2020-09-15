@@ -14,3 +14,11 @@ test: isclean
 
 .PHONY: pr-check
 pr-check: test
+
+# Use as:
+#     eval $(make clone-this)
+# Then you can go to a consuming repo (in the same shell) and run
+# `make update-boilerplate` to test your local changes.
+.PHONY: clone-this
+clone-this:
+	@echo export BOILERPLATE_GIT_REPO=$(shell realpath .)

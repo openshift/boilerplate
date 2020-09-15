@@ -186,7 +186,7 @@ In your fork of this repository (not a consuming repository):
 To test your changes, you can use the `BOILERPLATE_GIT_REPO` environment
 variable and set it to your local clone in order to override the version of
 boilerplate used (Example: `export BOILERPLATE_GIT_REPO=~/git/boilerplate`).
-
+Shortcut: `eval $(make clone-this)`
 
 Default `update` behaviour consists of cloning the git repo, so ensure you have
 your changes locally committed for your testing.
