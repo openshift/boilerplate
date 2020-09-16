@@ -91,8 +91,7 @@ go-generate:
 
 .PHONY: op-generate
 op-generate:
-	operator-sdk generate crds
-	operator-sdk generate k8s
+	${CONVENTION_DIR}/operator-sdk-generate.sh
 	# Don't forget to commit generated files
 
 .PHONY: generate
