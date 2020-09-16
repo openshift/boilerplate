@@ -53,7 +53,7 @@ ALLOW_DIRTY_CHECKOUT?=false
 # TODO: Figure out how to discover this dynamically
 CONVENTION_DIR := boilerplate/openshift/golang-osd-operator
 
-default: gobuild
+default: go-build
 
 .PHONY: clean
 clean:
@@ -79,31 +79,31 @@ docker-build: build
 .PHONY: docker-push
 docker-push: push
 
-.PHONY: gocheck
-gocheck: ## Lint code
+.PHONY: go-check
+go-check: ## Lint code
 	boilerplate/_lib/ensure.sh golangci-lint
 	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${CONVENTION_DIR}/golangci.yml ./...
 
-.PHONY: gogenerate
-gogenerate:
+.PHONY: go-generate
+go-generate:
 	${GOENV} go generate $(TESTTARGETS)
 	# Don't forget to commit generated files
 
-.PHONY: opgenerate
-opgenerate:
+.PHONY: op-generate
+op-generate:
 	operator-sdk generate crds
 	operator-sdk generate k8s
 	# Don't forget to commit generated files
 
 .PHONY: generate
-generate: opgenerate gogenerate
+generate: op-generate go-generate
 
-.PHONY: gobuild
-gobuild: gocheck gotest ## Build binary
+.PHONY: go-build
+go-build: go-check go-test ## Build binary
 	${GOENV} go build ${GOBUILDFLAGS} -o ${BINFILE} ${MAINPACKAGE}
 
-.PHONY: gotest
-gotest:
+.PHONY: go-test
+go-test:
 	${GOENV} go test $(TESTOPTS) $(TESTTARGETS)
 
 .PHONY: coverage
@@ -111,7 +111,7 @@ coverage:
 	${CONVENTION_DIR}/codecov.sh
 
 .PHONY: test
-test: gotest validate-olm-deploy-yaml
+test: go-test olm-deploy-yaml-validate
 
 .PHONY: python-venv
 python-venv:
@@ -122,6 +122,6 @@ python-venv:
 yaml-validate: python-venv
 	${PYTHON} ${CONVENTION_DIR}/validate-yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
 
-.PHONY: validate-olm-deploy-yaml
-validate-olm-deploy-yaml: python-venv
+.PHONY: olm-deploy-yaml-validate
+olm-deploy-yaml-validate: python-venv
 	${PYTHON} ${CONVENTION_DIR}/validate-yaml.py $(shell git ls-files 'deploy/*.yaml' 'deploy/*.yml')

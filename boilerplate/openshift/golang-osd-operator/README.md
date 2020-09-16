@@ -23,7 +23,7 @@ run code coverage analysis per [this SOP](https://github.com/openshift/ops-sop/b
 
 ## Linting and other static analysis with `golangci-lint`
 
-- A `gocheck` `make` target, which
+- A `go-check` `make` target, which
 - ensures the proper version of `golangci-lint` is installed, and
 - runs it against
 - a `golangci.yml` config.
