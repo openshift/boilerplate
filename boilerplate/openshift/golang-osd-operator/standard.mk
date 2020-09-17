@@ -81,7 +81,7 @@ docker-push: push
 
 .PHONY: go-check
 go-check: ## Lint code
-	boilerplate/_lib/ensure.sh golangci-lint
+	${CONVENTION_DIR}/ensure.sh golangci-lint
 	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${CONVENTION_DIR}/golangci.yml ./...
 
 .PHONY: go-generate
@@ -114,7 +114,7 @@ test: go-test olm-deploy-yaml-validate
 
 .PHONY: python-venv
 python-venv:
-	boilerplate/_lib/ensure.sh venv ${CONVENTION_DIR}/py-requirements.txt
+	${CONVENTION_DIR}/ensure.sh venv ${CONVENTION_DIR}/py-requirements.txt
 	$(eval PYTHON := .venv/bin/python3)
 
 .PHONY: yaml-validate

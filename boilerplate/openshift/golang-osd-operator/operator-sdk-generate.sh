@@ -7,11 +7,10 @@ set -euo pipefail
 ###
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
-LIB=$REPO_ROOT/boilerplate/_lib
 
-source $LIB/common.sh
+source $REPO_ROOT/boilerplate/_lib/common.sh
 
-$LIB/ensure.sh operator-sdk
+$HERE/ensure.sh operator-sdk
 
 # Symlink to operator-sdk binary set up by `ensure.sh operator-sdk`:
 OSDK=$REPO_ROOT/.operator-sdk/bin/operator-sdk
