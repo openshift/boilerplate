@@ -70,6 +70,9 @@ update-boilerplate:
 	@boilerplate/update
 EOF
         > $UPDATE_CFG
+        # update requires a clean checkout
+        git add -A
+        git commit -m "Bootstrap"
     )
 }
 
@@ -185,6 +188,8 @@ ensure_nexus_makefile_include() {
     if ! _is_line_in_file $line $file; then
         # Put the line at the top.
         sed -i "1s,^,$line\n\n," $file
+        # Commit for update's clean check
+        git commit -am "Include nexus makefile"
     fi
 }
 

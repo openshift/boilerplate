@@ -105,7 +105,7 @@ name, because (eventually) there may be automated jobs that use it
 to look for available updates.
 
 3. Touch (create empty) the configuration file `boilerplate/update.cfg`.
-   This will be use [later](#configure).
+   This will be used [later](#configure).
 
 4. Commit the above changes.
 
@@ -137,13 +137,19 @@ in their respective READMEs.
 
 ### Update
 
-Periodically, run `make update-boilerplate` on a clean branch in your
-consuming repository. If it succeeds, commit the changes, being sure to
-notice if any new files were created. **Sanity check the changes against
-your specific repository to ensure they didn't break anything.** If they
-did, please make every effort to fix the issue _in the boilerplate repo
-itself_ before resorting to local snowflake fixups (which will be
-overwritten the next time you update) or opting out of the convention.
+- Periodically, run `make update-boilerplate` on a clean branch in your
+  consuming repository. If it succeeds, it will create a git commit in a branch
+  called `update-boilerplate-{COMMIT}`.
+- Validate the changes against your specific repository, and make any changes
+  to your repository's files to accommodate them. **Do not modify files owned
+  by boilerplate.** If one of these files is causing problems in your
+  repository, please make every effort to fix the issue _in the boilerplate
+  repo itself_ before resorting to local snowflake fixups (which will be
+  overwritten the next time you update) or opting out of the convention.
+- If post-update changes were necessary, add them to the branch, preferably in
+  a new commit so your posterity can distinguish between automatic and manual
+  changes.
+- Push the branch as usual to create a pull request.
 
 ## Contributing
 In your fork of this repository (not a consuming repository):
