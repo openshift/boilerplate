@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 ###
 # Run operator-sdk generate commands appropriate to the version of

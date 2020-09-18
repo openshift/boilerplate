@@ -16,7 +16,7 @@ osdk_version() {
     $osdk version | sed 's/operator-sdk version: "*\([^,"]*\)"*,.*/\1/'
 }
 
-if [[ -n "$BOILERPLATE_SET_X" ]]; then
+if [ "$BOILERPLATE_SET_X" ]; then
   set -x
 fi
 
