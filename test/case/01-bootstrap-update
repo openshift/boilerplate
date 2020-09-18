@@ -11,7 +11,7 @@ bootstrap_repo $repo
 
 cd $repo
 
-make update-boilerplate
+make boilerplate-update
 
 check_update $repo 01-no-convention
 
@@ -20,7 +20,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 add_convention $repo test/test-base-convention
-make update-boilerplate
+make boilerplate-update
 
 check_update $repo 01-with-convention
 

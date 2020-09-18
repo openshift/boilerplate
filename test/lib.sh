@@ -52,7 +52,7 @@ empty_repo() {
 #
 # Gets a git repo ready for boilerplate:
 # - Copies in boilerplate/update from $REPO_ROOT
-# - Seeds the Makefile with the update-boilerplate target
+# - Seeds the Makefile with the boilerplate-update target
 # - Creates an empty boilerplate/update.cfg
 # It does not run the update.
 #
@@ -65,8 +65,8 @@ bootstrap_repo() {
         mkdir -p boilerplate
         cp $REPO_ROOT/boilerplate/update boilerplate
         cat <<EOF > Makefile
-.PHONY: update-boilerplate
-update-boilerplate:
+.PHONY: boilerplate-update
+boilerplate-update:
 	@boilerplate/update
 EOF
         > $UPDATE_CFG
