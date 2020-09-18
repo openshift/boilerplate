@@ -37,9 +37,9 @@ The lifecycle from the consuming repository's perspective:
     +----+----+      |      |                 |    | |
          |           |      v                 v    | |
          v           |   +--+-----------------+--+ | |
-+--------+---------+ |   |make update-boilerplate| | |
++--------+---------+ |   |make boilerplate-update| | |
 |Create            | |   +--+--------------------+ | |
-|update-boilerplate| |      |                      | |
+|boilerplate-update| |      |                      | |
 |make target       | |      v                      | |
 +--------+---------+ |   +--+-----+                | |
          |           |   |Validate|                | |
@@ -98,8 +98,8 @@ path, because one of the things it does is update itself!
 3. Create a `Makefile` target as follows:
 
 ```makefile
-.PHONY: update-boilerplate
-update-boilerplate:
+.PHONY: boilerplate-update
+boilerplate-update:
 	@boilerplate/update
 ```
 
@@ -114,7 +114,7 @@ your console:
 curl --output boilerplate/update --create-dirs https://raw.githubusercontent.com/openshift/boilerplate/master/boilerplate/update
 chmod +x boilerplate/update
 touch boilerplate/update.cfg
-printf "\n.PHONY: update-boilerplate\nupdate-boilerplate:\n\t@boilerplate/update\n" >> Makefile
+printf "\n.PHONY: boilerplate-update\nboilerplate-update:\n\t@boilerplate/update\n" >> Makefile
 ```
 
 Don't forget to commit the changes.
@@ -147,7 +147,7 @@ in their respective READMEs.
 
 ### Update
 
-Periodically, run `make update-boilerplate` on a clean branch in your
+Periodically, run `make boilerplate-update` on a clean branch in your
 consuming repository. If it succeeds, commit the changes, being sure to
 notice if any new files were created. **Sanity check the changes against
 your specific repository to ensure they didn't break anything.** If they

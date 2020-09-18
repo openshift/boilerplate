@@ -27,15 +27,15 @@ boilerplate_master=$(new_boilerplate_clone)
 override_boilerplate_repo $boilerplate_master || exit $?
 
 add_convention $repo test/test-base-convention
-make update-boilerplate || exit $?
+make boilerplate-update || exit $?
 check_update $repo 03-check-after-init || exit $?
 
 reset_boilerplate_repo
 
-make update-boilerplate || exit $?
+make boilerplate-update || exit $?
 check_update $repo 03-check-new-version-update || exit $?
 
 override_boilerplate_repo $boilerplate_master || exit $?
 
-make update-boilerplate || exit $?
+make boilerplate-update || exit $?
 check_update $repo 03-check-new-version-update || exit $?
