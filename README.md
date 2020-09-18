@@ -92,7 +92,10 @@ A convention comprises:
 **Note:** It is important that the `update` script be at the expected
 path, because one of the things it does is update itself!
 
-2. Create a `Makefile` target as follows:
+2. Touch (create empty) the configuration file `boilerplate/update.cfg`.
+   This will be use [later](#configure).
+
+3. Create a `Makefile` target as follows:
 
 ```makefile
 .PHONY: update-boilerplate
@@ -104,10 +107,17 @@ update-boilerplate:
 name, because (eventually) there may be automated jobs that use it
 to look for available updates.
 
-3. Touch (create empty) the configuration file `boilerplate/update.cfg`.
-   This will be use [later](#configure).
+The above steps can be performed by pasting the following scriptlet into
+your console:
 
-4. Commit the above changes.
+```shell
+curl --output boilerplate/update --create-dirs https://raw.githubusercontent.com/openshift/boilerplate/master/boilerplate/update
+chmod +x boilerplate/update
+touch boilerplate/update.cfg
+printf "\n.PHONY: update-boilerplate\nupdate-boilerplate:\n\t@boilerplate/update\n" >> Makefile
+```
+
+Don't forget to commit the changes.
 
 ### Configure
 
