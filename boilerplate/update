@@ -18,16 +18,30 @@ fi
 # this for individual `update` scripts.
 CONVENTION_ROOT="$(realpath $(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd ))"
 
-# Were we re-exec'd?
-if [ "$1" ]; then
-  BP_CLONE=$1
-  # Let's make sure this was really a re-exec and not some other
-  # weirdness.
-  if ! [[ -d "$BP_CLONE" ]] || ! diff -q "$0" "$BP_CLONE/boilerplate/update"; then
-    echo "Something went wrong! I was invoked with '$BP_CLONE'!"
+# unacceptable_deltas [GREP_FLAGS]
+unacceptable_deltas() {
+  # Allow dirty checkout only when bootstrapping, or when modifying the
+  # config (e.g. subscribing to a new convention).
+  git status --porcelain | grep -E -v $1 '\b(Makefile|boilerplate/(update\.cfg)?)$'
+}
+
+# We're initially invoked with no arguments. The branch below clones the
+# boilerplate repo at the latest level into a temporary directory and copies in
+# the update script (this script) and utilities back into the consuming repo.
+# Then it re-execs this script with the temporary directory as a CLI argument.
+if [[ -z "$1" ]]; then
+  if unacceptable_deltas -q; then
+    cat <<EOF
+Local git checkout is not clean. This is only allowed when you are
+- Bootstrapping: dirty Makefile and untracked boilerplate/ directory
+- Changing subscriptions: dirty boilerplate/update.cfg
+
+We bounced off the following:
+EOF
+    unacceptable_deltas
     exit 2
   fi
-else
+
   if [ -z "$BOILERPLATE_GIT_REPO" ]; then
     BOILERPLATE_GIT_REPO=git@github.com:openshift/boilerplate.git
   fi
@@ -45,6 +59,15 @@ else
   exec "$0" "$BP_CLONE"
   # unreached
 fi
+
+BP_CLONE=$1
+# Let's make sure this was really a re-exec and not some other
+# weirdness.
+if ! [[ -d "$BP_CLONE" ]] || ! diff -q "$0" "$BP_CLONE/boilerplate/update"; then
+  echo "Something went wrong! I was invoked with '$BP_CLONE'!"
+  exit 2
+fi
+TO_COMMIT=$(cd ${BP_CLONE} && git rev-parse HEAD)
 
 trap "rm -fr $BP_CLONE" EXIT
 
