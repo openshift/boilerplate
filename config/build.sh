@@ -41,8 +41,7 @@ echo "${GIT_SHASUM}" git.tar.gz | sha256sum -c
 tar xzf git.tar.gz
 make --directory "git-${GIT_VERSION}" configure
 ./git-${GIT_VERSION}/configure --prefix=/usr
-make --directory "git-${GIT_VERSION}"
-make --directory "git-${GIT_VERSION}" install 
+make --directory "git-${GIT_VERSION}" prefix=/usr/local all install
 rm -rf "git-${GIT_VERSION}"
 yum groupremove -y "Development Tools" && \
 yum -y remove ${GIT_DEPENDENCIES}
