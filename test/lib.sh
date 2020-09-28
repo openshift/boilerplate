@@ -62,7 +62,7 @@ empty_repo() {
 # :param TEST_PROJECT: the test_project (from test/projects)
 # :param INITIAL_CONVENTION: The convention(s) to be used for initializing the 
 #       project. If it contains several conventions, they need to be passed 
-#.      between " (eg "test_convention/foo test_convemtion/bar")
+#       between " (eg "test_convention/foo test_convention/bar")
 bootstrap_project() {
     repodir=$1
     test_project=$2
