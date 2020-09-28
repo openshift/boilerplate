@@ -28,14 +28,14 @@ override_boilerplate_repo $boilerplate_master || exit $?
 
 add_convention $repo test/test-base-convention
 make boilerplate-update || exit $?
-check_update $repo 03-check-after-init || exit $?
+check_update $repo 04-check-after-init || exit $?
 
 reset_boilerplate_repo
 
 make boilerplate-update || exit $?
-check_update $repo 03-check-new-version-update || exit $?
+check_update $repo 04-check-new-version-update || exit $?
 
 override_boilerplate_repo $boilerplate_master || exit $?
 
 make boilerplate-update || exit $?
-check_update $repo 03-check-new-version-update || exit $?
+check_update $repo 04-check-new-version-update || exit $?

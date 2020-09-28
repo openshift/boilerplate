@@ -42,10 +42,41 @@ empty_repo() {
     tmpd=$(mktemp -d -t boilerplate-test-XXXXXXXX)
     pushd $tmpd >&2
     git init >&2
+    git config user.name "Test Boilerplate" >&2
+    git config user.email "test@example.com" >&2
     # Add a remote for REPO_NAME discovery
     git remote add origin git@example.com:example-org/test-repo.git
     popd >&2
     echo $tmpd
+}
+
+## bootstrap_project PATH TEST_PROJECT INITIAL_CONVENTION
+#
+# Build a temp boilerplated git project containing test_project files
+# - Copies in boilerplate/update from $REPO_ROOT
+# - Creates an empty boilerplate/update.cfg
+# It DOES run the update in order to allow using boilerplate/generated-includes.mk
+#
+# :param PATH: An existing directory that has been `git init`ed, like
+#       what you get when you run `empty_repo`.
+# :param TEST_PROJECT: the test_project (from test/projects)
+# :param INITIAL_CONVENTION: The convention(s) to be used for initializing the 
+#       project. If it contains several conventions, they need to be passed 
+#.      between " (eg "test_convention/foo test_convemtion/bar")
+bootstrap_project() {
+    repodir=$1
+    test_project=$2
+    (
+        cp -R $REPO_ROOT/test/projects/$test_project/* $repodir/.
+        cd $repodir
+        mkdir boilerplate
+        cp $REPO_ROOT/boilerplate/update boilerplate
+        touch boilerplate/update.cfg
+        for convention in $3 ; do
+            add_convention . $convention
+        done
+        sh boilerplate/update
+    )
 }
 
 ## bootstrap_repo PATH

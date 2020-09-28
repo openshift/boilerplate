@@ -107,6 +107,13 @@ python-venv:
 	${CONVENTION_DIR}/ensure.sh venv ${CONVENTION_DIR}/py-requirements.txt
 	$(eval PYTHON := .venv/bin/python3)
 
+.PHONY: check-generate
+check-generate: 
+	@$(MAKE) -s isclean --no-print-directory 
+	@$(MAKE) -s generate --no-print-directory
+	@$(MAKE) -s isclean --no-print-directory || (echo 'Files after generation are different than committed ones. Please commit updated and unaltered generated files' >&2 && exit 1)
+	@echo "All generated files are up-to-date and unaltered" 
+
 .PHONY: yaml-validate
 yaml-validate: python-venv
 	${PYTHON} ${CONVENTION_DIR}/validate-yaml.py $(shell git ls-files | egrep -v '^(vendor|boilerplate)/' | egrep '.*\.ya?ml')
@@ -129,7 +136,7 @@ validate: ;
 
 # lint: Perform static analysis.
 .PHONY: lint
-lint: olm-deploy-yaml-validate go-check
+lint: olm-deploy-yaml-validate go-check check-generate
 
 # test: "Local" unit and functional testing.
 .PHONY: test

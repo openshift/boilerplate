@@ -1,0 +1,35 @@
+#!/bin/bash -e
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 ; do
+    echo "Testing with operatore-sdk ${version}"
+    repo=$(empty_repo)
+    add_cleanup $repo
+    test_project="file-generate"
+
+    bootstrap_project $repo ${test_project} openshift/golang-osd-operator
+    cd $repo
+    sed s/__operator_sdk_version__/${version}/g go.mod.tmpl > go.mod
+    export GOPATH=$GOPATH:`pwd`
+
+    make update-boilerplate
+    make check-generate || echo "Project is not committed. Checks failed as expected"
+
+    git add -A
+    git commit -m "initial commit"
+
+    make check-generate || echo "Generated files are not committed. Checks failed as expected"
+
+    if [ ! -f src/test/test-generation ] || [ ! -f src/test/subfolder/test-generation-subfolder ] ; then
+        echo "Generation didn't work properly"
+        exit 1
+    fi
+
+    git add -A
+    git commit -m "commit generated files"
+
+    make check-generate
+done
