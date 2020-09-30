@@ -17,7 +17,6 @@ _BP_TEST_TEMP_DIRS=
 _cleanup() {
     echo
     echo "Cleaning up"
-    [ -z "$_BP_TEST_TEMP_DIRS" ] && return
 
     if [ -z "$PRESERVE_TEMP_DIRS" ]; then
         echo "Removing temporary directories"
@@ -69,13 +68,16 @@ bootstrap_project() {
     (
         cp -R $REPO_ROOT/test/projects/$test_project/* $repodir/.
         cd $repodir
+        # Commit the base files
+        git add -A
+        git commit -m "Commit baseline test project files"
         mkdir boilerplate
         cp $REPO_ROOT/boilerplate/update boilerplate
         touch boilerplate/update.cfg
         for convention in $3 ; do
             add_convention . $convention
         done
-        sh boilerplate/update
+        boilerplate/update
     )
 }
 
@@ -257,4 +259,36 @@ override_boilerplate_repo() {
 # Reset the boilerplate repository to be used to the 'tested' clone.
 reset_boilerplate_repo() {
     BOILERPLATE_GIT_REPO=$REPO_ROOT
+}
+
+## current_commit REPO
+#
+# Outputs the commit hash of the current commit in the REPO directory
+current_commit() {
+    (
+        cd $1
+        git rev-parse HEAD
+    )
+}
+
+## current_branch REPO
+#
+# Outputs the name of the current branch in the REPO directory
+current_branch() {
+    (
+        cd $1
+        git rev-parse --abbrev-ref HEAD
+    )
+}
+
+## last_commit_message REPO
+#
+# Outputs the last commit message in the REPO directory, skipping the
+# commit/author/date and the following blank line, preserving the indent
+# as output by `git log`.
+last_commit_message() {
+    (
+        cd $1
+        git log -1 | tail -n +5
+    )
 }

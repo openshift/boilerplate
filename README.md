@@ -5,6 +5,18 @@ Standard development infrastructure and tooling to be used across repositories i
 This work was inspired by, and partially cribbed from,
 [lyft/boilerplate](https://github.com/lyft/boilerplate).
 
+- [boilerplate](#boilerplate)
+  - [Overview](#overview)
+    - [A Pretty Picture](#a-pretty-picture)
+  - [Mechanism](#mechanism)
+  - [Consuming](#consuming)
+    - [Bootstrap](#bootstrap)
+    - [Configure](#configure)
+    - [Update](#update)
+  - [Contributing](#contributing)
+    - [Environment setup](#environment-setup)
+    - [Tests](#tests)
+
 ## Overview
 
 The principle behind this is to **copy** the standardized artifacts from
@@ -26,38 +38,54 @@ remote sources on the fly, see
 The lifecycle from the consuming repository's perspective:
 
 ```
-   +----------+      +------+          +-------------+
-   |Start Here|      |      |          |             |
-   +-----+----+      |      v          v             |
-         |           |   +--+----------+---+         |
-         v           |   |Subscribe to     |         |
-    +----+----+      |   |a convention     |         |
-    |Download |      |   |(edit update.cfg)|         |
-    |update.sh|      |   +--+--------------+  +----+ |
-    +----+----+      |      |                 |    | |
-         |           |      v                 v    | |
-         v           |   +--+-----------------+--+ | |
-+--------+---------+ |   |make boilerplate-update| | |
-|Create            | |   +--+--------------------+ | |
-|boilerplate-update| |      |                      | |
-|make target       | |      v                      | |
-+--------+---------+ |   +--+-----+                | |
-         |           |   |Validate|                | |
-         v           |   |changes |                | |
-    +----+-----+     |   +--+-----+                | |
-    |Touch     |     |      |                      | |
-    |update.cfg+-----+      v                      | |
-    +----+-----+         +--+---+  periodic update | |
-         |               |Commit+------------------+ |
-         +-------------->+Push  |                    |
-          bootstrap only |Etc.  +--------------------+
-                         +------+  new convention
+              XXXXXXXXXXXXX                           XXXXXXXXXX
+              X Bootstrap X                           X Update X
+              XXXXXXXXXXXXX                           XXXXXXXXXX
+
+             +-------------+                    +---------------------+
+             |Download     |                    |Subscribe (optional):|
+             |update script|                    |Edit update.cfg      |
+             +-----+-------+                    +----------+----------+
+                   |                                       |
+                   v                                       v
+          +--------+---------+                 +-----------+-----------+
+          |Create            |                 |make boilerplate-update|
+          |boilerplate-update|                 +-----------+-----------+
+          |make target       |                             |
+          +--------+---------+                             v
+                   |                           +-----------+-----------+
+                   v                           |Commit (automated):    |
+              +----+-----+                     |make boilerplate-commit|
+              |Touch     |                     +-----------+-----------+
+              |update.cfg|                                 |
+              +----+-----+                                 v
+                   |                              +--------+--------+
+                   v                              |Validate changes,|
+        +----------+------------+                 |make local edits |
+        |make boilerplate-update|                 +--------+--------+
+        +----------+------------+                          |
+                   |                                       v
+                   v                               +-------+-------+
++------------------+----------------------+        |Commit (manual)|
+|include boilerplate/generated-includes.mk|        +-------+-------+
++------------------+----------------------+                |
+                   |                                       v
+                   v                                     +-+--+
+        +----------+------------+                        |push|
+        |Commit (automated):    |                        +----+
+        |make boilerplate-commit|
+        +----------+------------+
+                   |
+                   v
+                 +-+--+
+                 |push|
+                 +----+
 ```
 
 ## Mechanism
 
 A "convention" lives in a subdirectory hierarchy of `boilerplate` and is
-identified by the subdirectory's path. For example, conventions around OSD
+identified by the subdirectory's path. For example, a convention around OSD
 operators written in Go lives under `boilerplate/openshift/golang-osd-operator`
 and is identified as `openshift/golang-osd-operator`.
 
@@ -107,6 +135,27 @@ boilerplate-update:
 name, because (eventually) there may be automated jobs that use it
 to look for available updates.
 
+4. Run your first update.
+
+```shell
+$ make boilerplate-update
+```
+
+5. Include the "nexus" makefile. This file is generated by boilerplate and will
+   import `make` rules for any conventions you subscribe to, as well as for the
+   boilerplate framework itself. Add the following line to your Makefile,
+   preferably at the top:
+
+```makefile
+include boilerplate/generated-includes.mk
+```
+
+6. Commit, using the `boilerplate-commit` target provided by boilerplate:
+
+```shell
+$ make boilerplate-commit
+```
+
 The above steps can be performed by pasting the following scriptlet into
 your console:
 
@@ -115,9 +164,13 @@ curl --output boilerplate/update --create-dirs https://raw.githubusercontent.com
 chmod +x boilerplate/update
 touch boilerplate/update.cfg
 printf "\n.PHONY: boilerplate-update\nboilerplate-update:\n\t@boilerplate/update\n" >> Makefile
+make boilerplate-update
+sed -i '1s,^,include boilerplate/generated-includes.mk\n\n,' Makefile
+make boilerplate-commit
 ```
 
-Don't forget to commit the changes.
+7. `boilerplate-commit` creates a commit in a new topic branch. Push it
+   to your `origin` remote as usual to create a pull request.
 
 ### Configure
 
@@ -145,15 +198,33 @@ the configuration. If conventions need to be applied in a certain order
 (which should be avoided if at all possible), it should be called out
 in their respective READMEs.
 
+Follow any configuration changes with the "Update" sequence described below:
+
 ### Update
 
-Periodically, run `make boilerplate-update` on a clean branch in your
-consuming repository. If it succeeds, commit the changes, being sure to
-notice if any new files were created. **Sanity check the changes against
-your specific repository to ensure they didn't break anything.** If they
-did, please make every effort to fix the issue _in the boilerplate repo
-itself_ before resorting to local snowflake fixups (which will be
-overwritten the next time you update) or opting out of the convention.
+Use this procedure to pick up newly-subscribed conventions; and run it
+periodically to pick up changes to existing subscriptions or to the
+boilerplate framework itself.
+
+1. Run `make boilerplate-update` on a clean branch in your consuming
+   repository.
+
+2. Run `make boilerplate-commit`. This will create a new topic branch
+   and commit any changes resulting from the update.
+
+3. Sanity check the changes against your specific repository, fixing any
+   breakages and making local changes appropriate to the substance of
+   the update. If you used `make boilerplate-commit`, you can use
+   `git show` to see a summary of what was changed. **NOTE:** You must
+   not touch files owned by boilerplate. Any changes to boilerplate
+   content must be made in the boilerplate repo itself.
+
+4. If local changes were necessary, commit them manually. You should
+   commit to the topic branch generated above so that your PR is
+   internally consistent and will build. You may choose to keep the
+   two commits separate (preferred), or combine them.
+
+5. Push the branch to create a PR as usual.
 
 ## Contributing
 In your fork of this repository (not a consuming repository):
@@ -177,6 +248,11 @@ In your fork of this repository (not a consuming repository):
     - **Note:** The entire convention directory is wiped out and
       replaced between `PRE` and `POST`, so e.g. don't try to store any
       information there.
+  - If your `update` script copies or modifies any files outside of the
+    convention subdirectory, you must add those paths to
+    `.boilerplate-ignore-files` in your convention. This tells the main
+    `update` driver that it's okay for those files to be dirty prior to
+    performing an update.
   - It must indicate success or failure by exiting with zero or nonzero
     status, respectively. Failure will cause the main driver to abort.
   - The main driver exports the following variables for use by

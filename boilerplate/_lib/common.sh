@@ -16,6 +16,10 @@ osdk_version() {
     $osdk version | sed 's/operator-sdk version: "*\([^,"]*\)"*,.*/\1/'
 }
 
+if [ "$BOILERPLATE_SET_X" ]; then
+  set -x
+fi
+
 # Only used for error messages
 _lib=${BASH_SOURCE##*/}
 
