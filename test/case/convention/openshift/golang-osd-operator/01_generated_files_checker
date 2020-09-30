@@ -5,7 +5,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 source $REPO_ROOT/test/lib.sh
 
 for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 ; do
-    echo "Testing with operatore-sdk ${version}"
+    echo "Testing with operator-sdk ${version}"
     repo=$(empty_repo)
     add_cleanup $repo
     test_project="file-generate"
@@ -15,21 +15,51 @@ for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 ; do
     sed s/__operator_sdk_version__/${version}/g go.mod.tmpl > go.mod
     export GOPATH=$GOPATH:`pwd`
 
+    # Check failure when project is not committed
     make update-boilerplate
-    make check-generate || echo "Project is not committed. Checks failed as expected"
+    make generate-check && err "make generate-check should have failed" || echo "Project is not committed. Checks failed as expected"
+    
+    # Checking files haven't been generated and the project is not committed
+    make isclean || echo "Project is detected as uncommitted as expected"
+    if [ -f src/test/test-generation ] || [ -f src/test/subfolder/test-generation-subfolder ] || [ -f pkg/apis/mygroup/v1alpha1/zz_generated.deepcopy.go ] ; then
+        err "Files have been generated while the project wasn't committed..."
+    fi
 
+    # Check failure when project is committed but generated content not generated/committed
     git add -A
     git commit -m "initial commit"
 
-    make check-generate || echo "Generated files are not committed. Checks failed as expected"
+    make generate-check && err "make generate-check should have failed" || echo "Generated files are not committed. Checks failed as expected"
 
-    if [ ! -f src/test/test-generation ] || [ ! -f src/test/subfolder/test-generation-subfolder ] ; then
-        echo "Generation didn't work properly"
-        exit 1
-    fi
+    # Check the generated files matches the expected content
+    diff src/test/test.txt expected/test.txt || err "generate from src/test/test.go didn't work properly"
+    diff src/test/subfolder/test.txt expected/subfolder/test.txt || err "generate from src/test/subfolder/test.go didn't work properly"
+	if [ ! -f pkg/apis/mygroup/v1alpha1/zz_generated.deepcopy.go ] ; then
+		err "crd generate didn't work properly"
+	fi
 
     git add -A
     git commit -m "commit generated files"
 
-    make check-generate
+    # Check are passing as all is committed
+    make generate-check
+    
+    # Check detection of modified generated file
+    echo "Updating generated content" >> src/test/test.txt
+    git add -A
+    git commit -m "updating generated files"
+
+    make generate-check && err "make generate-check should have failed" || echo "Generated files have been updated manually. Checks failed as expected"
+    
+    # Check detection of deleted generated file
+    git rm -f src/test/test.txt 
+    git commit -m "deleting a generated files"
+
+    make generate-check && err "make generate-check should have failed" || echo "All generated files are not present. Checks failed as expected"
+
+    make generate
+    git add -A
+    git commit -m "Putting back all files"
+
+    make generate-check
 done

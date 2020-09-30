@@ -1,3 +1,3 @@
 package subfolder
 
-//go:generate touch test-generation-subfolder
+//go:generate cp ../../../expected/subfolder/test.txt . 

@@ -1,3 +1,3 @@
 package test
 
-//go:generate touch test-generation
+//go:generate cp ../../expected/test.txt . 
