@@ -1,4 +1,7 @@
 ALLOW_DIRTY_CHECKOUT?=false
+IMG?=boilerplate
+QUAY_IMAGE?=quay.io/app-sre/$(IMG)
+CONTAINER_ENGINE?=$(shell command -v podman 2>/dev/null || echo "docker")
 
 # Tests rely on this starting off unset. (And if it is set, it's usually
 # not for the reasons we care about.)
@@ -14,3 +17,20 @@ test: isclean
 
 .PHONY: pr-check
 pr-check: test
+
+.PHONY: docker-build
+docker-build:
+	GIT_HASH=$(shell git rev-parse --short=7 HEAD)
+	cd config; $(CONTAINER_ENGINE) build -t $(IMG) .	
+
+.PHONY: docker-push
+docker-push:
+	skopeo copy --dest-creds "$(QUAY_USER):$(QUAY_TOKEN)" \
+	    "docker-daemon:$(IMG)" \
+	    "docker://$(QUAY_IMAGE):latest"
+	skopeo copy --dest-creds "$(QUAY_USER):$(QUAY_TOKEN)" \
+	    "docker-daemon:$(IMG)" \
+	    "docker://$(QUAY_IMAGE):$(GIT_HASH)"
+
+.PHONY: build-push
+build-push: docker-build docker-push
