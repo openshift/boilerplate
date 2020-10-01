@@ -73,11 +73,14 @@ bootstrap_project() {
         git commit -m "Commit baseline test project files"
         mkdir boilerplate
         cp $REPO_ROOT/boilerplate/update boilerplate
+        printf "\n.PHONY: boilerplate-update\nboilerplate-update:\n\t@boilerplate/update\n" >> Makefile
         touch boilerplate/update.cfg
         for convention in $3 ; do
             add_convention . $convention
         done
-        boilerplate/update
+        make boilerplate-update
+        sed -i '1s,^,include boilerplate/generated-includes.mk\n\n,' Makefile
+        make boilerplate-commit
     )
 }
 

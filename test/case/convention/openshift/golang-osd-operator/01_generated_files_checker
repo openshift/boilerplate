@@ -12,11 +12,11 @@ for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 ; do
 
     bootstrap_project $repo ${test_project} openshift/golang-osd-operator
     cd $repo
+    make boilerplate-update
     sed s/__operator_sdk_version__/${version}/g go.mod.tmpl > go.mod
     export GOPATH=$GOPATH:`pwd`
 
     # Check failure when project is not committed
-    make update-boilerplate
     make generate-check && err "make generate-check should have failed" || echo "Project is not committed. Checks failed as expected"
     
     # Checking files haven't been generated and the project is not committed
