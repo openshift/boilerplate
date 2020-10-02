@@ -150,7 +150,8 @@ $ make boilerplate-update
 include boilerplate/generated-includes.mk
 ```
 
-6. Commit, using the `boilerplate-commit` target provided by boilerplate:
+6. Commit. For convenience, you can use the `boilerplate-commit` target
+   provided by boilerplate:
 
 ```shell
 $ make boilerplate-commit
@@ -209,8 +210,9 @@ boilerplate framework itself.
 1. Run `make boilerplate-update` on a clean branch in your consuming
    repository.
 
-2. Run `make boilerplate-commit`. This will create a new topic branch
-   and commit any changes resulting from the update.
+2. Commit the changes. For convenience, you can use `make boilerplate-commit`
+   to automatically create a new topic branch and commit any changes
+   resulting from the update.
 
 3. Sanity check the changes against your specific repository, fixing any
    breakages and making local changes appropriate to the substance of
@@ -220,9 +222,10 @@ boilerplate framework itself.
    content must be made in the boilerplate repo itself.
 
 4. If local changes were necessary, commit them manually. You should
-   commit to the topic branch generated above so that your PR is
-   internally consistent and will build. You may choose to keep the
-   two commits separate (preferred), or combine them.
+   commit to the topic branch you (or `make boilerplate-commit`) created
+   above so that your PR is internally consistent and will build. You
+   may choose to keep the two commits separate (preferred), or combine
+   them.
 
 5. Push the branch to create a PR as usual.
 
@@ -248,11 +251,6 @@ In your fork of this repository (not a consuming repository):
     - **Note:** The entire convention directory is wiped out and
       replaced between `PRE` and `POST`, so e.g. don't try to store any
       information there.
-  - If your `update` script copies or modifies any files outside of the
-    convention subdirectory, you must add those paths to
-    `.boilerplate-ignore-files` in your convention. This tells the main
-    `update` driver that it's okay for those files to be dirty prior to
-    performing an update.
   - It must indicate success or failure by exiting with zero or nonzero
     status, respectively. Failure will cause the main driver to abort.
   - The main driver exports the following variables for use by
