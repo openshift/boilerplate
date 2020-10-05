@@ -295,3 +295,31 @@ last_commit_message() {
         git log -1 | tail -n +5
     )
 }
+
+## expect_failure ERROR_STRING CMD ARGS...
+#
+# Runs CMD with ARGS...
+# Fails if CMD succeeds.
+# If CMD fails, the output (stdout+stderr) is grepped for ERROR_STRING,
+# and we succeed iff it is found.
+# CMD ARGS... is run via eval "$@". Quote accordingly.
+expect_failure () {
+    local errstr=$1
+    shift
+    local logf=$(mktemp -p $LOG_DIR)
+    rc=0
+    echo "Running command:"
+    echo "   $@"
+    echo "And expecting failure including output:"
+    echo "   $errstr"
+    eval "$@" >$logf 2>&1 || rc=$?
+    if [[ $rc -eq 0 ]]; then
+        echo "Expected failure but got success!" >&2
+        return 1
+    fi
+    if ! grep -q "$errstr" $logf; then
+        echo "Expected output not found!" >&2
+        return 1
+    fi
+    return 0
+}
