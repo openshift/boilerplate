@@ -53,6 +53,12 @@ ALLOW_DIRTY_CHECKOUT?=false
 # TODO: Figure out how to discover this dynamically
 CONVENTION_DIR := boilerplate/openshift/golang-osd-operator
 
+# Set the default goal in a way that works for older & newer versions of `make`:
+# Older versions (<=3.8.0) will pay attention to the `default` target.
+# Newer versions pay attention to .DEFAULT_GOAL, where uunsetting it makes the next defined target the default:
+# https://www.gnu.org/software/make/manual/make.html#index-_002eDEFAULT_005fGOAL-_0028define-default-goal_0029
+.DEFAULT_GOAL :=
+.PHONY: default
 default: go-build
 
 .PHONY: clean
