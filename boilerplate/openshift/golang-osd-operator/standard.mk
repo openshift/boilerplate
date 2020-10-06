@@ -134,14 +134,12 @@ olm-deploy-yaml-validate: python-venv
 
 # validate: Ensure code generation has not been forgotten; and ensure
 # generated and boilerplate code has not been modified.
-# TODO:
-# - move `generate-check` here
 .PHONY: validate
-validate: boilerplate-freeze-check
+validate: boilerplate-freeze-check generate-check
 
 # lint: Perform static analysis.
 .PHONY: lint
-lint: olm-deploy-yaml-validate go-check generate-check
+lint: olm-deploy-yaml-validate go-check
 
 # test: "Local" unit and functional testing.
 .PHONY: test
