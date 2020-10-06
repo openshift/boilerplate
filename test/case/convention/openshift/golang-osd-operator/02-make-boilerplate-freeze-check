@@ -1,0 +1,46 @@
+#!/bin/bash -e
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+echo "Testing freeze-check"
+repo=$(empty_repo)
+add_cleanup $repo
+# There's nothing special about file-generate -- we could as easily use
+# an empty repo -- but this is convenient.
+test_project="file-generate"
+
+convention=openshift/golang-osd-operator
+bootstrap_project $repo ${test_project} ${convention}
+cd $repo
+
+echo "'make boilerplate-freeze-check' should succeed directly after bootstrap."
+make boilerplate-freeze-check
+
+cur_branch=$(current_branch $repo)
+
+echo "Expect failure when changing boilerplate-owned files"
+# Validate for a file in the convention *and* for a file that the
+# convention's `update` copies out into the main part of the repo.
+for f in boilerplate/${convention}/codecov.sh .codecov.yml; do
+  # Make dirty, and expect validation to fail via `isclean`.
+  echo "# foo" >> $f
+  expect_failure "Can't validate boilerplate in a dirty repository. Please commit your changes and try again." make boilerplate-freeze-check
+  # Commit the change, and expect validation to fail via freeze-check.
+  git checkout -b dirty
+  git commit -a -m dirty
+  expect_failure "Your boilerplate is dirty!" make boilerplate-freeze-check
+  # Get back to the original commit
+  git reset --hard HEAD
+  git checkout $cur_branch
+  git branch -D dirty
+done
+
+# Now let's make sure a non-bp-owned file doesn't fail
+# Make dirty
+echo "# foo" >> Makefile
+expect_failure "Can't validate boilerplate in a dirty repository. Please commit your changes and try again." make boilerplate-freeze-check
+git checkout -b clean
+git commit -a -m clean
+make boilerplate-freeze-check
