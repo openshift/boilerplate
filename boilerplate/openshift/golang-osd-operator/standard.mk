@@ -23,7 +23,9 @@ COMMIT_NUMBER=$(shell git rev-list `git rev-list --parents HEAD | egrep "^[a-f0-
 CURRENT_COMMIT=$(shell git rev-parse --short=7 HEAD)
 OPERATOR_VERSION=$(VERSION_MAJOR).$(VERSION_MINOR).$(COMMIT_NUMBER)-$(CURRENT_COMMIT)
 
-IMG?=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME):v$(OPERATOR_VERSION)
+OPERATOR_IMAGE=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME)
+OPERATOR_IMAGE_TAG=v$(OPERATOR_VERSION)
+IMG?=$(OPERATOR_IMAGE):$(OPERATOR_IMAGE_TAG)
 OPERATOR_IMAGE_URI=${IMG}
 OPERATOR_IMAGE_URI_LATEST=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME):latest
 OPERATOR_DOCKERFILE ?=build/Dockerfile
@@ -31,12 +33,13 @@ OPERATOR_DOCKERFILE ?=build/Dockerfile
 BINFILE=build/_output/bin/$(OPERATOR_NAME)
 MAINPACKAGE=./cmd/manager
 
-# Containers may default GOFLAGS=-mod=vendor which would break us since
-# we're using modules.
+GOOS?=$(shell go env GOOS)
+GOARCH?=$(shell go env GOARCH)
+
+# Consumers may override GOFLAGS_MOD e.g. to use `-mod=vendor`
 unexport GOFLAGS
-GOOS?=linux
-GOARCH?=amd64
-GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=
+GOFLAGS_MOD ?=
+GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=${GOFLAGS_MOD}
 
 GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPATH}"
 
@@ -102,7 +105,9 @@ generate: op-generate go-generate
 
 .PHONY: go-build
 go-build: go-check go-test ## Build binary
-	${GOENV} go build ${GOBUILDFLAGS} -o ${BINFILE} ${MAINPACKAGE}
+	# Force GOOS=linux as we may want to build containers in other *nix-like systems (ie darwin).
+	# This is temporary until a better container build method is developed
+	${GOENV} GOOS=linux go build ${GOBUILDFLAGS} -o ${BINFILE} ${MAINPACKAGE}
 
 .PHONY: go-test
 go-test:
