@@ -3,6 +3,7 @@ IMG?=boilerplate
 IMG_TAG?=latest
 QUAY_IMAGE?=quay.io/app-sre/$(IMG)
 CONTAINER_ENGINE?=$(shell command -v podman 2>/dev/null || echo "docker")
+GIT_HASH?=$(shell git rev-parse --short=7 HEAD)
 
 # Tests rely on this starting off unset. (And if it is set, it's usually
 # not for the reasons we care about.)
