@@ -27,7 +27,7 @@ docker-build:
 .PHONY: docker-push
 docker-push:
 	skopeo copy --dest-creds "$(QUAY_USER):$(QUAY_TOKEN)" \
-	    "docker-daemon:$(IMG):$(IMG_TAG) \
+	    "docker-daemon:$(IMG):$(IMG_TAG)" \
 	    "docker://$(QUAY_IMAGE):$(IMG_TAG)"
 	skopeo copy --dest-creds "$(QUAY_USER):$(QUAY_TOKEN)" \
 	    "docker-daemon:$(IMG):$(IMG_TAG)" \
