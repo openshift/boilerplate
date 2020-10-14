@@ -14,7 +14,7 @@ bootstrap_project $repo ${test_project} ${convention}
 cd $repo
 
 # NOTE: Change this when publishing a new image tag.
-expected_image_tag=image-v0.1.0
+expected_image_tag=image-v0.1.1
 
 # The convention's `update` replaces the FROM line in the Dockerfile.
 cat -<<EOF >$LOG_DIR/expected-Dockerfile

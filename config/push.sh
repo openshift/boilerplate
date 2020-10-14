@@ -15,9 +15,9 @@ git_hash=$(git rev-parse --short=7 HEAD)
 push_for_tag() {
     local tag=$1
     echo "Pushing for tag $tag"
-    skopeo copy --dest-creds "$(QUAY_USER):$(QUAY_TOKEN)" \
-        "docker-daemon:$(name):latest" \
-        "docker://$(quay_image):$tag"
+    skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
+        "docker-daemon:${name}:latest" \
+        "docker://${quay_image}:$tag"
 }
 
 push_for_tag latest
