@@ -35,6 +35,10 @@ reset_boilerplate_repo
 make boilerplate-update || exit $?
 check_update $repo 04-check-new-version-update || exit $?
 
+# Hack: test-base-convention's `update` PRE check will fail if master is at an
+# earlier tag.
+export SKIP_IMAGE_TAG_CHECK=1
+
 override_boilerplate_repo $boilerplate_master || exit $?
 
 make boilerplate-update || exit $?
