@@ -265,6 +265,8 @@ In your fork of this repository (not a consuming repository):
       `update` driver and the convention subdirectories themselves. Of
       note, `${CONVENTION_ROOT}/_lib/` contains some utilities that may
       be useful for `update`s.
+    - `LATEST_IMAGE_TAG`: The tag for the most recent build image
+      produced by boilerplate.
 
 ### Environment setup
 To test your changes, you can use the `BOILERPLATE_GIT_REPO` environment
@@ -291,3 +293,27 @@ subdirectory. These are discovered and executed in lexicographic order by
 indicate failure. The [test/lib.sh](test/lib.sh) library defines convenient
 variables and functions you can use if your test case is written in `bash`.
 See existing test cases for examples.
+
+### Build Images
+If you make a change to the build image produced by boilerplate -- i.e.
+by changing anything in [config/](config/) -- you must:
+
+1. Publish a new tag. This will be picked up by appsre and used to
+   publish a new tagged image for consumption via `LATEST_IMAGE_TAG` in
+   conventions. The tag must be named `image-v{X}.{Y}.{Z}`, using
+   [semver](https://semver.org/) principles when deciding what
+   `{X}.{Y}.{Z}` should be.
+
+Example:
+
+```shell
+$ git tag image-v1.2.3
+$ git push upstream --tags
+```
+
+**NOTE:** You must do this *after* creating your PR. Otherwise the
+tagged commit will not exist upstream.
+
+2. Import that tag via boilerplate's ImageStream in `openshift/release`
+   by adding an element to the `spec.tags` list in
+   [this configuration file](https://github.com/openshift/release/blob/master/core-services/supplemental-ci-images/boilerplate.yaml).
