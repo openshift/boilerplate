@@ -1,5 +1,5 @@
 err() {
-  echo "$@" >&2
+  echo "==ERROR== $@" >&2
   exit 1
 }
 
