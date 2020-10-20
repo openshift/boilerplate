@@ -6,6 +6,7 @@ This work was inspired by, and partially cribbed from,
 [lyft/boilerplate](https://github.com/lyft/boilerplate).
 
 - [boilerplate](#boilerplate)
+  - [Quick Start](#quick-start)
   - [Overview](#overview)
     - [A Pretty Picture](#a-pretty-picture)
   - [Mechanism](#mechanism)
@@ -16,6 +17,26 @@ This work was inspired by, and partially cribbed from,
   - [Contributing](#contributing)
     - [Environment setup](#environment-setup)
     - [Tests](#tests)
+    - [Build Images](#build-images)
+
+## Quick Start
+
+[Bootstrap](#bootstrap) and [subscribe](#configure) to
+[openshift/golang-osd-operator](boilerplate/openshift/golang-osd-operator/) by
+pasting the following scriptlet into your terminal. Your pwd should be a clean
+checkout of the repository you wish to onboard.
+
+```shell
+curl --output boilerplate/update --create-dirs https://raw.githubusercontent.com/openshift/boilerplate/master/boilerplate/update
+chmod +x boilerplate/update
+echo "openshift/golang-osd-operator" > boilerplate/update.cfg
+printf "\n.PHONY: boilerplate-update\nboilerplate-update:\n\t@boilerplate/update\n" >> Makefile
+make boilerplate-update
+sed -i '1s,^,include boilerplate/generated-includes.mk\n\n,' Makefile
+make boilerplate-commit
+```
+
+**Pay attention to the output! It contains critical instructions!**
 
 ## Overview
 
