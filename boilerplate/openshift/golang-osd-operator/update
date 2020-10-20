@@ -22,6 +22,7 @@ echo "    tag: $LATEST_IMAGE_TAG"
 sed "s/__NAMESPACE__/$IMAGE_NAMESPACE/; s/__NAME__/$IMAGE_NAME/; s/__TAG__/$LATEST_IMAGE_TAG/" ${HERE}/.ci-operator.yaml > $REPO_ROOT/.ci-operator.yaml
 
 cat <<EOF
+
 =====================
 THINGS YOU NEED TO DO
 =====================
@@ -40,4 +41,6 @@ include boilerplate/generated-includes.mk
 
 - Make sure your prow and app-sre pipeline configurations use the
   build_root configuration and standard targets described in the README.
+=====================
+
 EOF

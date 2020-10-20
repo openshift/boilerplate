@@ -59,8 +59,8 @@ empty_repo() {
 # :param PATH: An existing directory that has been `git init`ed, like
 #       what you get when you run `empty_repo`.
 # :param TEST_PROJECT: the test_project (from test/projects)
-# :param INITIAL_CONVENTION: The convention(s) to be used for initializing the 
-#       project. If it contains several conventions, they need to be passed 
+# :param INITIAL_CONVENTION: The convention(s) to be used for initializing the
+#       project. If it contains several conventions, they need to be passed
 #       between " (eg "test_convention/foo test_convention/bar")
 bootstrap_project() {
     repodir=$1

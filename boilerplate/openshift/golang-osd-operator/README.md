@@ -64,7 +64,7 @@ run code coverage analysis per [this SOP](https://github.com/openshift/ops-sop/b
 The convention embeds default checks to ensure generated code generation is current, committed, and unaltered.
 To trigger the check, you can use `make generate-check` provided your Makefile properly includes the boilerplate-generated include `boilerplate/generated-includes.mk`.
 
-Checks consist of : 
+Checks consist of:
 * Checking all files are committed to ensure a safe point to revert to in case of error
 * Running the `make generate` command to regenerate the needed code
 * Checking if this results in any new uncommitted files in the git project or if all is clean.
