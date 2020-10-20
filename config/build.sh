@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+tmpd=$(mktemp -d)
+pushd $tmpd
+
 GOCILINT_VERSION="1.31.0"
 GOCILINT_SHA256SUM="9a5d47b51442d68b718af4c7350f4406cdc087e2236a5b9ae52f37aebede6cb3"
 GOCILINT_LOCATION=https://github.com/golangci/golangci-lint/releases/download/v${GOCILINT_VERSION}/golangci-lint-${GOCILINT_VERSION}-linux-amd64.tar.gz
@@ -17,8 +20,6 @@ curl -L -o golangci-lint.tar.gz $GOCILINT_LOCATION
 echo ${GOCILINT_SHA256SUM} golangci-lint.tar.gz | sha256sum -c
 tar xzf golangci-lint.tar.gz golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint
 mv golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint /usr/local/bin
-rm -rf golangci-lint-${GOCILINT_VERSION}-linux-amd64
-rm -f golangci-lint.tar.gz
 
 curl -L -o operator-sdk $OPERATOR_SDK_LOCATION
 echo ${OPERATOR_SDK_SHA256SUM} operator-sdk | sha256sum -c
@@ -42,9 +43,11 @@ tar xzf git.tar.gz
 make --directory "git-${GIT_VERSION}" configure
 ./git-${GIT_VERSION}/configure --prefix=/usr
 make --directory "git-${GIT_VERSION}" prefix=/usr/local all install
-rm -rf "git-${GIT_VERSION}"
 yum groupremove -y "Development Tools" && \
 yum -y remove ${GIT_DEPENDENCIES}
 yum clean all
 yum -y autoremove
 rm -rf /var/cache/yum
+
+popd
+rm -fr $tmpd
