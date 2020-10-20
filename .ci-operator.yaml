@@ -1,0 +1,5 @@
+# NOTE: Keep this in sync with config/Dockerfile's FROM
+build_root_image:
+  namespace: openshift
+  name: release
+  tag: golang-1.13
