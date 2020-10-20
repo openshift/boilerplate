@@ -1,5 +1,9 @@
 #!/bin/bash -e
 
+if [[ -z "$BOILERPLATE_SET_X" ]]; then
+    set -x
+fi
+
 # This script validates the vars we expect from the main `update` driver, and
 # many of those are set by common.sh, so don't source it.
 err() {
@@ -23,5 +27,5 @@ echo "Validating variables exported from the main update driver"
 # Granny switch to disable this check for weird tests like reverting to master
 if [[ -z "$SKIP_IMAGE_TAG_CHECK" ]]; then
     # Update this when publishing a new image tag
-    [[ "$LATEST_IMAGE_TAG" == "image-v0.1.1" ]] || err "Bad LATEST_IMAGE_TAG: '$LATEST_IMAGE_TAG'"
+    [[ "$LATEST_IMAGE_TAG" == "image-v0.1.2" ]] || err "Bad LATEST_IMAGE_TAG: '$LATEST_IMAGE_TAG'"
 fi
