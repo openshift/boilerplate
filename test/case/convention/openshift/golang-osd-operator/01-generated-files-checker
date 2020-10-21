@@ -18,7 +18,7 @@ for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 ; do
 
     # Check failure when project is not committed
     make generate-check && err "make generate-check should have failed" || echo "Project is not committed. Checks failed as expected"
-    
+
     # Checking files haven't been generated and the project is not committed
     make isclean || echo "Project is detected as uncommitted as expected"
     if [ -f src/test/test-generation ] || [ -f src/test/subfolder/test-generation-subfolder ] || [ -f pkg/apis/mygroup/v1alpha1/zz_generated.deepcopy.go ] ; then
@@ -43,16 +43,16 @@ for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 ; do
 
     # Check are passing as all is committed
     make generate-check
-    
+
     # Check detection of modified generated file
     echo "Updating generated content" >> src/test/test.txt
     git add -A
     git commit -m "updating generated files"
 
     make generate-check && err "make generate-check should have failed" || echo "Generated files have been updated manually. Checks failed as expected"
-    
+
     # Check detection of deleted generated file
-    git rm -f src/test/test.txt 
+    git rm -f src/test/test.txt
     git commit -m "deleting a generated files"
 
     make generate-check && err "make generate-check should have failed" || echo "All generated files are not present. Checks failed as expected"

@@ -1,3 +1,3 @@
 package subfolder
 
-//go:generate cp ../../../expected/subfolder/test.txt . 
+//go:generate cp ../../../expected/subfolder/test.txt .

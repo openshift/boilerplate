@@ -36,9 +36,11 @@ if [[ $# -eq 1 ]]; then
         usage
     fi
 
-    [[ -d $1 ]] || err "$1: Not a directory."
+    [[ -d $1 ]] || err "
+$1: Not a directory."
 
-    [[ $(repo_name $1) == "$release_repo" ]] || err "$1 is not a clone of $release_repo; or its 'origin' remote is not set properly."
+    [[ $(repo_name $1) == "$release_repo" ]] || err "
+$1 is not a clone of $release_repo; or its 'origin' remote is not set properly."
 
     # Got a usable clone of openshift/release
     release_clone=$1
@@ -48,22 +50,32 @@ elif [[ $# -ne 0 ]]; then
 fi
 
 consumer=$(repo_name .)
-[[ -z "$consumer" ]] && err "Failed to determine current repository name"
+[[ -z "$consumer" ]] && err "
+Failed to determine current repository name"
+
 consumer_org=${consumer%/*}
-[[ -z "$consumer_org" ]] && err "Failed to determine consumer org"
+[[ -z "$consumer_org" ]] && err "
+Failed to determine consumer org"
+
 consumer_name=${consumer#*/}
-[[ -z "$consumer_name" ]] && err "Failed to determine consumer name"
+[[ -z "$consumer_name" ]] && err "
+Failed to determine consumer name"
+
 # This will be something like refs/remotes/origin/master
 default_branch=$(git symbolic-ref refs/remotes/origin/HEAD)
-[[ -z "$default_branch" ]] && err "Failed to determine default branch name"
+[[ -z "$default_branch" ]] && err "
+Failed to determine default branch name"
 # Strip off refs/remotes/origin/
 default_branch=${default_branch##*/}
-[[ -z "$default_branch" ]] && err "Failed to determine default branch name"
+[[ -z "$default_branch" ]] && err "
+Failed to determine default branch name"
 
 # Make sure we were invoked from a boilerplate consumer.
-[[ -z "$CONVENTION_NAME" ]] && err "$cmd must be invoked from a consumer of an appropriate convention. Where did you get this script from?"
+[[ -z "$CONVENTION_NAME" ]] && err "
+$cmd must be invoked from a consumer of an appropriate convention. Where did you get this script from?"
 # Or at least not from boilerplate itself
-[[ "$consumer" == "openshift/boilerplate" ]] && err "$cmd must be invoked from a boilerplate consumer, not from boilerplate itself."
+[[ "$consumer" == "openshift/boilerplate" ]] && err "
+$cmd must be invoked from a boilerplate consumer, not from boilerplate itself."
 
 [[ -s $CONVENTION_ROOT/_data/last-boilerplate-commit ]] || err "
 $cmd must be invoked from a boilerplate consumer!"
@@ -76,14 +88,16 @@ $consumer is not subscribed to $CONVENTION_NAME!"
 # TODO: Get rid of this check, and $ci_config, and its usage in the config
 # dump, once DPTP-1640 is resolved.
 ci_config=$REPO_ROOT/.ci-operator.yaml
-[[ -s $ci_config ]] || err ".ci-operator.yaml not found! Do you need to 'make boilerplate-update'?"
+[[ -s $ci_config ]] || err "
+.ci-operator.yaml not found! Do you need to 'make boilerplate-update'?"
 
 # If a release repo clone wasn't specified, create one
 if [[ -z "$release_clone" ]]; then
     release_clone=$(mktemp -dt openshift_release_XXXXXXX)
     git clone git@github.com:${release_repo}.git $release_clone
 else
-    [[ -z "$(git -C $release_clone status --porcelain)" ]] || err "Your release clone must start clean."
+    [[ -z "$(git -C $release_clone status --porcelain)" ]] || err "
+Your release clone must start clean."
     # These will blow up if it's misconfigured
     git -C $release_clone checkout master
     git -C $release_clone pull

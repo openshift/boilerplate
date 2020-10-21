@@ -119,11 +119,11 @@ python-venv:
 	$(eval PYTHON := .venv/bin/python3)
 
 .PHONY: generate-check
-generate-check: 
-	@$(MAKE) -s isclean --no-print-directory 
+generate-check:
+	@$(MAKE) -s isclean --no-print-directory
 	@$(MAKE) -s generate --no-print-directory
 	@$(MAKE) -s isclean --no-print-directory || (echo 'Files after generation are different than committed ones. Please commit updated and unaltered generated files' >&2 && exit 1)
-	@echo "All generated files are up-to-date and unaltered" 
+	@echo "All generated files are up-to-date and unaltered"
 
 .PHONY: yaml-validate
 yaml-validate: python-venv

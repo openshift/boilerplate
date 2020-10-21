@@ -1,3 +1,3 @@
 package test
 
-//go:generate cp ../../expected/test.txt . 
+//go:generate cp ../../expected/test.txt .
