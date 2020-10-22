@@ -23,10 +23,12 @@ mv golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint /usr/local/bin
 
 curl -L -o operator-sdk $OPERATOR_SDK_LOCATION
 echo ${OPERATOR_SDK_SHA256SUM} operator-sdk | sha256sum -c
+chmod ugo+x operator-sdk
 mv operator-sdk /usr/local/bin
 
 curl -L -o opm $OPM_LOCATION && \
 echo ${OPM_SHASUM} opm | sha256sum -c
+chmod ugo+x opm
 mv opm /usr/local/bin
 
 python3 -m pip install PyYAML==5.3.1
