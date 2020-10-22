@@ -52,6 +52,12 @@ yum groupremove -y "Development Tools" && \
 yum -y remove ${GIT_DEPENDENCIES}
 yum clean all
 yum -y autoremove
+
+# autoremove removes ssh (which it presumably wouldn't if we were able
+# to install git from a repository, because git has a dep on ssh.)
+# Do we care to restrict this to a particular version?
+yum -y install openssh-clients
+
 rm -rf /var/cache/yum
 
 popd
