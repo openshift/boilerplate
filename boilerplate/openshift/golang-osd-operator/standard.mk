@@ -137,6 +137,10 @@ olm-deploy-yaml-validate: python-venv
 prow-config:
 	${CONVENTION_DIR}/prow-config ${RELEASE_CLONE}
 
+.PHONY: codecov-secret-mapping
+codecov-secret-mapping:
+	${CONVENTION_DIR}/codecov-secret-mapping ${RELEASE_CLONE}
+
 ######################
 # Targets used by prow
 ######################
