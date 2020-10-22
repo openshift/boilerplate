@@ -31,6 +31,11 @@ mv opm /usr/local/bin
 
 python3 -m pip install PyYAML==5.3.1
 
+# Per https://git-scm.com/download/linux, we have two choices for CentOS
+# (which is what we're running on):
+# - Build from source
+# - Use a third party repository
+# For security reasons, we're preferring the former.
 GIT_VERSION="2.28.0"
 GIT_SHASUM="02016d16dbce553699db5c9c04f6d13a3f50727c652061b7eb97a828d045e534"
 GIT_DEPENDENCIES="epel-release perl-CPAN gettext-devel perl-devel openssl-devel zlib-devel curl-devel expat-devel getopt asciidoc xmlto docbook2X"
