@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 set -euo pipefail
 
 tmpd=$(mktemp -d)
@@ -23,14 +24,21 @@ mv golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint /usr/local/bin
 
 curl -L -o operator-sdk $OPERATOR_SDK_LOCATION
 echo ${OPERATOR_SDK_SHA256SUM} operator-sdk | sha256sum -c
+chmod ugo+x operator-sdk
 mv operator-sdk /usr/local/bin
 
 curl -L -o opm $OPM_LOCATION && \
 echo ${OPM_SHASUM} opm | sha256sum -c
+chmod ugo+x opm
 mv opm /usr/local/bin
 
 python3 -m pip install PyYAML==5.3.1
 
+# Per https://git-scm.com/download/linux, we have two choices for CentOS
+# (which is what we're running on):
+# - Build from source
+# - Use a third party repository
+# For security reasons, we're preferring the former.
 GIT_VERSION="2.28.0"
 GIT_SHASUM="02016d16dbce553699db5c9c04f6d13a3f50727c652061b7eb97a828d045e534"
 GIT_DEPENDENCIES="epel-release perl-CPAN gettext-devel perl-devel openssl-devel zlib-devel curl-devel expat-devel getopt asciidoc xmlto docbook2X"
@@ -47,6 +55,12 @@ yum groupremove -y "Development Tools" && \
 yum -y remove ${GIT_DEPENDENCIES}
 yum clean all
 yum -y autoremove
+
+# autoremove removes ssh (which it presumably wouldn't if we were able
+# to install git from a repository, because git has a dep on ssh.)
+# Do we care to restrict this to a particular version?
+yum -y install openssh-clients
+
 rm -rf /var/cache/yum
 
 popd
