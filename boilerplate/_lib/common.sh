@@ -57,30 +57,6 @@ if [ -z "$BOILERPLATE_GIT_CLONE" ]; then
   export BOILERPLATE_GIT_CLONE="git clone $BOILERPLATE_GIT_REPO"
 fi
 
-## Information about the boilerplate consumer
-# E.g. "openshift/my-wizbang-operator"
-CONSUMER=$(repo_name .)
-[[ -z "$CONSUMER" ]] && err "
-Failed to determine current repository name"
-#
-# E.g. "openshift"
-CONSUMER_ORG=${CONSUMER%/*}
-[[ -z "$CONSUMER_ORG" ]] && err "
-Failed to determine consumer org"
-#
-# E.g. "my-wizbang-operator"
-CONSUMER_NAME=${CONSUMER#*/}
-[[ -z "$CONSUMER_NAME" ]] && err "
-Failed to determine consumer name"
-#
-# E.g. "master"
-# This will produce something like refs/remotes/origin/master
-DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/upstream/HEAD || git symbolic-ref refs/remotes/origin/HEAD || echo defaulting/to/master)
-# Strip off refs/remotes/{upstream|origin}/
-DEFAULT_BRANCH=${DEFAULT_BRANCH##*/}
-[[ -z "$DEFAULT_BRANCH" ]] && err "
-Failed to determine default branch name"
-
 # The namespace of the ImageStream by which prow will import the image.
 IMAGE_NAMESPACE=openshift
 IMAGE_NAME=boilerplate
