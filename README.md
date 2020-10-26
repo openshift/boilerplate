@@ -14,6 +14,7 @@ This work was inspired by, and partially cribbed from,
     - [Bootstrap](#bootstrap)
     - [Configure](#configure)
     - [Update](#update)
+    - [Multiple Updates](#multiple-updates)
   - [Contributing](#contributing)
     - [Environment setup](#environment-setup)
     - [Tests](#tests)
@@ -249,6 +250,15 @@ boilerplate framework itself.
    them.
 
 5. Push the branch to create a PR as usual.
+
+### Multiple Updates
+You may create an [update](#update) PR and, before it merges, want or
+need to include commits that subsequently merged into boilerplate. (A
+common cause is a fix required in boilerplate to make your consumer's CI
+pass.) In this case, in order to make sure the PR description is
+correct, it is recommended to close the original PR and create a new one
+from your default branch. If you had additional commits in play, these
+can often simply be rebased onto the new branch.
 
 ## Contributing
 In your fork of this repository (not a consuming repository):
