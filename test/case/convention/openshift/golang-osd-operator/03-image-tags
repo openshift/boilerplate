@@ -41,8 +41,8 @@ diff $LOG_DIR/expected-Dockerfile build/Dockerfile
 # NOTE: Change this when publishing a new image tag.
 cat -<<EOF >$LOG_DIR/expected-.ci-operator.yaml
 build_root_image:
-  namespace: openshift
   name: boilerplate
+  namespace: openshift
   tag: $expected_image_tag
 EOF
 
