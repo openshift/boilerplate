@@ -13,6 +13,10 @@ OPERATOR_SDK_VERSION="0.16.0"
 OPERATOR_SDK_SHA256SUM="3df782f341749f7962ab0fcfedd2961c18b21ad34ff7acd194b49a152f59abcb"
 OPERATOR_SDK_LOCATION=https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk-v${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
 
+YQ_VERSION="3.4.1"
+YQ_SHA256SUM="adbc6dd027607718ac74ceac15f74115ac1f3caef68babfb73246929d4ffb23c"
+YQ_LOCATION=https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+
 curl -L -o golangci-lint.tar.gz $GOCILINT_LOCATION
 echo ${GOCILINT_SHA256SUM} golangci-lint.tar.gz | sha256sum -c
 tar xzf golangci-lint.tar.gz golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint
@@ -22,6 +26,11 @@ curl -L -o operator-sdk $OPERATOR_SDK_LOCATION
 echo ${OPERATOR_SDK_SHA256SUM} operator-sdk | sha256sum -c
 chmod ugo+x operator-sdk
 mv operator-sdk /usr/local/bin
+
+curl -L -o yq $YQ_LOCATION
+echo ${YQ_SHA256SUM} yq | sha256sum -c
+chmod ugo+x yq
+mv yq /usr/local/bin
 
 python3 -m pip install PyYAML==5.3.1
 
