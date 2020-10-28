@@ -13,10 +13,6 @@ OPERATOR_SDK_VERSION="0.16.0"
 OPERATOR_SDK_SHA256SUM="3df782f341749f7962ab0fcfedd2961c18b21ad34ff7acd194b49a152f59abcb"
 OPERATOR_SDK_LOCATION=https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk-v${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
 
-OPM_VERSION="1.13.8"
-OPM_SHASUM="a48aa9d69b0be3439220e818edde4b36b3b9eceb2a058d86b4fdf0ca9dcd21c8"
-OPM_LOCATION=https://github.com/operator-framework/operator-registry/releases/download/v${OPM_VERSION}/linux-amd64-opm
-
 curl -L -o golangci-lint.tar.gz $GOCILINT_LOCATION
 echo ${GOCILINT_SHA256SUM} golangci-lint.tar.gz | sha256sum -c
 tar xzf golangci-lint.tar.gz golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint
@@ -26,11 +22,6 @@ curl -L -o operator-sdk $OPERATOR_SDK_LOCATION
 echo ${OPERATOR_SDK_SHA256SUM} operator-sdk | sha256sum -c
 chmod ugo+x operator-sdk
 mv operator-sdk /usr/local/bin
-
-curl -L -o opm $OPM_LOCATION && \
-echo ${OPM_SHASUM} opm | sha256sum -c
-chmod ugo+x opm
-mv opm /usr/local/bin
 
 python3 -m pip install PyYAML==5.3.1
 
