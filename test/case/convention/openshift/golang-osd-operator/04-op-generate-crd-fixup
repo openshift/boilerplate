@@ -1,0 +1,21 @@
+#!/bin/bash -e
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+echo "Testing CRD fixup for OLM bug in 3.11"
+
+repo=$(empty_repo)
+add_cleanup $repo
+test_project="file-generate"
+
+bootstrap_project $repo ${test_project} openshift/golang-osd-operator
+cd $repo
+make boilerplate-update
+# Pick a version
+sed s/__operator_sdk_version__/v0.16.0/g go.mod.tmpl > go.mod
+
+make op-generate
+
+diff deploy/crds/mygroup.com_testkinds_crd.yaml expected/mygroup.com_testkinds_crd.yaml || err "CRD fixup didn't work properly."

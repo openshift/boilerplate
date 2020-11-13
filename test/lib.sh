@@ -14,6 +14,11 @@ export NEXUS_MK=boilerplate/generated-includes.mk
 
 _BP_TEST_TEMP_DIRS=
 
+err() {
+  echo "==ERROR== $@" >&2
+  exit 1
+}
+
 _cleanup() {
     echo
     echo "Cleaning up"
