@@ -172,6 +172,38 @@ prow-config:
 .PHONY: codecov-secret-mapping
 codecov-secret-mapping:
 	${CONVENTION_DIR}/codecov-secret-mapping ${RELEASE_CLONE}
+	
+.PHONY: staging-csv-build
+staging-csv-build: 
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c staging -h $(CURRENT_COMMIT) -n $(COMMIT_NUMBER)
+
+.PHONY: staging-csv-build-and-compare
+staging-csv-build-and-compare: staging-csv-build
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c staging -h $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -t
+
+.PHONY: staging-catalog-saas-push
+staging-catalog-saas-push: staging-csv-build
+	@${CONVENTION_DIR}/csv-generate/csv-saas-git-push.sh -o $(OPERATOR_NAME) -c staging -h $(CURRENT_COMMIT) -n $(COMMIT_NUMBER)
+	
+.PHONY: staging-catalog-publish
+staging-catalog-publish: 
+	@${CONVENTION_DIR}/csv-generate/csv-image-publish.sh -o $(OPERATOR_NAME) -c staging -h $(CURRENT_COMMIT) 
+	
+.PHONY: production-csv-build
+production-csv-build: 
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c production -h $(CURRENT_COMMIT) -n $(COMMIT_NUMBER)
+
+.PHONY: production-csv-build-and-compare
+production-csv-build-and-compare: production-csv-build
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c production -h $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -t
+
+.PHONY: production-catalog-saas-push
+production-catalog-saas-push: production-csv-build
+	@${CONVENTION_DIR}/csv-generatecsv-saas-git-push.sh -o $(OPERATOR_NAME) -c production -h $(CURRENT_COMMIT) -n $(COMMIT_NUMBER)
+	
+.PHONY: production-catalog-publish
+production-catalog-publish: 
+	@${CONVENTION_DIR}/csv-generate/csv-image-publish.sh -o $(OPERATOR_NAME) -c production -h $(CURRENT_COMMIT) 
 
 ######################
 # Targets used by prow
