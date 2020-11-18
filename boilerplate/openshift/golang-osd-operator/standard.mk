@@ -100,7 +100,7 @@ go-generate:
 
 .PHONY: op-generate
 op-generate:
-	${CONVENTION_DIR}/operator-sdk-generate.sh
+	OSDK_GENERATE_CRDS_FLAGS="${OSDK_GENERATE_CRDS_FLAGS}" ${CONVENTION_DIR}/operator-sdk-generate.sh
 	# HACK: Due to an OLM bug in 3.11, we need to remove the
 	# spec.validation.openAPIV3Schema.type from CRDs. Remove once
 	# 3.11 is no longer supported.

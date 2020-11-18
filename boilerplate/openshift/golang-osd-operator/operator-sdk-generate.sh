@@ -29,7 +29,7 @@ VER=$(osdk_version $OSDK)
 # anything outside of that.
 case $VER in
   'v0.15.1'|'v0.16.0'|'v0.17.0'|'v0.17.1'|'v0.17.2'|'v0.18.2')
-      $OSDK generate crds
+      $OSDK generate crds $OSDK_GENERATE_CRDS_FLAGS
       $OSDK generate k8s
       ;;
   *) err "Unsupported operator-sdk version $VER" ;;
