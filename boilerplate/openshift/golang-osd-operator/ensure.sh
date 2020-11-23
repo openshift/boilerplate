@@ -6,6 +6,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 source $REPO_ROOT/boilerplate/_lib/common.sh
 
 GOLANGCI_LINT_VERSION="1.30.0"
+OPM_VERSION="v1.15.2"
 DEPENDENCY=${1:-}
 GOOS=$(go env GOOS)
 
@@ -79,6 +80,26 @@ operator-sdk)
     # Create (or overwrite) the symlink to the binary we discovered or
     # downloaded above.
     ln -sf $osdk operator-sdk
+    ;;
+
+opm)
+    mkdir -p .opm/bin
+    cd .opm/bin
+
+    if [[ -x ./opm  && "$(opm_version ./opm)" == "$OPM_VERSION" ]]; then
+        exit 0
+    fi
+
+    if which opm && [[ "$(opm_version $(which opm))" == "$OPM_VERSION" ]]; then
+        opm=$(realpath $(which opm))
+    else
+        opm="opm-$OPM_VERSION-$GOOS-amd64"
+        opm_download_url="https://github.com/operator-framework/operator-registry/releases/download/$OPM_VERSION/$GOOS-amd64-opm"
+        curl -sfL "${opm_download_url}" -o "$opm"
+        chmod +x "$opm"
+    fi
+
+    ln -fs "$opm" opm
     ;;
 
 venv)
