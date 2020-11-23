@@ -7,6 +7,7 @@ source $REPO_ROOT/boilerplate/_lib/common.sh
 
 GOLANGCI_LINT_VERSION="1.30.0"
 OPM_VERSION="v1.15.2"
+GRPCURL_VERSION="1.7.0"
 DEPENDENCY=${1:-}
 GOOS=$(go env GOOS)
 
@@ -100,6 +101,28 @@ opm)
     fi
 
     ln -fs "$opm" opm
+    ;;
+
+grpcurl)
+    mkdir -p .grpcurl/bin
+    cd .grpcurl/bin
+
+    if [[ -x ./grpcurl  && "$(grpcurl_version ./grpcurl)" == "$GRPCURL_VERSION" ]]; then
+        exit 0
+    fi
+
+    if which grpcurl && [[ "$(grpcurl_version $(which grpcurl))" == "$GRPCURL_VERSION" ]]; then
+        grpcurl=$(realpath $(which grpcurl))
+    else
+        # mapping from https://github.com/fullstorydev/grpcurl/blob/master/.goreleaser.yml
+        [[ "$GOOS" == "darwin" ]] && os=osx || os="$GOOS"
+        grpcurl="grpcurl-$GRPCURL_VERSION-$os-x86_64"
+        grpcurl_download_url="https://github.com/fullstorydev/grpcurl/releases/download/v$GRPCURL_VERSION/grpcurl_${GRPCURL_VERSION}_${os}_x86_64.tar.gz"
+        curl -sfL "$grpcurl_download_url" | tar -xzf - -O grpcurl > "$grpcurl"
+        chmod +x "$grpcurl"
+    fi
+
+    ln -fs "$grpcurl" grpcurl
     ;;
 
 venv)

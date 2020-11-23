@@ -26,6 +26,15 @@ opm_version() {
     $opm version | sed 's/.*OpmVersion:"//;s/".*//'
 }
 
+## grpcurl_version BINARY
+#
+# Print the version of the specified grpcurl BINARY
+grpcurl_version() {
+    local grpcurl=$1
+    # `grpcurl -version` output looks like:  grpcurl 1.7.0
+    $grpcurl -version 2>&1 | cut -d " " -f 2
+}
+
 repo_name() {
     # Account for remotes which are
     # - upstream or origin
