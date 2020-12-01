@@ -2,6 +2,9 @@ if [ "$BOILERPLATE_SET_X" ]; then
     set -x
 fi
 
+# NOTE: Change this when publishing a new image tag.
+LATEST_IMAGE_TAG=image-v0.3.0
+
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
 export BOILERPLATE_GIT_REPO=$REPO_ROOT
@@ -118,6 +121,30 @@ hr() {
     echo "========================="
 }
 
+## compare_data_file PATH EXPECTED_VALUE
+#
+# Check that the file at PATH exists and contains EXPECTED_VALUE.
+# Writes any errors to $LOG_FILE.
+#
+# :param PATH: File system path, which may be relative to
+#     $REPO_ROOT/boilerplate, of the data file to inspect.
+# :param EXPECTED_VALUE: The expected contents of the file.
+compare_data_file() {
+    local datafile=$1
+    local expected=$2
+    if [[ ! -f $datafile ]]; then
+        echo "$datafile does not exist" >> $LOG_FILE
+    fi
+    local actual=$(cat $datafile)
+    if [[ "$actual" != "$expected" ]]; then
+        cat <<EOF >> $LOG_FILE
+Bad $datafile.
+Expected: $expected
+Actual:   $actual
+EOF
+    fi
+}
+
 ## compare FOLDER LOG_FILE
 #
 # Check FOLDER is properly sync'ed, determining the reference base on FOLDER
@@ -126,17 +153,9 @@ hr() {
 # :param LOG_FILE: The log file used to aggregate the output of the `diff` calls
 compare() {
     if [ $1 = "_data" ] ; then
-        if [ ! -f _data/last-boilerplate-commit ] ; then
-            echo "_data/last-boilerplate-commit does not exist" >> $LOG_FILE
-        fi
-        local expected=$(cd $BOILERPLATE_GIT_REPO; git rev-parse HEAD)
-        local actual=$(cat _data/last-boilerplate-commit)
-        if [[  $actual != $expected ]]; then
-            cat <<EOF >> $LOG_FILE
-Bad last-boilerplate-commit.
-Expected: $expected
-Actual:   $actual
-EOF
+        compare_data_file _data/last-boilerplate-commit $(cd $BOILERPLATE_GIT_REPO; git rev-parse HEAD)
+        if [[ -z "$SKIP_IMAGE_TAG_CHECK" ]]; then
+            compare_data_file _data/backing-image-tag $LATEST_IMAGE_TAG
         fi
     else
         # Don't let this kill tests using -e. The failure is detected
