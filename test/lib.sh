@@ -367,3 +367,15 @@ expect_failure () {
     fi
     return 0
 }
+
+
+## update_project PROJECT
+#
+# Generate dummy commit to a git project and commit it
+# :param PROJECT: A git ptoject 
+local_dummy_commit () {
+    new_file=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1`
+    touch ${new_file}
+    git add .
+    git commit -m "Adding ${new_file}"
+}

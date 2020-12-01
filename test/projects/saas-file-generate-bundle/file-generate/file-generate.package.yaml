@@ -1,0 +1,4 @@
+packageName: file-generate
+channels:
+- name: staging
+  currentCSV: file-generate.v0.1.10-c664c72

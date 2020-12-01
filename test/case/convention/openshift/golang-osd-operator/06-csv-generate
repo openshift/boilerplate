@@ -1,0 +1,105 @@
+#!/bin/bash -e
+
+# Scenario : 
+# 1 - Create a new CSV and push it to Prod and Staging
+# 2 - Ensure proper history in case of unpushed changed
+# 3 - Validate behaviour when some versions are not pushed to production (history cleanup)
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+repo=$(empty_repo)
+saas_repo=$(empty_repo)
+
+add_cleanup $repo
+add_cleanup $saas_repo
+
+test_project="file-generate"
+
+bootstrap_project $repo ${test_project} openshift/golang-osd-operator
+
+# Init the saas git project
+saas_root_repo=$(mktemp -d -t boilerplate-saas-XXXXXXXX)
+cp -R $REPO_ROOT/test/projects/saas-file-generate-bundle $saas_root_repo/.
+saas_repo=${saas_root_repo}/saas-file-generate-bundle
+pushd $saas_repo >&2
+git init >&2
+git config user.name "Test Boilerplate" >&2
+git config user.email "test@example.com" >&2
+git remote add origin git@example.com:example-org/test-repo.git
+git add .
+git commit -m "Initial saas-file-generate-bundle"
+git checkout -b staging
+git checkout -b production
+# It is not possible to push to the repository on the checked out branch, so need to switch to an unused branch
+git checkout master
+export GIT_PATH=`pwd`
+popd
+
+DEPLOYED_HASH="0.1.0-441cd20"
+
+cd $repo
+
+make boilerplate-update
+
+echo -e "\e[33m First build and compare on Staging"
+make staging-hack-csv-build
+make staging-common-csv-build-and-diff
+
+# Something to be checked/tested here
+
+echo -e "\e[33m First push on Staging"
+make staging-saas-bundle-push
+
+# Something to be checked/tested here
+
+echo -e "\e[91m First build and compare on Production"
+make production-hack-csv-build
+make production-common-csv-build-and-diff
+
+# Something to be checked/tested here
+
+echo -e "\e[91m First push on Production"
+make production-saas-bundle-push
+
+# Something to be checked/tested here
+
+echo -e "\e[33m Updating project - #1"
+
+local_dummy_commit
+
+echo -e "\e[33m Un-production build and compare on Staging"
+make staging-hack-csv-build
+make staging-common-csv-build-and-diff
+
+# Something to be checked/tested here
+
+echo -e "\e[91m Push un-production build to Staging"
+make staging-saas-bundle-push
+
+echo -e "\e[33m Updating project - #2"
+
+local_dummy_commit
+
+echo -e "\e[33m Second build and compare on Staging to be pushed to Production"
+make staging-hack-csv-build
+make staging-common-csv-build-and-diff
+
+# Something to be checked/tested here
+
+echo -e "\e[33m Second push on Staging"
+make staging-saas-bundle-push
+
+# Something to be checked/tested here
+
+echo -e "\e[91m Second build and compare on Production"
+make production-hack-csv-build
+make production-common-csv-build-and-diff
+
+# Something to be checked/tested here
+
+echo -e "\e[91m Second push on Production"
+make production-saas-bundle-push
+
+# Something to be checked/tested here

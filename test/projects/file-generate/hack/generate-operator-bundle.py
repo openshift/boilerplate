@@ -22,27 +22,16 @@ import string
 # version like: 0.1.189-3f73a592
 VERSION_BASE = "0.1"
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-o", "--operator-name", type=str, help="Name of the operator", required=True)
-parser.add_argument("-d", "--output-dir", type=str, help="Directory for the CSV generation", required=True)
-parser.add_argument("-p", "--previous-version", type=str, help="Directory for the CSV generation", required=True)
-parser.add_argument("-n", "--commit-number", type=str, help="Number of commits in the project (used for version generation)", required=True)
-parser.add_argument("-c", "--commit-hash", type=str, help="Current commit hashDirectory for the CSV generation (used for version generation)", required=True)
-parser.add_argument("-i", "--operator-image", type=str, help="Base index image to be used", required=True)
-args = parser.parse_args()
+if len(sys.argv) != 6:
+    print("USAGE: %s OUTPUT_DIR PREVIOUS_VERSION GIT_NUM_COMMITS GIT_HASH HIVE_IMAGE" % sys.argv[0])
+    sys.exit(1)
 
-#operator_name="deadmanssnitch-operator"
-
-#if len(sys.argv) != 6:
-#    print("USAGE: %s OUTPUT_DIR PREVIOUS_VERSION GIT_NUM_COMMITS GIT_HASH HIVE_IMAGE" % sys.argv[0])
-#    sys.exit(1)
-
-operator_name   = args.operator_name
-outdir          = args.output_dir
-prev_version    = args.previous_version
-git_num_commits = args.commit_number
-git_hash        = args.commit_hash
-operator_image  = args.operator_image
+operator_name   = "file-generate"
+outdir          = sys.argv[1]
+prev_version    = sys.argv[2]
+git_num_commits = sys.argv[3]
+git_hash        = sys.argv[4]
+operator_image  = sys.argv[5]
 
 full_version = "%s.%s-%s" % (VERSION_BASE, git_num_commits, git_hash)
 print("Generating CSV for version: %s" % full_version)
