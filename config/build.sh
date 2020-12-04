@@ -42,6 +42,37 @@ for OPERATOR_SDK_VERSION in "${!OSDK_VERSION_HASHES[@]}"; do
     mv $OPERATOR_SDK_BINARY /usr/local/bin
 done
 
+###############
+# Set up go env
+###############
+# Get rid of -mod=vendor
+unset GOFLAGS
+# No, really, we want to use modules
+export GO111MODULE=on
+
+#############
+# openapi-gen
+#############
+OPENAPI_GEN_VERSION=v0.19.4
+go get k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
+
+#########
+# mockgen
+#########
+MOCKGEN_VERSION=v1.4.4
+go get github.com/golang/mock/mockgen@${MOCKGEN_VERSION}
+
+# HACK: `go get` creates lots of things under GOPATH that are not group
+# accessible, even if umask is set properly. This causes failures of
+# subsequent go tool usage (e.g. resolving packages) by a non-root user,
+# which is what consumes this image in CI.
+# Here we make group permissions match user permissions, since the CI
+# non-root user's gid is 0.
+dir=$(go env GOPATH)
+for bit in r x w; do
+    find $dir -perm -u+${bit} -a ! -perm -g+${bit} -exec chmod g+${bit} '{}' +
+done
+
 ####
 # yq
 ####
