@@ -59,35 +59,6 @@ mv yq /usr/local/bin
 ##################
 python3 -m pip install PyYAML==5.3.1
 
-##################
-# golang (via gvm)
-##################
-GO_VERSIONS="go1.13.15 go1.14.10"
-
-GVM_VERSION=1.0.22
-GVM_SHA256SUM="72123889c8ef55f7b745038dc8cf556c1aece982408966fa5ff612ce6a97bae7"
-GVM_LOCATION=https://raw.githubusercontent.com/moovweb/gvm/${GVM_VERSION}/binscripts/gvm-installer
-
-curl -L -o gvm-installer $GVM_LOCATION
-echo ${GVM_SHA256SUM} gvm-installer | sha256sum -c
-chmod ugo+x gvm-installer
-./gvm-installer
-rm -f gvm-installer
-source /root/.gvm/scripts/gvm
-
-GVM_DEPS="bison"
-yum -y install ${GVM_DEPS}
-
-for GO_VERSION in $GO_VERSIONS; do
-    gvm install $GO_VERSION --prefer-binary
-done
-
-# Is there a better way to make this usable by the non-root user in the
-# consumer pod?
-chmod -R ugo+w /root/.gvm
-
-yum -y remove ${GVM_DEPS}
-
 #####
 # git
 #####
