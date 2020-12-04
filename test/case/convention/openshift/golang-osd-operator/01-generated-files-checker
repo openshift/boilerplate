@@ -37,6 +37,9 @@ for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 ; do
 	if [ ! -f pkg/apis/mygroup/v1alpha1/zz_generated.deepcopy.go ] ; then
 		err "crd generate didn't work properly"
 	fi
+	if [ ! -f pkg/apis/mygroup/v1alpha1/zz_generated.openapi.go ] ; then
+		err "openapi generate didn't work properly"
+	fi
 
     git add -A
     git commit -m "commit generated files"
