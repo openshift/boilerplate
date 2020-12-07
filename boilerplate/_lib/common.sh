@@ -99,5 +99,10 @@ fi
 # The namespace of the ImageStream by which prow will import the image.
 IMAGE_NAMESPACE=openshift
 IMAGE_NAME=boilerplate
+# LATEST_IMAGE_TAG may be set by `update`, in which case that's the
+# value we want to use.
+if [[ -z "$LATEST_IMAGE_TAG" ]]; then
+    LATEST_IMAGE_TAG=$(cat ${CONVENTION_ROOT}/_data/backing-image-tag)
+fi
 # The public image location
 IMAGE_PULL_PATH=quay.io/app-sre/$IMAGE_NAME:$LATEST_IMAGE_TAG
