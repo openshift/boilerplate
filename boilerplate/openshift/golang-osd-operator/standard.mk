@@ -64,7 +64,7 @@ CONVENTION_DIR := boilerplate/openshift/golang-osd-operator
 # https://www.gnu.org/software/make/manual/make.html#index-_002eDEFAULT_005fGOAL-_0028define-default-goal_0029
 .DEFAULT_GOAL :=
 .PHONY: default
-default: go-build
+default: go-check go-test go-build
 
 .PHONY: clean
 clean:
@@ -111,7 +111,7 @@ op-generate:
 generate: op-generate go-generate
 
 .PHONY: go-build
-go-build: go-check go-test ## Build binary
+go-build: ## Build binary
 	# Force GOOS=linux as we may want to build containers in other *nix-like systems (ie darwin).
 	# This is temporary until a better container build method is developed
 	${GOENV} GOOS=linux go build ${GOBUILDFLAGS} -o ${BINFILE} ${MAINPACKAGE}
