@@ -1,0 +1,209 @@
+#!/bin/bash
+
+# shellcheck disable=SC2207,SC2155
+
+set -euo pipefail
+
+export OLM_BUNDLE_IMAGE=quay.io/rporresm/deployment-validation-operator-bundle
+export OLM_CATALOG_IMAGE=quay.io/rporresm/deployment-validation-operator-catalog
+export CONTAINER_ENGINE=/usr/local/bin/docker
+export CONTAINER_ENGINE_CONFIG_DIR=.docker
+export CURRENT_COMMIT=860gta5q
+export COMMIT_NUMBER=5
+export OPERATOR_VERSION=0.1.5-860gta5q
+export OPERATOR_NAME=deployment-validation-operator
+export OPERATOR_IMAGE=quay.io/rporresm/deployment-validation-operator
+export OPERATOR_IMAGE_TAG=not-important-at-the-moment
+export OLM_CHANNEL=alpha
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+# shellcheck disable=SC1090
+source "$REPO_ROOT/boilerplate/openshift/golang-osd-operator/build-opm-catalog.sh"
+
+function gen_commit() {
+    # shellcheck disable=SC2002
+    cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1
+}
+
+function gen_operator_version() {
+    local commit=${1}
+    local commit_number=${2}
+    echo "0.1.$commit_number-$commit"
+}
+
+# build_version_file commit commit_number1 commit_number2 commit_number3 ...
+# commit_number can be a single digit or a digit followed by the S letter
+# in the latter case, the resulting line will have the SKIP word appended
+function build_versions_file() {
+    local commit=${1}
+    shift
+    local commit_numbers=("$@")
+
+    local versions_file=$(mktemp -p "$TEMP_DIR" versions-file.XXXXXXXX)
+
+    for commit_number in "${commit_numbers[@]}"; do
+        if [[ "$commit_number" == *S ]]; then
+            echo "$(gen_operator_version "$commit" "${commit_number%S}") SKIP" >> "$versions_file"
+        else
+            gen_operator_version "$commit" "$commit_number" >> "$versions_file"
+        fi
+    done
+
+    echo "$versions_file"
+}
+
+function initialize_local_saas_repo() {
+    local saas_root_repo=$(mktemp -p "$TEMP_DIR" -d -t saas-operator-versions-XXXXXXXX)
+    local current_dir=$PWD
+    cd "$saas_root_repo"
+    git init > /dev/null 2>&1
+    git config user.name "Test Boilerplate" > /dev/null 2>&1
+    git config user.email "test@example.com" > /dev/null 2>&1
+    mkdir "$OPERATOR_NAME"
+    touch "$OPERATOR_NAME/$OPERATOR_NAME-versions.txt"
+    git add  "$OPERATOR_NAME/$OPERATOR_NAME-versions.txt" > /dev/null 2>&1
+    git commit -m "Adding empty versions file for $OPERATOR_NAME" > /dev/null 2>&1
+    cd "$current_dir"
+
+    echo "$saas_root_repo"
+}
+
+function test_get_prev_operator_version_no_versions_file() {
+    local versions_file=$(mktemp -p "$TEMP_DIR" versions-file.XXXXXXXX)
+    rm "$versions_file"
+    [[ "$(get_prev_operator_version "$versions_file")" == "" ]] && return 0 || return 1
+}
+
+# This is the same as if the file does not exist
+function test_get_prev_operator_version_empty_versions_file() {
+    local versions_file=$(mktemp -p "$TEMP_DIR" versions-file.XXXXXXXX)
+    [[ "$(get_prev_operator_version "$versions_file")" == "" ]] && return 0 || return 1
+}
+
+function test_get_prev_operator_version_one_version() {
+    local commit=$(gen_commit)
+    local versions_file=$(build_versions_file "$commit" 1)
+    local expected_prev_operator_version=$(gen_operator_version "$commit" 1)
+    local expected_prev_good_operator_version="$expected_prev_operator_version"
+    local expected_skip_versions=""
+    local versions=($(get_prev_operator_version "$versions_file"))
+
+    [[ "${versions[0]}" == "$expected_prev_operator_version" ]] || return 1
+    [[ "${versions[1]}" == "$expected_prev_good_operator_version" ]] || return 1
+    [[ "${versions[2]:-}" == "" ]] || return 1
+
+    return 0
+}
+
+function test_get_prev_operator_version_multiple_versions() {
+    local commit=$(gen_commit)
+    local versions_file=$(build_versions_file "$commit" 1 2 3 4)
+    local expected_prev_operator_version=$(gen_operator_version "$commit" 4)
+    local expected_prev_good_operator_version="$expected_prev_operator_version"
+    local expected_skip_versions=""
+    local versions=($(get_prev_operator_version "$versions_file"))
+
+    [[ "${versions[0]}" == "$expected_prev_operator_version" ]] || return 1
+    [[ "${versions[1]}" == "$expected_prev_good_operator_version" ]] || return 1
+    [[ "${versions[2]:-}" == "$expected_skip_versions" ]] || return 1
+
+    return 0
+}
+
+function test_get_prev_operator_version_multiple_versions_old_skips() {
+    local commit=$(gen_commit)
+    local versions_file=$(build_versions_file "$commit" 1 2S 3S 4 5S 6)
+    local expected_prev_operator_version=$(gen_operator_version "$commit" 6)
+    local expected_prev_good_operator_version="$expected_prev_operator_version"
+    local expected_skip_versions=""
+    local versions=($(get_prev_operator_version "$versions_file"))
+
+    [[ "${versions[0]}" == "$expected_prev_operator_version" ]] || return 1
+    [[ "${versions[1]}" == "$expected_prev_good_operator_version" ]] || return 1
+    [[ "${versions[2]:-}" == "$expected_skip_versions" ]] || return 1
+
+    return 0
+}
+
+function test_get_prev_operator_version_one_skip() {
+    local commit=$(gen_commit)
+    local versions_file=$(build_versions_file "$commit" 1 2 3 4S)
+    local expected_prev_operator_version=$(gen_operator_version "$commit" 4)
+    local expected_prev_good_operator_version=$(gen_operator_version "$commit" 3)
+    local expected_skip_versions="$expected_prev_operator_version"
+    local versions=($(get_prev_operator_version "$versions_file"))
+
+    [[ "${versions[0]}" == "$expected_prev_operator_version" ]] || return 1
+    [[ "${versions[1]}" == "$expected_prev_good_operator_version" ]] || return 1
+    [[ "${versions[2]:-}" == "$expected_skip_versions" ]] || return 1
+
+    return 0
+}
+
+function test_get_prev_operator_version_multiple_skips() {
+    local commit=$(gen_commit)
+    local versions_file=$(build_versions_file "$commit" 1 2 3S 4S)
+    local expected_prev_operator_version=$(gen_operator_version "$commit" 4)
+    local expected_prev_good_operator_version=$(gen_operator_version "$commit" 2)
+    local expected_skip_versions="$expected_prev_operator_version $(gen_operator_version "$commit" 3)"
+    local versions=($(get_prev_operator_version "$versions_file"))
+
+    [[ "${versions[0]}" == "$expected_prev_operator_version" ]] || return 1
+    [[ "${versions[1]}" == "$expected_prev_good_operator_version" ]] || return 1
+    [[ "${versions[2]:-} ${versions[3]:-}" == "$expected_skip_versions" ]] || return 1
+
+    return 0
+}
+
+function test_get_prev_operator_version_all_skips() {
+    local commit=$(gen_commit)
+    local versions_file=$(build_versions_file "$commit" 1S 2S 3S)
+    local expected_prev_operator_version=$(gen_operator_version "$commit" 3)
+    local expected_prev_good_operator_version=$(gen_operator_version "$commit" 3)
+    local expected_skip_versions="$expected_prev_operator_version $(gen_operator_version "$commit" 2) $(gen_operator_version "$commit" 1)"
+    local versions=($(get_prev_operator_version "$versions_file"))
+
+    [[ "${versions[0]}" == "$expected_prev_operator_version" ]] || return 1
+    [[ "${versions[1]}" == "$expected_prev_good_operator_version" ]] || return 1
+    [[ "${versions[2]:-} ${versions[3]:-} ${versions[4]}" == "$expected_skip_versions" ]] || return 1
+
+    return 0
+}
+
+function test_add_current_version_to_bundle_versions_file() {
+    local saas_root_repo=$(initialize_local_saas_repo)
+    local bundle_versions_file="$saas_root_repo/$OPERATOR_NAME/$OPERATOR_NAME-versions.txt"
+    local prev_operator_version=""
+    add_current_version_to_bundle_versions_file "$bundle_versions_file" "$saas_root_repo" "$prev_operator_version"
+    local versions=($(get_prev_operator_version "$bundle_versions_file"))
+
+    [[ "${versions[0]}" == "$OPERATOR_VERSION" ]] || return 1
+    [[ "${versions[1]}" == "$OPERATOR_VERSION" ]] || return 1
+    [[ "${versions[2]:-}" == "" ]] || return 1
+
+    return 0
+}
+
+function main() {
+    TEMP_DIR=$(mktemp -d --suffix "-$(basename "$0")")
+    [[ -z "${PRESERVE_TEMP_DIRS:-}" ]] && trap 'rm -rf $TEMP_DIR' EXIT
+
+    local failed=0
+    for test_name in test_get_prev_operator_version_no_versions_file \
+                     test_get_prev_operator_version_empty_versions_file \
+                     test_get_prev_operator_version_one_version \
+                     test_get_prev_operator_version_multiple_versions \
+                     test_get_prev_operator_version_multiple_versions_old_skips \
+                     test_get_prev_operator_version_one_skip \
+                     test_get_prev_operator_version_multiple_skips \
+                     test_get_prev_operator_version_all_skips \
+                     test_add_current_version_to_bundle_versions_file
+    do
+        $test_name || { echo "$test_name failed"; failed=$((failed+1)); }
+    done
+
+    return $failed
+}
+
+main
