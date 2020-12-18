@@ -14,6 +14,19 @@ endif
 ifndef VERSION_MINOR
 $(error VERSION_MINOR is not set; check project.mk file)
 endif
+ifndef OPERATOR_NAME
+$(error OPERATOR_NAME is not set; check project.mk file)
+endif
+
+# If using the stock Dockerfile, make sure the consumer has provided a
+# description.
+ifeq ($(or $(OPERATOR_DOCKERFILE),$(OPERATOR_DESCRIPTION)),)
+$(error You must supply OPERATOR_DESCRIPTION when using the standard Dockerfile)
+endif
+
+
+# TODO: Figure out how to discover this dynamically
+CONVENTION_DIR := boilerplate/openshift/golang-osd-operator
 
 # Accommodate docker or podman
 CONTAINER_ENGINE=$(shell command -v podman 2>/dev/null || command -v docker 2>/dev/null)
@@ -28,7 +41,10 @@ OPERATOR_IMAGE_TAG=v$(OPERATOR_VERSION)
 IMG?=$(OPERATOR_IMAGE):$(OPERATOR_IMAGE_TAG)
 OPERATOR_IMAGE_URI=${IMG}
 OPERATOR_IMAGE_URI_LATEST=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME):latest
-OPERATOR_DOCKERFILE ?=build/Dockerfile
+# Consumers can override this to use a bespoke Dockerfile. But please
+# don't do that unless you really need to do something unique. Otherwise
+# try to figure out a way to include your needs in the stock Dockerfile.
+OPERATOR_DOCKERFILE ?=${CONVENTION_DIR}/Dockerfile
 
 OLM_BUNDLE_IMAGE = $(OPERATOR_IMAGE)-bundle
 OLM_CATALOG_IMAGE = $(OPERATOR_IMAGE)-catalog
@@ -62,9 +78,6 @@ TESTTARGETS := $(shell ${GOENV} go list -e ./... | egrep -v "/(vendor)/")
 TESTOPTS :=
 
 ALLOW_DIRTY_CHECKOUT?=false
-
-# TODO: Figure out how to discover this dynamically
-CONVENTION_DIR := boilerplate/openshift/golang-osd-operator
 
 # Set the default goal in a way that works for older & newer versions of `make`:
 # Older versions (<=3.8.0) will pay attention to the `default` target.
