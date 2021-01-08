@@ -17,9 +17,29 @@ export NEXUS_MK=boilerplate/generated-includes.mk
 
 _BP_TEST_TEMP_DIRS=
 
+# ANSI colors
+RED='\033[0;31m'
+ORANGE='\033[0;33m'
+GREEN='\033[0;32m'
+RESET='\033[0m'
+
+colorprint() {
+  color=$1
+  shift
+  /bin/echo -e "${color}$@${RESET}"
+}
+
 err() {
-  echo "==ERROR== $@" >&2
+  colorprint $RED "==ERROR== $@" >&2
   exit 1
+}
+
+# Override "echo" so test output is visually distinguished.
+# NOTE: This means when you need to echo something raw (e.g. when
+# constructing a file, or as "output" from a function), you need to use
+# /bin/echo explicitly.
+echo() {
+  colorprint ${ORANGE} "$@"
 }
 
 _cleanup() {
@@ -54,7 +74,7 @@ empty_repo() {
     # Add a remote for REPO_NAME discovery
     git remote add origin git@example.com:example-org/test-repo.git
     popd >&2
-    echo $tmpd
+    /bin/echo $tmpd
 }
 
 ## bootstrap_project PATH TEST_PROJECT INITIAL_CONVENTION
@@ -228,7 +248,7 @@ _is_line_in_file() {
 add_convention() {
     file="$1/$UPDATE_CFG"
     if ! _is_line_in_file "$2" "$file" ; then
-        echo "$2" >> "$file"
+        /bin/echo "$2" >> "$file"
     fi
 }
 
@@ -266,7 +286,7 @@ new_boilerplate_clone() {
     fi
     # Print the directory. (It is important that nothing else above
     # prints to stdout.)
-    echo $clone
+    /bin/echo $clone
 }
 
 ## override_boilerplate_repo NEW_PATH

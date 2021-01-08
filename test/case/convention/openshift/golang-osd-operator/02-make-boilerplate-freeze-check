@@ -25,7 +25,7 @@ echo "Expect failure when changing boilerplate-owned files"
 # convention's `update` copies out into the main part of the repo.
 for f in boilerplate/${convention}/codecov.sh .codecov.yml; do
   # Make dirty, and expect validation to fail via `isclean`.
-  echo "# foo" >> $f
+  /bin/echo "# foo" >> $f
   expect_failure "Can't validate boilerplate in a dirty repository. Please commit your changes and try again." make boilerplate-freeze-check
   # Commit the change, and expect validation to fail via freeze-check.
   git checkout -b dirty
@@ -39,7 +39,7 @@ done
 
 # Now let's make sure a non-bp-owned file doesn't fail
 # Make dirty
-echo "# foo" >> Makefile
+/bin/echo "# foo" >> Makefile
 expect_failure "Can't validate boilerplate in a dirty repository. Please commit your changes and try again." make boilerplate-freeze-check
 git checkout -b clean
 git commit -a -m clean
