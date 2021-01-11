@@ -39,22 +39,22 @@ main() {
         RC=$?
         hr
         if [[ $RC -eq 0 ]]; then
-            echo PASS
+            colorprint ${GREEN} PASS
             _PASS+=($test_case_name)
         else
-            echo "FAIL with RC=$RC"
+            colorprint ${RED} "FAIL with RC=$RC"
             _FAIL+=($test_case_name)
         fi
         echo
     done
 
     hr
-    echo "PASS: ${#_PASS[@]}"
-    echo -n "  "
-    echo ${_PASS[@]} | sed 's/ /\n  /g'
-    echo "FAIL: ${#_FAIL[@]}"
-    echo -n "  "
-    echo ${_FAIL[@]} | sed 's/ /\n  /g'
+    colorprint ${GREEN} "PASS: ${#_PASS[@]}"
+    /bin/echo -n "  "
+    colorprint ${GREEN} ${_PASS[@]} | sed 's/ /\n  /g'
+    colorprint ${RED} "FAIL: ${#_FAIL[@]}"
+    /bin/echo -n "  "
+    colorprint ${RED} ${_FAIL[@]} | sed 's/ /\n  /g'
     hr
     if [[ ${#_FAIL[@]} -ne 0 ]]; then
         exit 1

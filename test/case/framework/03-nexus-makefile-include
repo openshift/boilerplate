@@ -67,7 +67,7 @@ add_convention $repo $convention
 make boilerplate-update
 check_update $repo
 cat $expected/nmi-header > $exp_nmi
-echo "include boilerplate/$convention/one.mk" >> $exp_nmi
+/bin/echo "include boilerplate/$convention/one.mk" >> $exp_nmi
 diff $exp_nmi $NEXUS_MK
 # Our base Makefile doesn't include the nmi yet
 if make one-one 2>/dev/null; then
@@ -76,7 +76,7 @@ if make one-one 2>/dev/null; then
 fi
 # Now include it and the target should work
 ensure_nexus_makefile_include $repo
-echo "one-one" > $expected/expected-out
+/bin/echo "one-one" > $expected/expected-out
 $make_q one-one > $expected/actual-out
 diff $expected/expected-out $expected/actual-out
 
@@ -97,7 +97,7 @@ include boilerplate/$convention/two.mk
 EOF
 diff $exp_nmi $NEXUS_MK
 ensure_nexus_makefile_include $repo
-echo "mult-one" > $expected/expected-out
+/bin/echo "mult-one" > $expected/expected-out
 $make_q mult-one > $expected/actual-out
 diff $expected/expected-out $expected/actual-out
 

@@ -29,7 +29,7 @@ function gen_commit() {
 function gen_operator_version() {
     local commit=${1}
     local commit_number=${2}
-    echo "0.1.$commit_number-$commit"
+    /bin/echo "0.1.$commit_number-$commit"
 }
 
 # build_version_file commit commit_number1 commit_number2 commit_number3 ...
@@ -44,13 +44,13 @@ function build_versions_file() {
 
     for commit_number in "${commit_numbers[@]}"; do
         if [[ "$commit_number" == *S ]]; then
-            echo "$(gen_operator_version "$commit" "${commit_number%S}") SKIP" >> "$versions_file"
+            /bin/echo "$(gen_operator_version "$commit" "${commit_number%S}") SKIP" >> "$versions_file"
         else
             gen_operator_version "$commit" "$commit_number" >> "$versions_file"
         fi
     done
 
-    echo "$versions_file"
+    /bin/echo "$versions_file"
 }
 
 function initialize_local_saas_repo() {
@@ -66,7 +66,7 @@ function initialize_local_saas_repo() {
     git commit -m "Adding empty versions file for $OPERATOR_NAME" > /dev/null 2>&1
     cd "$current_dir"
 
-    echo "$saas_root_repo"
+    /bin/echo "$saas_root_repo"
 }
 
 function test_get_prev_operator_version_no_versions_file() {
