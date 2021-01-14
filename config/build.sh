@@ -42,6 +42,37 @@ for OPERATOR_SDK_VERSION in "${!OSDK_VERSION_HASHES[@]}"; do
     mv $OPERATOR_SDK_BINARY /usr/local/bin
 done
 
+###############
+# Set up go env
+###############
+# Get rid of -mod=vendor
+unset GOFLAGS
+# No, really, we want to use modules
+export GO111MODULE=on
+
+#############
+# openapi-gen
+#############
+OPENAPI_GEN_VERSION=v0.19.4
+go get k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
+
+#########
+# mockgen
+#########
+MOCKGEN_VERSION=v1.4.4
+go get github.com/golang/mock/mockgen@${MOCKGEN_VERSION}
+
+# HACK: `go get` creates lots of things under GOPATH that are not group
+# accessible, even if umask is set properly. This causes failures of
+# subsequent go tool usage (e.g. resolving packages) by a non-root user,
+# which is what consumes this image in CI.
+# Here we make group permissions match user permissions, since the CI
+# non-root user's gid is 0.
+dir=$(go env GOPATH)
+for bit in r x w; do
+    find $dir -perm -u+${bit} -a ! -perm -g+${bit} -exec chmod g+${bit} '{}' +
+done
+
 ####
 # yq
 ####
@@ -58,35 +89,6 @@ mv yq /usr/local/bin
 # python libraries
 ##################
 python3 -m pip install PyYAML==5.3.1
-
-##################
-# golang (via gvm)
-##################
-GO_VERSIONS="go1.13.15 go1.14.10"
-
-GVM_VERSION=1.0.22
-GVM_SHA256SUM="72123889c8ef55f7b745038dc8cf556c1aece982408966fa5ff612ce6a97bae7"
-GVM_LOCATION=https://raw.githubusercontent.com/moovweb/gvm/${GVM_VERSION}/binscripts/gvm-installer
-
-curl -L -o gvm-installer $GVM_LOCATION
-echo ${GVM_SHA256SUM} gvm-installer | sha256sum -c
-chmod ugo+x gvm-installer
-./gvm-installer
-rm -f gvm-installer
-source /root/.gvm/scripts/gvm
-
-GVM_DEPS="bison"
-yum -y install ${GVM_DEPS}
-
-for GO_VERSION in $GO_VERSIONS; do
-    gvm install $GO_VERSION --prefer-binary
-done
-
-# Is there a better way to make this usable by the non-root user in the
-# consumer pod?
-chmod -R ugo+w /root/.gvm
-
-yum -y remove ${GVM_DEPS}
 
 #####
 # git
