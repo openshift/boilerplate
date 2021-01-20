@@ -1,13 +1,15 @@
-#!/bin/bash -x
+#!/bin/bash -e
 
-usage() { echo "Usage: $0 -o operator_name -i operator_image -c saas-repository-channel [-t]" 1>&2; exit 1; }
+source `dirname $0`/common.sh
 
-while getopts "o:c:n:h:p" option; do
+usage() { echo "Usage: $0 -o operator_name -c saas-repository-channel -H operator_commit_hash -n operator_commit_number [-p]" 1>&2; exit 1; }
+
+while getopts "o:c:n:H:p" option; do
     case "${option}" in
         c)
             operator_channel=${OPTARG}
             ;;
-        h)
+        H)
             operator_commit_hash=${OPTARG}
             ;;
         n)
@@ -25,42 +27,19 @@ while getopts "o:c:n:h:p" option; do
 done
 
 # Checking parameters
-unset csv_missing_param_error
-
-if [ -z "${operator_channel}" ] ; then 
-    echo "Missing operator_channel parameter"
-    csv_missing_param_error=true
-fi
-
-if [ -z "${operator_name}" ] ; then 
-    echo "Missing operator_name parameter"
-    csv_missing_param_error=true
-fi
-
-if [ -z "${operator_commit_hash}" ] ; then 
-    echo "Missing operator_commit_hash parameter"
-    csv_missing_param_error=true
-fi
-
-if [ -z "${operator_commit_number}" ] ; then 
-    echo "Missing operator_commit_number parameter"
-    csv_missing_param_error=true
-fi
-
-if [ ! -z "${csv_missing_param_error}" ] ; then
-    usage
-fi
-
-# If no override, using the gitlab repo
-if [ -z "${GIT_PATH}" ] ; then 
-    GIT_PATH="https://app:@gitlab.cee.redhat.com/service/saas-${operator_name}-bundle.git"
-fi
+check_mandatory_params operator_channel operator_name operator_commit_hash operator_commit_number
 
 # Calculate previous version
 SAAS_OPERATOR_DIR="saas-${operator_name}-bundle"
-BUNDLE_DIR="${SAAS_OPERATOR_DIR}/${operator_name}/"
+BUNDLE_DIR="${SAAS_OPERATOR_DIR}/${operator_name}"
 OPERATOR_NEW_VERSION=$(ls "${BUNDLE_DIR}" | sort -t . -k 3 -g | tail -n 1)
 OPERATOR_PREV_VERSION=$(ls "${BUNDLE_DIR}" | sort -t . -k 3 -g | tail -n 2 | head -n 1)
+
+# Checking SAAS_OPERATOR_DIR exist
+if [ ! -d "${SAAS_OPERATOR_DIR}/.git" ] ; then
+    echo "${SAAS_OPERATOR_DIR} should exist and be a git repository"
+    exit 1
+fi
 
 # create package yaml
 cat <<EOF > $BUNDLE_DIR/${operator_name}.package.yaml
@@ -76,6 +55,7 @@ pushd ${SAAS_OPERATOR_DIR}
 git add .
 
 MESSAGE="add version ${operator_commit_number}-${operator_commit_hash}
+
 replaces ${OPERATOR_PREV_VERSION}
 removed versions: ${REMOVED_VERSIONS}"
 
@@ -85,7 +65,6 @@ git push origin "${operator_channel}"
 popd
 
 if [ "$push_catalog" = true ] ; then
-    # build the registry image
     REGISTRY_IMG="quay.io/app-sre/${operator_name}-registry"
     
     # push image

@@ -1,8 +1,10 @@
-#!/bin/bash
+#!/bin/bash -e
 
-usage() { echo "Usage: $0 -o operator_name -i operator_image -c saas-repository-channel [-t]" 1>&2; exit 1; }
+source `dirname $0`/common.sh
 
-while getopts "o:h:c:" option; do
+usage() { echo "Usage: $0 -o operator_name -c saas-repository-channel" 1>&2; exit 1; }
+
+while getopts "o:H:c:" option; do
     case "${option}" in
         o)
             operator_name=${OPTARG}
@@ -10,50 +12,24 @@ while getopts "o:h:c:" option; do
         c)
             operator_channel=${OPTARG}
             ;;
-        h)
-            operator_commit_hash=${OPTARG}
-            ;;
         *)
             usage
     esac
 done
 
 # Checking parameters
-unset csv_missing_param_error
+check_mandatory_params operator_channel operator_name  
 
-if [ -z "$operator_channel" ] ; then 
-    echo "Missing operator_channel parameter"
-    csv_missing_param_error = true
-fi
-
-if [ -z "$operator_name" ] ; then 
-    echo "Missing operator_name parameter"
-    csv_missing_param_error = true
-fi
-
-if [ -z "$operator_commit_hash" ] ; then 
-    echo "Missing operator_commit_hash parameter"
-    csv_missing_param_error = true
-fi
-
-if [ ! -z "$csv_missing_param_error" ] ; then
-    usage
-fi
-
-# If no override, using the gitlab repo
-if [ -z "$GIT_PATH" ] ; then 
-    GIT_PATH="https://app:@gitlab.cee.redhat.com/service/saas-${operator_name}-bundle.git"
-fi
-
-# Calculate previous version
+# Parameters for the Dockerfile
 SAAS_OPERATOR_DIR="saas-${operator_name}-bundle"
-BUNDLE_DIR="$SAAS_OPERATOR_DIR/${operator_name}/"
-
-OPERATOR_PREV_VERSION="$(ls "$BUNDLE_DIR" | sort -t . -k 3 -g | tail -n 1)"
-
-# build the registry image
 REGISTRY_IMG="quay.io/app-sre/${operator_name}-registry"
 DOCKERFILE_REGISTRY="Dockerfile.olm-registry"
+
+# Checking SAAS_OPERATOR_DIR exist
+if [ ! -d "${SAAS_OPERATOR_DIR}/.git" ] ; then
+    echo "${SAAS_OPERATOR_DIR} should exist and be a git repository"
+    exit 1
+fi
 
 cat <<EOF > $DOCKERFILE_REGISTRY
 FROM quay.io/openshift/origin-operator-registry:latest
@@ -63,5 +39,10 @@ CMD ["registry-server", "-t", "/tmp/terminate.log"]
 EOF
 
 docker build -f $DOCKERFILE_REGISTRY --tag "${REGISTRY_IMG}:${operator_channel}-latest" .
+
+if [ $? -ne 0 ] ; then 
+    echo "docker build failed, exiting..."
+    exit 1
+fi
 
 # TODO : Test the image and the version it contains

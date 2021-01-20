@@ -1,5 +1,15 @@
 #!/bin/bash -e
 
+set_saas_git_config() {
+  # This is to avoid git failure when running within the docker container
+  # Container doesn't have global config so complaining for missing user/email
+  pushd saas-file-generate-bundle
+  git config user.name "Test Boilerplate" 
+  git config user.email "test@example.com" 
+  popd
+   
+}
+
 # Scenario : 
 # 1 - Create a new CSV and push it to Prod and Staging
 # 2 - Ensure proper history in case of unpushed changed
@@ -23,83 +33,87 @@ bootstrap_project $repo ${test_project} openshift/golang-osd-operator
 saas_root_repo=$(mktemp -d -t boilerplate-saas-XXXXXXXX)
 cp -R $REPO_ROOT/test/projects/saas-file-generate-bundle $saas_root_repo/.
 saas_repo=${saas_root_repo}/saas-file-generate-bundle
-pushd $saas_repo >&2
-git init >&2
-git config user.name "Test Boilerplate" >&2
-git config user.email "test@example.com" >&2
-git remote add origin git@example.com:example-org/test-repo.git
+pushd $saas_repo 
+git init 
+git config user.name "Test Boilerplate" 
+git config user.email "test@example.com" 
 git add .
 git commit -m "Initial saas-file-generate-bundle"
-git checkout -b staging
-git checkout -b production
-# It is not possible to push to the repository on the checked out branch, so need to switch to an unused branch
-git checkout master
+git remote add origin git@example.com:example-org/test-repo.git
+
+git branch staging master
+git branch production master
+
 export GIT_PATH=`pwd`
 popd
 
-DEPLOYED_HASH="0.1.0-441cd20"
+export DEPLOYED_HASH="0.1.0-441cd20"
 
 cd $repo
 
 make boilerplate-update
 
-echo -e "\e[33m First build and compare on Staging"
+colorprint $ORANGE "First build and compare on Staging"
 make staging-hack-csv-build
 make staging-common-csv-build-and-diff
 
 # Something to be checked/tested here
 
-echo -e "\e[33m First push on Staging"
+colorprint $ORANGE "First push on Staging"
+set_saas_git_config
 make staging-saas-bundle-push
 
 # Something to be checked/tested here
 
-echo -e "\e[91m First build and compare on Production"
+colorprint $ORANGE "First build and compare on Production"
 make production-hack-csv-build
 make production-common-csv-build-and-diff
 
 # Something to be checked/tested here
 
-echo -e "\e[91m First push on Production"
+colorprint $ORANGE "First push on Production"
+set_saas_git_config
 make production-saas-bundle-push
 
 # Something to be checked/tested here
 
-echo -e "\e[33m Updating project - #1"
+colorprint $ORANGE "Updating project - #1"
 
 local_dummy_commit
 
-echo -e "\e[33m Un-production build and compare on Staging"
+colorprint $ORANGE "Un-production build and compare on Staging"
 make staging-hack-csv-build
 make staging-common-csv-build-and-diff
 
 # Something to be checked/tested here
 
-echo -e "\e[91m Push un-production build to Staging"
+colorprint $ORANGE "Push un-production build to Staging"
+set_saas_git_config
 make staging-saas-bundle-push
 
-echo -e "\e[33m Updating project - #2"
+colorprint $ORANGE "Updating project - #2"
 
 local_dummy_commit
 
-echo -e "\e[33m Second build and compare on Staging to be pushed to Production"
+colorprint $ORANGE "Second build and compare on Staging to be pushed to Production"
 make staging-hack-csv-build
 make staging-common-csv-build-and-diff
 
 # Something to be checked/tested here
 
-echo -e "\e[33m Second push on Staging"
+colorprint $ORANGE "Second push on Staging"
+set_saas_git_config
 make staging-saas-bundle-push
 
 # Something to be checked/tested here
 
-echo -e "\e[91m Second build and compare on Production"
+colorprint $ORANGE "Second build and compare on Production"
 make production-hack-csv-build
 make production-common-csv-build-and-diff
 
 # Something to be checked/tested here
-
-echo -e "\e[91m Second push on Production"
+colorprint $ORANGE "Second push on Production"
+set_saas_git_config
 make production-saas-bundle-push
 
 # Something to be checked/tested here

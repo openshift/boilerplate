@@ -1,9 +1,11 @@
-#!/bin/bash -x
+#!/bin/bash -e
 
-usage() { echo "Usage: $0 -o operator_name -i operator_image -c saas-repository-channel [-t]" 1>&2; exit 1; }
+source `dirname $0`/common.sh
+
+usage() { echo "Usage: $0 -o operator_name -c saas-repository-channel -H operator_commit_hash -n operator_commit_number -i operator_image -g [hack|common][-d]" 1>&2; exit 1; }
 
 # TODO : Add support of long-options 
-while getopts "c:dg:h:i:n:o:" option; do
+while getopts "c:dg:H:i:n:o:" option; do
     case "${option}" in
         c)
             operator_channel=${OPTARG}
@@ -12,9 +14,14 @@ while getopts "c:dg:h:i:n:o:" option; do
             diff_generate=true
             ;;
         g)
-            generate_script=${OPTARG}
+            if [ "${OPTARG}" = "hack" ] || [ "${OPTARG}" = "common" ] ; then
+                generate_script=${OPTARG}
+            else
+                # TODO : Case to be tested
+                echo "Incorrect value for '-g'. Expecting 'hack' or 'common'. Got ${OPTARG}"
+            fi
             ;;
-        h)
+        H)
             operator_commit_hash=${OPTARG}
             ;;
         i)
@@ -32,41 +39,7 @@ while getopts "c:dg:h:i:n:o:" option; do
 done
 
 # Checking parameters
-unset csv_missing_param_error
-
-if [ -z "$operator_channel" ] ; then 
-    echo "Missing operator_channel parameter"
-    csv_missing_param_error=true
-fi
-
-if [ -z "$operator_image" ] ; then 
-    echo "Missing operator_image parameter"
-    csv_missing_param_error=true
-fi
-
-if [ -z "$operator_name" ] ; then 
-    echo "Missing operator_name parameter"
-    csv_missing_param_error=true
-fi
-
-if [ -z "$operator_commit_hash" ] ; then 
-    echo "Missing operator_commit_hash parameter"
-    csv_missing_param_error=true
-fi
-
-if [ -z "$operator_commit_number" ] ; then 
-    echo "Missing operator_commit_number parameter"
-    csv_missing_param_error=true
-fi
-
-if [ -z "$generate_script" ] ; then 
-    echo "Missing generate_script parameter"
-    csv_missing_param_error=true
-fi
-
-if [ ! -z "$csv_missing_param_error" ] ; then
-    usage
-fi
+check_mandatory_params operator_channel operator_image operator_name operator_commit_hash operator_commit_number generate_script
 
 # If no override, using the gitlab repo
 if [ -z "$GIT_PATH" ] ; then 
@@ -81,6 +54,12 @@ if [ "$diff_generate" = true ] ; then
     OPERATOR_NEW_VERSION=$(ls "$BUNDLE_DIR" | sort -t . -k 3 -g | tail -n 1)
     OPERATOR_PREV_VERSION=$(ls "${BUNDLE_DIR}" | sort -t . -k 3 -g | tail -n 2 | head -n 1)
     OUTPUT_DIR="output-comparison"
+    
+    # For diff usecase, checking there is already a generated CSV
+    if [ ! -f ${BUNDLE_DIR}/${OPERATOR_NEW_VERSION}/*.clusterserviceversion.yaml ] ; then
+        echo "You need to generate CSV with your legacy script before trying to run the diff option"
+        exit 1 
+    fi
 else
     rm -rf "$SAAS_OPERATOR_DIR"
     git clone --branch "$operator_channel" ${GIT_PATH} "$SAAS_OPERATOR_DIR"
@@ -118,7 +97,7 @@ else
 fi
 
 if [[ "$generate_script" = "common" ]] ; then
-    python3 ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} -p ${OPERATOR_PREV_VERSION} -n ${operator_commit_number} -c ${operator_commit_hash} -i ${operator_image}
+    ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} -p ${OPERATOR_PREV_VERSION} -n ${operator_commit_number} -c ${operator_commit_hash} -i ${operator_image}
 elif [[ "$generate_script" = "hack" ]] ; then
     if [ -z "$OPERATOR_PREV_VERSION" ] ; then 
         OPERATOR_PREV_VERSION="no-version"

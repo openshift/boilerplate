@@ -369,13 +369,11 @@ expect_failure () {
 }
 
 
-## update_project PROJECT
+## local_dummy_commit
 #
-# Generate dummy commit to a git project and commit it
-# :param PROJECT: A git ptoject 
+# Generate dummy commit in the current location
 local_dummy_commit () {
-    new_file=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1`
-    touch ${new_file}
+    new_file=`mktemp dummy-commit-XXXXXXXXXX`
     git add .
     git commit -m "Adding ${new_file}"
 }

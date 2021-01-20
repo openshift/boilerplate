@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Generate an operator bundle for publishing to OLM. Copies appropriate files
 # into a directory, and composes the ClusterServiceVersion which needs bits and
@@ -31,12 +31,6 @@ parser.add_argument("-c", "--commit-hash", type=str, help="Current commit hashDi
 parser.add_argument("-i", "--operator-image", type=str, help="Base index image to be used", required=True)
 args = parser.parse_args()
 
-#operator_name="deadmanssnitch-operator"
-
-#if len(sys.argv) != 6:
-#    print("USAGE: %s OUTPUT_DIR PREVIOUS_VERSION GIT_NUM_COMMITS GIT_HASH HIVE_IMAGE" % sys.argv[0])
-#    sys.exit(1)
-
 operator_name   = args.operator_name
 outdir          = args.output_dir
 prev_version    = args.previous_version
@@ -59,7 +53,6 @@ with open('config/templates/csv-template.yaml'.format(operator_name), 'r') as st
 
 csv['spec']['customresourcedefinitions']['owned'] = []
 
-# Copy all CSV files over to the bundle output dir:
 # Copy all CRD files over to the bundle output dir:
 crd_files = [ f for f in os.listdir('deploy/crds') if f.endswith('_crd.yaml') ]
 for file_name in crd_files:
@@ -91,7 +84,7 @@ with open('deploy/role.yaml', 'r') as stream:
             'serviceAccountName': operator_name,
         })
 
-# Add our deployment spec for the hive operator:
+# Add our deployment spec for the operator:
 with open('deploy/operator.yaml', 'r') as stream:
     operator_components = []
     operator = yaml.load_all(stream)
