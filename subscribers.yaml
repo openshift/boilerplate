@@ -39,12 +39,12 @@ subscribers:
   - name: openshift/aws-account-operator
     conventions:
       - name: openshift/golang-osd-operator
-        status: proposed
+        status: manual
 
   - name: openshift/aws-efs-operator
     conventions:
       - name: openshift/golang-osd-operator
-        status: candidate
+        status: manual
 
   - name: openshift/certman-operator
     conventions:
@@ -79,7 +79,7 @@ subscribers:
   - name: openshift/managed-upgrade-operator
     conventions:
       - name: openshift/golang-osd-operator
-        status: candidate
+        status: manual
 
   - name: openshift/managed-velero-operator
     conventions:
