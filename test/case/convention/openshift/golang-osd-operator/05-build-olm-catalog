@@ -175,7 +175,10 @@ function test_add_current_version_to_bundle_versions_file() {
     local saas_root_repo=$(initialize_local_saas_repo)
     local bundle_versions_file="$saas_root_repo/$OPERATOR_NAME/$OPERATOR_NAME-versions.txt"
     local prev_operator_version=""
-    add_current_version_to_bundle_versions_file "$bundle_versions_file" "$saas_root_repo" "$prev_operator_version"
+    # We use dry-run mode to avoid pushes attempts
+    DRY_RUN=true add_current_version_to_bundle_versions_file "$bundle_versions_file" \
+                                                             "$saas_root_repo" \
+                                                             "$prev_operator_version"
     local versions=($(get_prev_operator_version "$bundle_versions_file"))
 
     [[ "${versions[0]}" == "$OPERATOR_VERSION" ]] || return 1
