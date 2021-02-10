@@ -104,7 +104,7 @@ elif [[ "$generate_script" = "hack" ]] ; then
         DELETE_REPLACE=true
     fi
     
-    python3 ./hack/generate-operator-bundle.py ${OUTPUT_DIR} ${OPERATOR_PREV_VERSION} ${operator_commit_number} ${operator_commit_hash} ${operator_image}
+    ./hack/generate-operator-bundle.py ${OUTPUT_DIR} ${OPERATOR_PREV_VERSION} ${operator_commit_number} ${operator_commit_hash} ${operator_image}
     
     if [ ! -z "${DELETE_REPLACE}" ] ; then
         yq d -i output-comparison/${OPERATOR_NEW_VERSION}/*.clusterserviceversion.yaml 'spec.replaces'

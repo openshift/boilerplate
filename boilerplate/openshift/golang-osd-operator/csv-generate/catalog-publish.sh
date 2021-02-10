@@ -62,6 +62,11 @@ removed versions: ${REMOVED_VERSIONS}"
 git commit -m "${MESSAGE}"
 git push origin "${operator_channel}"
 
+if [ $? -ne 0 ] ; then 
+    echo "git push failed, exiting..."
+    exit 1
+fi
+
 popd
 
 if [ "$push_catalog" = true ] ; then
@@ -71,8 +76,18 @@ if [ "$push_catalog" = true ] ; then
     skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
         "docker-daemon:${REGISTRY_IMG}:${operator_channel}-latest" \
         "docker://${REGISTRY_IMG}:${operator_channel}-latest"
+
+    if [ $? -ne 0 ] ; then 
+        echo "skopeo push of ${REGISTRY_IMG}:${operator_channel}-latest failed, exiting..."
+        exit 1
+    fi
     
     skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
         "docker-daemon:${REGISTRY_IMG}:${operator_channel}-latest" \
         "docker://${REGISTRY_IMG}:${operator_channel}-${operator_commit_hash}"
+
+    if [ $? -ne 0 ] ; then 
+        echo "skopeo push of ${REGISTRY_IMG}:${operator_channel}-${operator_commit_hash} failed, exiting..."
+        exit 1
+    fi
 fi

@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 #
-# Generate an operator bundle for publishing to OLM. Copies appropriate files
+# Common script to generate OSD operator bundles for publishing to OLM. Copies appropriate files
 # into a directory, and composes the ClusterServiceVersion which needs bits and
 # pieces of our rbac and deployment files.
 #
-# Usage ./hack/generate-operator-bundle.py OUTPUT_DIR PREVIOUS_VERSION GIT_NUM_COMMITS GIT_HASH HIVE_IMAGE
-#
-# Commit count can be obtained with: git rev-list 9c56c62c6d0180c27e1cc9cf195f4bbfd7a617dd..HEAD --count
-# This is the first hive commit, if we tag a release we can then switch to using that tag and bump the base version.
+# Usage ./common-generate-operator-bundle.py -o OPERATOR_NAME -d OUTPUT_DIR -p PREVIOUS_VERSION -n GIT_NUM_COMMITS -c COMMIT_HASH -i HIVE_IMAGE
 
 import datetime
 import os
