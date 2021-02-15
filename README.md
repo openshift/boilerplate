@@ -325,6 +325,16 @@ indicate failure. The [test/lib.sh](test/lib.sh) library defines convenient
 variables and functions you can use if your test case is written in `bash`.
 See existing test cases for examples.
 
+If you want to test boilerplate using the boilerplate build image (same condition as in the MR checks and easier for MacOS users), you 
+can use the work which has been done for the convention `make` targets doing the following : 
+
+```shell
+$ # Format of the LATEST_IMAGE_TAG should be similar to image-v0.4.0
+$ export LATEST_IMAGE_TAG=<image_tag_in_use> 
+$ ./boilerplate/_lib/container-make test
+```
+This command will run the test suite within the docker container. In case of failure, you will be left within the docker container allowing you to debug directly. 
+
 ### Build Images
 If you make a change to the build image produced by boilerplate -- i.e.
 by changing anything in [config/](config/) -- you must:
@@ -348,3 +358,5 @@ tagged commit will not exist upstream.
 2. Import that tag via boilerplate's ImageStream in `openshift/release`
    by adding an element to the `spec.tags` list in
    [this configuration file](https://github.com/openshift/release/blob/master/core-services/supplemental-ci-images/boilerplate.yaml).
+   
+3. Update in boilerplate the `.latest_image_tag` file in order to point to the latest image. This is the reference image used for local testing and `make-container` wrapper

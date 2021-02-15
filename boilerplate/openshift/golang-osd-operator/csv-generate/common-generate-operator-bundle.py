@@ -4,7 +4,7 @@
 # into a directory, and composes the ClusterServiceVersion which needs bits and
 # pieces of our rbac and deployment files.
 #
-# Usage ./common-generate-operator-bundle.py -o OPERATOR_NAME -d OUTPUT_DIR -p PREVIOUS_VERSION -n GIT_NUM_COMMITS -c COMMIT_HASH -i HIVE_IMAGE
+# Usage ./common-generate-operator-bundle.py -o OPERATOR_NAME -d OUTPUT_DIR [-p PREVIOUS_VERSION] -V CURRENT_VERSION -i INDEX_IMAGE
 
 import datetime
 import os
@@ -22,30 +22,24 @@ VERSION_BASE = "0.1"
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--operator-name", type=str, help="Name of the operator", required=True)
 parser.add_argument("-d", "--output-dir", type=str, help="Directory for the CSV generation", required=True)
-parser.add_argument("-p", "--previous-version", type=str, help="Directory for the CSV generation", required=True)
-parser.add_argument("-n", "--commit-number", type=str, help="Number of commits in the project (used for version generation)", required=True)
-parser.add_argument("-c", "--commit-hash", type=str, help="Current commit hashDirectory for the CSV generation (used for version generation)", required=True)
+parser.add_argument("-p", "--previous-version", type=str, help="Version of previous CSV")
 parser.add_argument("-i", "--operator-image", type=str, help="Base index image to be used", required=True)
+parser.add_argument("-V", "--current-version", type=str, help="Version of the operator being built", required=True)
 args = parser.parse_args()
 
 operator_name   = args.operator_name
 outdir          = args.output_dir
 prev_version    = args.previous_version
-git_num_commits = args.commit_number
-git_hash        = args.commit_hash
 operator_image  = args.operator_image
+full_version    = args.current_version
 
-full_version = "%s.%s-%s" % (VERSION_BASE, git_num_commits, git_hash)
 print("Generating CSV for version: %s" % full_version)
-
-if not os.path.exists(outdir):
-    os.mkdir(outdir)
 
 version_dir = os.path.join(outdir, full_version)
 if not os.path.exists(version_dir):
-    os.mkdir(version_dir)
+    os.makedirs(version_dir)
 
-with open('config/templates/csv-template.yaml'.format(operator_name), 'r') as stream:
+with open('config/templates/csv-template.yaml', 'r') as stream:
     csv = yaml.load(stream)
 
 csv['spec']['customresourcedefinitions']['owned'] = []
@@ -97,7 +91,9 @@ csv['spec']['install']['spec']['deployments'][0]['spec']['template']['spec']['co
 # Update the versions to include git hash:
 csv['metadata']['name'] = "{}.v{}".format(operator_name, full_version)
 csv['spec']['version'] = full_version
-csv['spec']['replaces'] = "{}.v{}".format(operator_name, prev_version)
+
+if ( prev_version is not None ) :
+    csv['spec']['replaces'] = "{}.v{}".format(operator_name, prev_version)
 
 # Set the CSV createdAt annotation:
 now = datetime.datetime.now()

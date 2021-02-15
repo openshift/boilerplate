@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash -e
 
 set_saas_git_config() {
   # This is to avoid git failure when running within the docker container
@@ -54,12 +54,9 @@ cd $repo
 make boilerplate-update
 
 colorprint $ORANGE "First build and compare on Staging"
-make staging-hack-csv-build
-make staging-common-csv-build-and-diff
+make staging-common-csv-build
 
-if [ $? -ne 0 ] ; then 
-    exit 1
-fi
+# Something to be checked/tested here
 
 colorprint $ORANGE "First push on Staging"
 set_saas_git_config
@@ -68,12 +65,9 @@ make staging-saas-bundle-push
 # Something to be checked/tested here
 
 colorprint $ORANGE "First build and compare on Production"
-make production-hack-csv-build
-make production-common-csv-build-and-diff
+make production-common-csv-build
 
-if [ $? -ne 0 ] ; then 
-    exit 1
-fi
+# Something to be checked/tested here
 
 colorprint $ORANGE "First push on Production"
 set_saas_git_config
@@ -86,12 +80,9 @@ colorprint $ORANGE "Updating project - #1"
 local_dummy_commit
 
 colorprint $ORANGE "Un-production build and compare on Staging"
-make staging-hack-csv-build
-make staging-common-csv-build-and-diff
+make staging-common-csv-build
 
-if [ $? -ne 0 ] ; then 
-    exit 1
-fi
+# Something to be checked/tested here
 
 colorprint $ORANGE "Push un-production build to Staging"
 set_saas_git_config
@@ -102,12 +93,9 @@ colorprint $ORANGE "Updating project - #2"
 local_dummy_commit
 
 colorprint $ORANGE "Second build and compare on Staging to be pushed to Production"
-make staging-hack-csv-build
-make staging-common-csv-build-and-diff
+make staging-common-csv-build
 
-if [ $? -ne 0 ] ; then 
-    exit 1
-fi
+# Something to be checked/tested here
 
 colorprint $ORANGE "Second push on Staging"
 set_saas_git_config
@@ -116,28 +104,11 @@ make staging-saas-bundle-push
 # Something to be checked/tested here
 
 colorprint $ORANGE "Second build and compare on Production"
-make production-hack-csv-build
-make production-common-csv-build-and-diff
+make production-common-csv-build
 
-if [ $? -ne 0 ] ; then 
-    exit 1
-fi
-
+# Something to be checked/tested here
 colorprint $ORANGE "Second push on Production"
 set_saas_git_config
 make production-saas-bundle-push
 
 # Something to be checked/tested here
-
-local_dummy_commit
-
-colorprint $ORANGE "Testing the diff is returning error"
-
-make staging-hack-csv-build
-yq d -i saas-file-generate-bundle/file-generate/0.1.4-*/file-generate.v0.1.4-*  'kind'
-
-make staging-common-csv-build-and-diff
-
-if [ $? -eq 0 ] ; then 
-    exit 1
-fi
