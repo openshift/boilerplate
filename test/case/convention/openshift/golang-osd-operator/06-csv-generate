@@ -1,0 +1,119 @@
+#!/bin/bash -e
+
+set_saas_git_config() {
+  # This is to avoid git failure when running within the docker container
+  # Container doesn't have global config so complaining for missing user/email
+  pushd saas-file-generate-bundle
+  git config user.name "Test Boilerplate" 
+  git config user.email "test@example.com" 
+  popd
+   
+}
+
+# Scenario : 
+# 1 - Create a new CSV and push it to Prod and Staging
+# 2 - Ensure proper history in case of unpushed changed
+# 3 - Validate behaviour when some versions are not pushed to production (history cleanup)
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+repo=$(empty_repo)
+saas_repo=$(empty_repo)
+
+add_cleanup $repo
+add_cleanup $saas_repo
+
+test_project="file-generate"
+
+bootstrap_project $repo ${test_project} openshift/golang-osd-operator
+
+# Init the saas git project
+saas_root_repo=$(mktemp -d -t boilerplate-saas-XXXXXXXX)
+cp -R $REPO_ROOT/test/projects/saas-file-generate-bundle $saas_root_repo/.
+saas_repo=${saas_root_repo}/saas-file-generate-bundle
+pushd $saas_repo 
+git init 
+git config user.name "Test Boilerplate" 
+git config user.email "test@example.com" 
+git add .
+git commit -m "Initial saas-file-generate-bundle"
+git remote add origin git@example.com:example-org/test-repo.git
+
+git branch staging master
+git branch production master
+
+export GIT_PATH=`pwd`
+popd
+
+export DEPLOYED_HASH="0.1.0-441cd20"
+
+cd $repo
+
+make boilerplate-update
+
+colorprint $ORANGE "First build and compare on Staging"
+make staging-hack-csv-build
+make staging-common-csv-build-and-diff
+
+# Something to be checked/tested here
+
+colorprint $ORANGE "First push on Staging"
+set_saas_git_config
+make staging-saas-bundle-push
+
+# Something to be checked/tested here
+
+colorprint $ORANGE "First build and compare on Production"
+make production-hack-csv-build
+make production-common-csv-build-and-diff
+
+# Something to be checked/tested here
+
+colorprint $ORANGE "First push on Production"
+set_saas_git_config
+make production-saas-bundle-push
+
+# Something to be checked/tested here
+
+colorprint $ORANGE "Updating project - #1"
+
+local_dummy_commit
+
+colorprint $ORANGE "Un-production build and compare on Staging"
+make staging-hack-csv-build
+make staging-common-csv-build-and-diff
+
+# Something to be checked/tested here
+
+colorprint $ORANGE "Push un-production build to Staging"
+set_saas_git_config
+make staging-saas-bundle-push
+
+colorprint $ORANGE "Updating project - #2"
+
+local_dummy_commit
+
+colorprint $ORANGE "Second build and compare on Staging to be pushed to Production"
+make staging-hack-csv-build
+make staging-common-csv-build-and-diff
+
+# Something to be checked/tested here
+
+colorprint $ORANGE "Second push on Staging"
+set_saas_git_config
+make staging-saas-bundle-push
+
+# Something to be checked/tested here
+
+colorprint $ORANGE "Second build and compare on Production"
+make production-hack-csv-build
+make production-common-csv-build-and-diff
+
+# Something to be checked/tested here
+colorprint $ORANGE "Second push on Production"
+set_saas_git_config
+make production-saas-bundle-push
+
+# Something to be checked/tested here

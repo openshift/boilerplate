@@ -1,0 +1,45 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: file-generate-1.0.0
+  namespace: placeholder
+  annotations:
+    categories: A list of comma separated categories that your operator falls under.
+    certified: "false"
+    description: Test operator
+    containerImage: quay.io/app-sre/file-generate:latest
+    createdAt: "2019-04-10T17:34:33Z"
+    support: Carl Brumm
+spec:
+  displayName: file-generate
+  description: Test operator
+  keywords:
+  - kubernetes
+  - openshift
+  - multi-cluster
+  - cluster
+  version: 1.0.0
+  provider:
+    name: Red Hat, Inc
+  maturity: alpha
+  installModes:
+  - type: OwnNamespace
+    supported: true
+  - type: SingleNamespace
+    supported: true
+  - type: MultiNamespace
+    supported: false
+  - type: AllNamespaces
+    supported: false
+  install:
+    strategy: deployment
+    spec:
+      clusterPermissions:
+      - serviceAccountName: file-generate
+        # Rules will be added here by the generate-csv.py script.
+      deployments:
+      - name: file-generate
+        # Deployment spec will be added here by the generate-csv.py script.
+  customresourcedefinitions:
+    owned:
+    # CRD's will be added here by the generate-operator-bundle.py

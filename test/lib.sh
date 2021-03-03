@@ -367,3 +367,13 @@ expect_failure () {
     fi
     return 0
 }
+
+
+## local_dummy_commit
+#
+# Generate dummy commit in the current location
+local_dummy_commit () {
+    new_file=`mktemp dummy-commit-XXXXXXXXXX`
+    git add .
+    git commit -m "Adding ${new_file}"
+}
