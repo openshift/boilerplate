@@ -50,6 +50,18 @@ unset GOFLAGS
 # No, really, we want to use modules
 export GO111MODULE=on
 
+###########
+# kustomize
+###########
+KUSTOMIZE_VERSION=v3.8.8
+go get sigs.k8s.io/kustomize/kustomize/v3@${KUSTOMIZE_VERSION}
+
+################
+# controller-gen
+################
+CONTROLLER_GEN_VERSION=v0.3.0
+go get sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
+
 #############
 # openapi-gen
 #############
@@ -72,6 +84,12 @@ dir=$(go env GOPATH)
 for bit in r x w; do
     find $dir -perm -u+${bit} -a ! -perm -g+${bit} -exec chmod g+${bit} '{}' +
 done
+
+############
+# go-bindata
+############
+GO_BINDATA_VERSION=v3.1.2
+go get github.com/go-bindata/go-bindata/...@${GO_BINDATA_VERSION}
 
 ####
 # yq
