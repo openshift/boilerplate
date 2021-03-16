@@ -12,8 +12,15 @@ source ${0%/*}/common.sh
 CONTAINER_ENGINE=$(command -v podman || command -v docker)
 [[ -n "$CONTAINER_ENGINE" ]] || err "Couldn't find a container engine. Are you already in a container?"
 
-CONTAINER_ROOT="/go/src/${REPO_ROOT##*src}"
-[[ -n "$CONTAINER_ROOT" ]] || err "$_lib couldn't parse container root"
+CONTAINER_ROOT="/go/src/${REPO_ROOT##*/src/}"
+ if [[ $CONTAINER_ROOT == "/go/src/${REPO_ROOT}" ]]
+then
+ # If the container root is the same as the repo root without the substring
+ # removal it didn't take because the path might be set up differently
+ # so let's just reset the container root to the repo root
+  echo "$_lib couldn't parse container root"
+  CONTAINER_ROOT=$REPO_ROOT
+fi
 
 # First set up a detached container with the repo mounted.
 banner "Starting the container"
