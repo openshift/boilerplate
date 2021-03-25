@@ -23,12 +23,16 @@ COMMIT_NUMBER=$(shell git rev-list `git rev-list --parents HEAD | egrep "^[a-f0-
 CURRENT_COMMIT=$(shell git rev-parse --short=7 HEAD)
 OPERATOR_VERSION=$(VERSION_MAJOR).$(VERSION_MINOR).$(COMMIT_NUMBER)-$(CURRENT_COMMIT)
 
+VERSION_BASE=$(VERSION_MAJOR).$(VERSION_MINOR)
 OPERATOR_IMAGE=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME)
 OPERATOR_IMAGE_TAG=v$(OPERATOR_VERSION)
 IMG?=$(OPERATOR_IMAGE):$(OPERATOR_IMAGE_TAG)
 OPERATOR_IMAGE_URI=${IMG}
 OPERATOR_IMAGE_URI_LATEST=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME):latest
-OPERATOR_DOCKERFILE ?=build/Dockerfile
+OPERATOR_DOCKERFILE?=build/Dockerfile
+
+# Default value for the CSV generator to be used. Possible values are 'hack' and 'common'
+DEFAULT_CSV_GENRATOR?=hack
 
 OLM_BUNDLE_IMAGE = $(OPERATOR_IMAGE)-bundle
 OLM_CATALOG_IMAGE = $(OPERATOR_IMAGE)-catalog
@@ -174,7 +178,6 @@ prow-config:
 .PHONY: codecov-secret-mapping
 codecov-secret-mapping:
 	${CONVENTION_DIR}/codecov-secret-mapping ${RELEASE_CLONE}
-
 
 ######################
 # Targets used by prow

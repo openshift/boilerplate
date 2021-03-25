@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash -x
 
 set_saas_git_config() {
   # This is to avoid git failure when running within the docker container
@@ -28,10 +28,11 @@ add_cleanup $saas_repo
 test_project="file-generate"
 
 bootstrap_project $repo ${test_project} openshift/golang-osd-operator
+sed -i '1s,^,include project.mk\n,' $repo/Makefile
 
 # Init the saas git project
 saas_root_repo=$(mktemp -d -t boilerplate-saas-XXXXXXXX)
-cp -R $REPO_ROOT/test/projects/saas-file-generate-bundle $saas_root_repo/.
+cp -R $REPO_ROOT/test/projects/saas-file-generate-bundle-new $saas_root_repo/saas-file-generate-bundle
 saas_repo=${saas_root_repo}/saas-file-generate-bundle
 pushd $saas_repo 
 git init 
@@ -47,47 +48,51 @@ git branch production master
 export GIT_PATH=`pwd`
 popd
 
-export DEPLOYED_HASH="0.1.0-441cd20"
+# export DEPLOYED_HASH="0.1.0-441cd20"
 
 cd $repo
 
 make boilerplate-update
 
 colorprint $ORANGE "First build and compare on Staging"
-make staging-hack-csv-build
-make staging-common-csv-build-and-diff
+make staging-common-csv-build
 
-if [ $? -ne 0 ] ; then 
+
+if [ ! -f saas-file-generate-bundle/file-generate/1.0.1-*/file-generate.v1.0.1-*  ] ; then 
     exit 1
 fi
+
+grep "replaces:" saas-file-generate-bundle/file-generate/1.0.1-*/file-generate.v1.0.1-* 
+
+if [ $? -ne 1 ] ; then 
+    exit 1
+fi
+
+previous_version=`ls saas-file-generate-bundle/file-generate | grep "^1.0.0"`
 
 colorprint $ORANGE "First push on Staging"
 set_saas_git_config
 make staging-saas-bundle-push
 
-# Something to be checked/tested here
+# ToDo : Check there is a new commit on staging branch and it contains the previous_version CSV
 
 colorprint $ORANGE "First build and compare on Production"
-make production-hack-csv-build
-make production-common-csv-build-and-diff
-
-if [ $? -ne 0 ] ; then 
-    exit 1
-fi
+make production-common-csv-build
 
 colorprint $ORANGE "First push on Production"
 set_saas_git_config
 make production-saas-bundle-push
 
-# Something to be checked/tested here
+# ToDo : Check there is a new commit on production branch and it contains the previous_version CSV
 
 colorprint $ORANGE "Updating project - #1"
 
 local_dummy_commit
 
 colorprint $ORANGE "Un-production build and compare on Staging"
-make staging-hack-csv-build
-make staging-common-csv-build-and-diff
+make staging-common-csv-build
+
+grep "replaces: file-generate.v${previous_version}" saas-file-generate-bundle/file-generate/1.0.2-*/file-generate.v1.0.2-* 
 
 if [ $? -ne 0 ] ; then 
     exit 1
@@ -102,12 +107,9 @@ colorprint $ORANGE "Updating project - #2"
 local_dummy_commit
 
 colorprint $ORANGE "Second build and compare on Staging to be pushed to Production"
-make staging-hack-csv-build
-make staging-common-csv-build-and-diff
+make staging-common-csv-build
 
-if [ $? -ne 0 ] ; then 
-    exit 1
-fi
+# Something to be checked/tested here
 
 colorprint $ORANGE "Second push on Staging"
 set_saas_git_config
@@ -116,28 +118,11 @@ make staging-saas-bundle-push
 # Something to be checked/tested here
 
 colorprint $ORANGE "Second build and compare on Production"
-make production-hack-csv-build
-make production-common-csv-build-and-diff
+make production-common-csv-build
 
-if [ $? -ne 0 ] ; then 
-    exit 1
-fi
-
+# Something to be checked/tested here
 colorprint $ORANGE "Second push on Production"
 set_saas_git_config
 make production-saas-bundle-push
 
 # Something to be checked/tested here
-
-local_dummy_commit
-
-colorprint $ORANGE "Testing the diff is returning error"
-
-make staging-hack-csv-build
-yq d -i saas-file-generate-bundle/file-generate/0.1.4-*/file-generate.v0.1.4-*  'kind'
-
-make staging-common-csv-build-and-diff
-
-if [ $? -eq 0 ] ; then 
-    exit 1
-fi

@@ -2,10 +2,9 @@ if [ "$BOILERPLATE_SET_X" ]; then
     set -x
 fi
 
-# NOTE: Change this when publishing a new image tag.
-LATEST_IMAGE_TAG=image-v0.4.0
-
 REPO_ROOT=$(git rev-parse --show-toplevel)
+source ${REPO_ROOT}/.latest_image_tag
+
 # Make all tests use this local clone by default.
 export BOILERPLATE_GIT_REPO=$REPO_ROOT
 export LOG_DIR=$(mktemp -d -t boilerplate-logs-XXXXXXXX)

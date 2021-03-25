@@ -107,4 +107,11 @@ Checks consist of:
 * `go generate`. This is a no-op if you have no `//go:generate`
   directives in your code.
 
+## CSV and Catalog Image management
+
+Boilerplate is providing 2 options to manage CSV and Catalog images to allow proper deployment and upgrade by OLM : 
+- one is implementing the historical model used by most of our operators today (2-branch saas-bundle git project storing history, home-made scripts for the image build). Aim is to have a 'no-gap' migration to it for existing operators. For more details, 
+look at the README.md is `csv-generate` folder
+- the second one is the aimed model (single git repository and branch for saas-bundle, using opm for catalog image management). This is implemented under the `make opm-build-push`.
+
 ## More coming soon
