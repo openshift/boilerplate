@@ -1,4 +1,4 @@
-# CSV genration and catalog image management
+# CSV generation and catalog image management
 
 ## Scope
 
@@ -44,3 +44,11 @@ In case of successful comparison, output should be something similar to :
 ```
 No diff found between 'common' script output and 'hack' script
 ```
+
+### Migration guide for 'common' CSV generator
+
+For the migration, symlink may more convenient than `mv` or `cp` of the files (allowing to keep a single source but both `hack` and `common` generator working properly).
+
+1. The CSV template (located in `config/templates`) should be called `csv-template.yaml ` 
+2. The CRDs to be embedded in the CSV should be placed in `deploy/crds` repository
+3. The roles to be embedded in the CSV should be placed in `deploy/roles` repository

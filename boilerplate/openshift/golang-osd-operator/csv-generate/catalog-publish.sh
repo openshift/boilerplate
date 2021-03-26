@@ -71,6 +71,25 @@ popd
 
 if [ "$push_catalog" = true ] ; then
     REGISTRY_IMG="quay.io/app-sre/${operator_name}-registry"
+    CATALOG_IMAGE="${REGISTRY_IMG}:${operator_channel}-latest"
+    
+    cleanup() {
+       docker rm -f catalog-image || true
+    }
+    
+    trap cleanup EXIT
+
+    cleanup
+    docker run --name catalog-image -d --rm --network host "$CATALOG_IMAGE"
+    sleep 10
+    
+    REPLACES_VERSION=$(docker run --rm --network=host quay.io/rogbas/grpcurl -plaintext localhost:50051 api.Registry/ListBundles | jq -r 'select(.csvName == "'"$NEW_OPERATOR_VERSION"'" ) | .replaces')
+    
+    if [[ "$REPLACES_VERSION" != "$PREV_OPERATOR_VERSION" ]]; then
+        echo "replaces field '$REPLACES_VERSION' in catalog does not match previous version $PREV_OPERATOR_VERSION"
+        exit 1
+    fi
+
     
     # push image
     skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
