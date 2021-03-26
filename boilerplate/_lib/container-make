@@ -7,6 +7,9 @@ if [[ "$1" == "-h"* ]] || [[ "$1" == "--h"* ]]; then
   exit -1
 fi
 
+REPO_ROOT=$(git rev-parse --show-toplevel)
+source ${REPO_ROOT}/.latest_image_tag
+
 source ${0%/*}/common.sh
 
 CONTAINER_ENGINE=$(command -v podman || command -v docker)

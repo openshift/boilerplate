@@ -1,8 +1,8 @@
-#!/bin/bash -e
+#!/bin/bash -x
 
 source `dirname $0`/common.sh
 
-usage() { echo "Usage: $0 -o operator_name -c saas-repository-channel -H operator_commit_hash -n operator_commit_number -i operator_image -g [hack|common][-d]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -o operator_name -c saas-repository-channel -H operator_commit_hash -n operator_commit_number -i operator_image -g {hack|common} [-d]" 1>&2; exit 1; }
 
 # TODO : Add support of long-options 
 while getopts "c:dg:H:i:n:o:" option; do
@@ -51,8 +51,14 @@ SAAS_OPERATOR_DIR="saas-${operator_name}-bundle"
 BUNDLE_DIR="$SAAS_OPERATOR_DIR/${operator_name}/"
 
 if [ "$diff_generate" = true ] ; then
-    OPERATOR_NEW_VERSION=$(ls "$BUNDLE_DIR" | sort -t . -k 3 -g | tail -n 1)
-    OPERATOR_PREV_VERSION=$(ls "${BUNDLE_DIR}" | sort -t . -k 3 -g | tail -n 2 | head -n 1)
+    # For diff usecase, BUNDLE_DIR should already exist as first CSV is already built
+    if [ ! -d ${BUNDLE_DIR} ] ; then
+        echo "You need to generate CSV with your legacy script before trying to run the diff option"
+        exit 1 
+    fi
+    
+    OPERATOR_NEW_VERSION=$(basename `find "${BUNDLE_DIR}" -maxdepth 1 -type d | sort -t . -k 3 -V | tail -n 1 `)
+    OPERATOR_PREV_VERSION=$(basename `find "${BUNDLE_DIR}" -maxdepth 1 -type d | sort -t . -k 3 -V | tail -n 2 | head -n 1 `)
     OUTPUT_DIR="output-comparison"
     
     # For diff usecase, checking there is already a generated CSV
@@ -90,14 +96,27 @@ else
             fi
         done
     fi
+
     # TODO : Clean handling of major version (should be variable from consumer repo and default to 0.1 is undefined)
-    OPERATOR_PREV_VERSION=$(ls "$BUNDLE_DIR" | sort -t . -k 3 -g | tail -n 1)
-    OPERATOR_NEW_VERSION="0.1.${operator_commit_number}-${operator_commit_hash}"
     OUTPUT_DIR=${BUNDLE_DIR}
+    OPERATOR_NEW_VERSION="${VERSION_BASE}.${operator_commit_number}-${operator_commit_hash}"
+    OPERATOR_PREV_VERSION=`find "${BUNDLE_DIR}" -maxdepth 1 -type d | sort -t . -k 3 -V | tail -n 1  | grep -v 'file-generate/$'`
+    if [ ! -z ${OPERATOR_PREV_VERSION} ] ; then
+        OPERATOR_PREV_VERSION=`basename ${OPERATOR_PREV_VERSION}`
+    fi
 fi
 
 if [[ "$generate_script" = "common" ]] ; then
-    ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} -p ${OPERATOR_PREV_VERSION} -n ${operator_commit_number} -c ${operator_commit_hash} -i ${operator_image}
+    if [ -z "${OPERATOR_PREV_VERSION}" ] ; then
+        PREVIOUS_VERSION_OPTION=""
+    else
+        PREVIOUS_VERSION_OPTION="-p ${OPERATOR_PREV_VERSION}"
+    fi
+    
+    HERE=${0%/*}
+    echo "$HERE/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREVIOUS_VERSION_OPTION} -V ${OPERATOR_NEW_VERSION} -i ${operator_image}"
+    
+    $HERE/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREVIOUS_VERSION_OPTION} -V ${OPERATOR_NEW_VERSION} -i ${operator_image}
 elif [[ "$generate_script" = "hack" ]] ; then
     if [ -z "$OPERATOR_PREV_VERSION" ] ; then 
         OPERATOR_PREV_VERSION="no-version"
@@ -122,6 +141,12 @@ if [ "$diff_generate" = true ] ; then
         yq d output-comparison/${OPERATOR_NEW_VERSION}/*.clusterserviceversion.yaml 'metadata.annotations.createdAt' > output-comparison/common_generate.yaml
         # Diff on the filtered files
         diff output-comparison/hack_generate.yaml output-comparison/common_generate.yaml
+        
+        if [ $? -ne 0 ] ; then
+            echo "Both (common and hack) scripts returned different content." && exit 1
+        else
+            echo "No diff found between 'common' script output and 'hack' script"
+        fi
     fi
 fi
 
