@@ -3,7 +3,7 @@ if [ "$BOILERPLATE_SET_X" ]; then
 fi
 
 # NOTE: Change this when publishing a new image tag.
-LATEST_IMAGE_TAG=image-v0.5.0
+LATEST_IMAGE_TAG=image-v0.5.1
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
