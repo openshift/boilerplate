@@ -4,7 +4,7 @@ source `dirname $0`/common.sh
 
 usage() { echo "Usage: $0 -o operator_name -c saas-repository-channel" 1>&2; exit 1; }
 
-while getopts "o:H:c:" option; do
+while getopts "o:c:" option; do
     case "${option}" in
         o)
             operator_name=${OPTARG}

@@ -17,7 +17,7 @@ staging-common-csv-build-and-diff:
 
 .PHONY: staging-catalog-build
 staging-catalog-build: 
-	@${CONVENTION_DIR}/csv-generate/catalog-build.sh -o $(OPERATOR_NAME) -c staging -H $(CURRENT_COMMIT)
+	@${CONVENTION_DIR}/csv-generate/catalog-build.sh -o $(OPERATOR_NAME) -c staging
 	
 .PHONY: staging-saas-bundle-push
 staging-saas-bundle-push: 
@@ -50,7 +50,7 @@ production-common-csv-build-and-diff:
 
 .PHONY: production-catalog-build
 production-catalog-build: 
-	@${CONVENTION_DIR}/csv-generate/catalog-build.sh -o $(OPERATOR_NAME) -c production -H $(CURRENT_COMMIT)
+	@${CONVENTION_DIR}/csv-generate/catalog-build.sh -o $(OPERATOR_NAME) -c production
 	
 .PHONY: production-saas-bundle-push
 production-saas-bundle-push: 
