@@ -2,18 +2,18 @@
 	
 .PHONY: staging-hack-csv-build
 staging-hack-csv-build: 
-	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g hack
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE_URI) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g hack
 	
 .PHONY: staging-common-csv-build
 staging-common-csv-build: 
-	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g common
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE_URI) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g common
 	
 .PHONY: staging-csv-build
 staging-csv-build: staging-hack-csv-build
 
 .PHONY: staging-common-csv-build-and-diff
 staging-common-csv-build-and-diff: 
-	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g common -d
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE_URI) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g common -d
 
 .PHONY: staging-catalog-build
 staging-catalog-build: 
@@ -35,18 +35,18 @@ staging-catalog-build-and-publish:
 	
 .PHONY: production-hack-csv-build
 production-hack-csv-build: 
-	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g hack
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE_URI) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g hack
 	
 .PHONY: production-common-csv-build
 production-common-csv-build: 
-	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g common
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE_URI) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g common
 	
 .PHONY: production-csv-build
 production-csv-build: production-hack-csv-build
 
 .PHONY: production-common-csv-build-and-diff
 production-common-csv-build-and-diff: 
-	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g common -d
+	@${CONVENTION_DIR}/csv-generate/csv-generate.sh -o $(OPERATOR_NAME) -i $(OPERATOR_IMAGE_URI) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -g common -d
 
 .PHONY: production-catalog-build
 production-catalog-build: 
