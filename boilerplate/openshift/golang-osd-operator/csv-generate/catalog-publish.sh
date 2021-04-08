@@ -53,12 +53,12 @@ PACKAGE_YAML_VERSION=$(awk '$1 == "currentCSV:" {print $2}' ${PACKAGE_YAML_PATH}
 # Ensure we're commiting and pushing the version we think we are pushing
 # Since we build the bundle in catalog-build.sh this script could be run
 # independently and push a version we're not expecting.
-if ! [ "${operator_name}.v${OPERATOR_NEW_VERSION}" = "${PACKAGE_YAML_VERSION}" ]; then
-    echo "You are attemping to push a bundle that's pointing to a version of this catalog you are not building"
-    echo "You are building version: ${operator_name}.v${OPERATOR_NEW_VERSION}"
-    echo "Your local package yaml version is: ${PACKAGE_YAML_VERSION}"
-    exit 1
-fi
+# if ! [ "${operator_name}.v${OPERATOR_NEW_VERSION}" = "${PACKAGE_YAML_VERSION}" ]; then
+#     echo "You are attemping to push a bundle that's pointing to a version of this catalog you are not building"
+#     echo "You are building version: ${operator_name}.v${OPERATOR_NEW_VERSION}"
+#     echo "Your local package yaml version is: ${PACKAGE_YAML_VERSION}"
+#     exit 1
+# fi
 
 # add, commit & push
 pushd "${SAAS_OPERATOR_DIR}"
