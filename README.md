@@ -13,6 +13,7 @@ This work was inspired by, and partially cribbed from,
   - [Consuming](#consuming)
     - [Bootstrap](#bootstrap)
     - [Configure](#configure)
+    - [Register](#register)
     - [Update](#update)
     - [Multiple Updates](#multiple-updates)
   - [Contributing](#contributing)
@@ -223,6 +224,13 @@ in their respective READMEs.
 
 Follow any configuration changes with the "Update" sequence described below:
 
+### Register
+
+To take advantage of certain automations, your consuming repository must be
+registered as a subscriber. See the
+[documentation](doc/subscriber.md#subscribersyaml) for details on how this
+works.
+
 ### Update
 
 Use this procedure to pick up newly-subscribed conventions; and run it
@@ -250,6 +258,9 @@ boilerplate framework itself.
    them.
 
 5. Push the branch to create a PR as usual.
+
+To update multiple consumers at once, use `subscriber propose update` --
+see the [documentation](doc/subscriber.md#subscriber-propose-update) for details.
 
 ### Multiple Updates
 You may create an [update](#update) PR and, before it merges, want or
