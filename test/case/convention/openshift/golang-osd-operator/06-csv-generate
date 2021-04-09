@@ -19,18 +19,9 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 source $REPO_ROOT/test/lib.sh
 
-# >>HACK!>>
-# csv-generate.sh uses skopeo, but that's not in the backing image.
-# Create a dummy skopeo until it is.
-# FIXME
-mkdir /tmp/bin
-cat <<EOF >/tmp/bin/skopeo
-#!/bin/bash
-echo '{"Digest": "sha256:abc123"}'
-EOF
-chmod +x /tmp/bin/skopeo
-export PATH=$PATH:/tmp/bin
-# <<HACK!<<
+# The skopeo command in csv-generate.sh needs this to point to a valid
+# repository. Don't worry, the command is read-only.
+export IMAGE_REPOSTIORY=app-sre
 
 repo=$(empty_repo)
 saas_repo=$(empty_repo)
