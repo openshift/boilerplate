@@ -2,9 +2,9 @@
 
 source `dirname $0`/common.sh
 
-usage() { echo "Usage: $0 -o operator_name -c saas-repository-channel -H operator_commit_hash -n operator_commit_number [-p]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -o operator-name -c saas-repository-channel -r registry-image -H operator-commit-hash -n operator-commit-number [-p]" 1>&2; exit 1; }
 
-while getopts "o:c:n:H:p" option; do
+while getopts "o:c:n:H:pr:" option; do
     case "${option}" in
         c)
             operator_channel=${OPTARG}
@@ -21,13 +21,17 @@ while getopts "o:c:n:H:p" option; do
         p)
             push_catalog=true
             ;;
+        r)
+            # NOTE: This is the URL without the tag/digest
+            registry_image=${OPTARG}
+            ;;
         *)
             usage
     esac
 done
 
 # Checking parameters
-check_mandatory_params operator_channel operator_name operator_commit_hash operator_commit_number
+check_mandatory_params operator_channel operator_name operator_commit_hash operator_commit_number registry_image
 
 # Calculate previous version
 SAAS_OPERATOR_DIR="saas-${operator_name}-bundle"
@@ -70,24 +74,22 @@ fi
 popd
 
 if [ "$push_catalog" = true ] ; then
-    REGISTRY_IMG="quay.io/app-sre/${operator_name}-registry"
-    
     # push image
     skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
-        "docker-daemon:${REGISTRY_IMG}:${operator_channel}-latest" \
-        "docker://${REGISTRY_IMG}:${operator_channel}-latest"
+        "docker-daemon:${registry_image}:${operator_channel}-latest" \
+        "docker://${registry_image}:${operator_channel}-latest"
 
     if [ $? -ne 0 ] ; then 
-        echo "skopeo push of ${REGISTRY_IMG}:${operator_channel}-latest failed, exiting..."
+        echo "skopeo push of ${registry_image}:${operator_channel}-latest failed, exiting..."
         exit 1
     fi
     
     skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
-        "docker-daemon:${REGISTRY_IMG}:${operator_channel}-latest" \
-        "docker://${REGISTRY_IMG}:${operator_channel}-${operator_commit_hash}"
+        "docker-daemon:${registry_image}:${operator_channel}-latest" \
+        "docker://${registry_image}:${operator_channel}-${operator_commit_hash}"
 
     if [ $? -ne 0 ] ; then 
-        echo "skopeo push of ${REGISTRY_IMG}:${operator_channel}-${operator_commit_hash} failed, exiting..."
+        echo "skopeo push of ${registry_image}:${operator_channel}-${operator_commit_hash} failed, exiting..."
         exit 1
     fi
 fi

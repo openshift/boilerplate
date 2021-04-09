@@ -17,15 +17,15 @@ staging-common-csv-build-and-diff:
 
 .PHONY: staging-catalog-build
 staging-catalog-build: 
-	@${CONVENTION_DIR}/csv-generate/catalog-build.sh -o $(OPERATOR_NAME) -c staging
+	@${CONVENTION_DIR}/csv-generate/catalog-build.sh -o $(OPERATOR_NAME) -c staging -r ${REGISTRY_IMAGE}
 	
 .PHONY: staging-saas-bundle-push
 staging-saas-bundle-push: 
-	@${CONVENTION_DIR}/csv-generate/catalog-publish.sh -o $(OPERATOR_NAME) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER)
+	@${CONVENTION_DIR}/csv-generate/catalog-publish.sh -o $(OPERATOR_NAME) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -r ${REGISTRY_IMAGE}
 	
 .PHONY: staging-catalog-publish
 staging-catalog-publish: 
-	@${CONVENTION_DIR}/csv-generate/catalog-publish.sh -o $(OPERATOR_NAME) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -p
+	@${CONVENTION_DIR}/csv-generate/catalog-publish.sh -o $(OPERATOR_NAME) -c staging -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -p -r ${REGISTRY_IMAGE}
 	
 .PHONY: staging-catalog-build-and-publish
 staging-catalog-build-and-publish: 
@@ -50,15 +50,15 @@ production-common-csv-build-and-diff:
 
 .PHONY: production-catalog-build
 production-catalog-build: 
-	@${CONVENTION_DIR}/csv-generate/catalog-build.sh -o $(OPERATOR_NAME) -c production
+	@${CONVENTION_DIR}/csv-generate/catalog-build.sh -o $(OPERATOR_NAME) -c production -r ${REGISTRY_IMAGE}
 	
 .PHONY: production-saas-bundle-push
 production-saas-bundle-push: 
-	@${CONVENTION_DIR}/csv-generate/catalog-publish.sh -o $(OPERATOR_NAME) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER)
+	@${CONVENTION_DIR}/csv-generate/catalog-publish.sh -o $(OPERATOR_NAME) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -r ${REGISTRY_IMAGE}
 	
 .PHONY: production-catalog-publish
 production-catalog-publish: 
-	@${CONVENTION_DIR}/csv-generate/catalog-publish.sh -o $(OPERATOR_NAME) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -p
+	@${CONVENTION_DIR}/csv-generate/catalog-publish.sh -o $(OPERATOR_NAME) -c production -H $(CURRENT_COMMIT) -n $(COMMIT_NUMBER) -p -r ${REGISTRY_IMAGE}
 	
 .PHONY: production-catalog-build-and-publish
 production-catalog-build-and-publish: 
