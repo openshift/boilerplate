@@ -27,7 +27,6 @@ check_mandatory_params operator_channel operator_name
 # Parameters for the Dockerfile
 SAAS_OPERATOR_DIR="saas-${operator_name}-bundle"
 BUNDLE_DIR="${SAAS_OPERATOR_DIR}/${operator_name}"
-REGISTRY_IMG="quay.io/app-sre/${operator_name}-registry"
 DOCKERFILE_REGISTRY="Dockerfile.olm-registry"
 
 # Checking SAAS_OPERATOR_DIR exist
