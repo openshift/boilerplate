@@ -16,7 +16,7 @@ tag-check:
 
 .PHONY: test
 test: isclean tag-check
-	test/driver
+	test/driver $(CASE_GLOB)
 
 .PHONY: pr-check
 pr-check: test
