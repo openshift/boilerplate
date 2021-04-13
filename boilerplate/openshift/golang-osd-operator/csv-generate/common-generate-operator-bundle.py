@@ -4,7 +4,12 @@
 # into a directory, and composes the ClusterServiceVersion which needs bits and
 # pieces of our rbac and deployment files.
 #
-# Usage ./common-generate-operator-bundle.py -o OPERATOR_NAME -d OUTPUT_DIR -p PREVIOUS_VERSION -n GIT_NUM_COMMITS -c COMMIT_HASH -i HIVE_IMAGE
+# Usage ./common-generate-operator-bundle.py \
+#   -o OPERATOR_NAME \
+#   -d OUTPUT_DIR \
+#   -p PREVIOUS_VERSION \
+#   -i OPERATOR_IMAGE_URI \
+#   -V VERSION_BASE
 
 import datetime
 import os
@@ -14,28 +19,20 @@ import shutil
 import argparse
 import string
 
-# This script will append the current number of commits given as an arg
-# (presumably since some past base tag), and the git hash arg for a final
-# version like: 0.1.189-3f73a592
-VERSION_BASE = "0.1"
-
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--operator-name", type=str, help="Name of the operator", required=True)
 parser.add_argument("-d", "--output-dir", type=str, help="Directory for the CSV generation", required=True)
 parser.add_argument("-p", "--previous-version", type=str, help="Semver of the version being replaced", required=True)
-parser.add_argument("-n", "--commit-number", type=str, help="Number of commits in the project (used for version generation)", required=True)
-parser.add_argument("-c", "--commit-hash", type=str, help="Current commit hashDirectory for the CSV generation (used for version generation)", required=True)
 parser.add_argument("-i", "--operator-image", type=str, help="Base index image to be used", required=True)
+parser.add_argument("-V", "--operator-version", type=str, help="The full version of the operator (without the leading `v`): {major}.{minor}.{commit-number}-{hash}", required=True)
 args = parser.parse_args()
 
 OPERATOR_NAME   = args.operator_name
 outdir          = args.output_dir
 prev_version    = args.previous_version
-git_num_commits = args.commit_number
-git_hash        = args.commit_hash
 operator_image  = args.operator_image
+full_version    = args.operator_version
 
-full_version = "%s.%s-%s" % (VERSION_BASE, git_num_commits, git_hash)
 print("Generating CSV for version: %s" % full_version)
 
 if not os.path.exists(outdir):

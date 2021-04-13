@@ -37,7 +37,7 @@ while getopts "c:dg:H:i:n:o:V:" option; do
             ;;
         V)
             # This should be $OPERATOR_VERSION from standard.mk:
-            # `{major}.{minor}.{commit-number}.{hash}`
+            # `{major}.{minor}.{commit-number}-{hash}`
             # Notably, it does *not* start with `v`.
             operator_version=${OPTARG}
             ;;
@@ -112,7 +112,7 @@ else
 fi
 
 if [[ "$generate_script" = "common" ]] ; then
-    ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} -p ${OPERATOR_PREV_VERSION} -n ${operator_commit_number} -c ${operator_commit_hash} -i ${REPO_DIGEST}
+    ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} -p ${OPERATOR_PREV_VERSION} -i ${REPO_DIGEST} -V ${operator_version}
 elif [[ "$generate_script" = "hack" ]] ; then
     if [ -z "$OPERATOR_PREV_VERSION" ] ; then 
         OPERATOR_PREV_VERSION="no-version"
