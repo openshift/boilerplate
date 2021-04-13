@@ -23,7 +23,7 @@ source $REPO_ROOT/test/lib.sh
 # csv-generate.sh uses skopeo, but that's not in the backing image.
 # Create a dummy skopeo until it is.
 # FIXME
-mkdir /tmp/bin
+mkdir -p /tmp/bin
 cat <<EOF >/tmp/bin/skopeo
 #!/bin/bash
 echo '{"Digest": "sha256:abc123"}'
