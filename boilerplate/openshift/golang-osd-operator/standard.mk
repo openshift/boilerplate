@@ -16,7 +16,8 @@ $(error VERSION_MINOR is not set; check project.mk file)
 endif
 
 # Accommodate docker or podman
-CONTAINER_ENGINE=$(shell command -v podman 2>/dev/null || command -v docker 2>/dev/null)
+# export CONTAINER_ENGINE to override the default lookup since it favors podman
+CONTAINER_ENGINE ?= $(shell command -v podman 2>/dev/null || command -v docker 2>/dev/null)
 
 # Generate version and tag information from inputs
 COMMIT_NUMBER=$(shell git rev-list `git rev-list --parents HEAD | egrep "^[a-f0-9]{40}$$"`..HEAD --count)
@@ -37,7 +38,6 @@ OLM_CHANNEL ?= alpha
 
 REGISTRY_USER ?=
 REGISTRY_TOKEN ?=
-CONTAINER_ENGINE_CONFIG_DIR = .docker
 
 BINFILE=build/_output/bin/$(OPERATOR_NAME)
 MAINPACKAGE ?= ./cmd/manager
@@ -92,8 +92,8 @@ docker-build: isclean
 
 .PHONY: docker-push
 docker-push: docker-login docker-build
-	${CONTAINER_ENGINE} --config=${CONTAINER_ENGINE_CONFIG_DIR} push ${OPERATOR_IMAGE_URI}
-	${CONTAINER_ENGINE} --config=${CONTAINER_ENGINE_CONFIG_DIR} push ${OPERATOR_IMAGE_URI_LATEST}
+	${CONTAINER_ENGINE} push ${OPERATOR_IMAGE_URI}
+	${CONTAINER_ENGINE} push ${OPERATOR_IMAGE_URI_LATEST}
 
 .PHONY: push
 push: docker-push
@@ -101,8 +101,7 @@ push: docker-push
 .PHONY: docker-login
 docker-login:
 	@test "${REGISTRY_USER}" != "" && test "${REGISTRY_TOKEN}" != "" || (echo "REGISTRY_USER and REGISTRY_TOKEN must be defined" && exit 1)
-	mkdir -p ${CONTAINER_ENGINE_CONFIG_DIR}
-	@${CONTAINER_ENGINE} --config=${CONTAINER_ENGINE_CONFIG_DIR} login -u="${REGISTRY_USER}" -p="${REGISTRY_TOKEN}" quay.io
+	@${CONTAINER_ENGINE} login -u="${REGISTRY_USER}" -p="${REGISTRY_TOKEN}" quay.io
 
 .PHONY: go-check
 go-check: ## Golang linting and other static analysis

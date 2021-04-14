@@ -38,9 +38,6 @@ export IMAGE_REPOSITORY=2uasimojo
 #    Account Settings => Generate Encrypted Password.
 export REGISTRY_USER=<your registry username>
 export REGISTRY_TOKEN=<token obtained from the registry>
-# FIXME: we shouldn't need both REGISTRY_* and QUAY_*
-export QUAY_USER=$REGISTRY_USER
-export QUAY_TOKEN=$REGISTRY_TOKEN
 
 # Tell the scripts where to find your fork of the SaaS bundle repository.
 # Except for the authentication part, this should correspond to what you see in the
