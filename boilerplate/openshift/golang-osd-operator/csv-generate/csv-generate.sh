@@ -49,6 +49,11 @@ done
 # Checking parameters
 check_mandatory_params operator_channel operator_image operator_version operator_name operator_commit_hash operator_commit_number generate_script
 
+# Use set container engine or select one from available binaries
+if [[ -z "$CONTAINER_ENGINE" ]]; then
+	CONTAINER_ENGINE=$(command -v podman || command -v docker || true)
+fi
+
 # Get the image URI as repo URL + image digest
 IMAGE_DIGEST=$(skopeo inspect docker://${operator_image}:v${operator_version} | jq -r .Digest)
 if [[ -z "$IMAGE_DIGEST" ]]; then
@@ -79,14 +84,57 @@ if [ "$diff_generate" = true ] ; then
 else
     rm -rf "$SAAS_OPERATOR_DIR"
     git clone --branch "$operator_channel" ${GIT_PATH} "$SAAS_OPERATOR_DIR"
+
+
+    # PATH to saas file in app-interface
+    SAAS_FILE_URL="https://gitlab.cee.redhat.com/service/app-interface/raw/master/data/services/osd-operators/cicd/saas/saas-${operator_name}.yaml"
+
+    # MANAGED_RESOURCE_TYPE
+    # SAAS files contain the type of resources managed within the OC templates that
+    # are being applied to hive.
+    # For customer cluster resources this should always be of type "SelectorSyncSet" resources otherwise
+    # can't be sync'd to the customer cluster. We're explicity selecting the first element in the array.
+    # We can safely assume anything that is not of type "SelectorSyncSet" is being applied to hive only
+    # since it matches ClusterDeployment resources.
+    # From this we'll assume that the namespace reference in resourceTemplates to be:
+    # For customer clusters: /services/osd-operators/namespace/<hive shard>/namespaces/cluster-scope.yaml
+    # For hive clusters: /services/osd-operators/namespace/<hive shard>/namespaces/<namespace name>.yaml
+    MANAGED_RESOURCE_TYPE=$(curl -s "${SAAS_FILE_URL}" | \
+            $CONTAINER_ENGINE run --rm -i quay.io/app-sre/yq:3.4.1 yq r - "managedResourceTypes[0]"
+    )
+
+    if [[ "${MANAGED_RESOURCE_TYPE}" == "" ]]; then
+        echo "Unabled to determine if SAAS file managed resource type"
+        exit 1
+    fi
+
+	# Determine namespace reference path, output resource type
+    if [[ "${MANAGED_RESOURCE_TYPE}" == "SelectorSyncSet" ]]; then
+        echo "SAAS file is NOT applied to Hive, MANAGED_RESOURCE_TYPE=$MANAGED_RESOURCE_TYPE"
+        resource_template_ns_path="/services/osd-operators/namespaces/hivep01ue1/cluster-scope.yml"
+    else
+        echo "SAAS file is applied to Hive, MANAGED_RESOURCE_TYPE=$MANAGED_RESOURCE_TYPE"
+        resource_template_ns_path="/services/osd-operators/namespaces/hivep01ue1/${operator_name}.yml"
+    fi
     
     # remove any versions more recent than deployed hash
     if [[ "$operator_channel" == "production" ]]; then
         if [ -z "$DEPLOYED_HASH" ] ; then
             DEPLOYED_HASH=$(
-                curl -s "https://gitlab.cee.redhat.com/service/app-interface/raw/master/data/services/osd-operators/cicd/saas/saas-${operator_name}.yaml" | \
-                    docker run --rm -i quay.io/app-sre/yq:3.4.1 yq r - "resourceTemplates[*].targets(namespace.\$ref==/services/osd-operators/namespaces/hivep01ue1/${operator_name}.yml).ref"
+                curl -s "${SAAS_FILE_URL}" | \
+                    $CONTAINER_ENGINE run --rm -i quay.io/app-sre/yq:3.4.1 yq r - "resourceTemplates[*].targets(namespace.\$ref==${resource_template_ns_path}).ref"
             )
+        fi
+
+        # Ensure that our query for the current deployed hash worked
+        # Validate that our DEPLOYED_HASH var isn't empty.
+        # Although we have `set -e` defined the docker container isn't returning
+        # an error and allowing the script to continue
+        echo "Current deployed production HASH: $DEPLOYED_HASH"
+
+        if [[ ! "${DEPLOYED_HASH}" =~ [0-9a-f]{40} ]]; then
+            echo "Error discovering current production deployed HASH"
+            exit 1
         fi
     
         delete=false
