@@ -29,7 +29,7 @@ cat <<EOF >/tmp/bin/skopeo
 echo '{"Digest": "sha256:abc123"}'
 EOF
 chmod +x /tmp/bin/skopeo
-export PATH=$PATH:/tmp/bin
+export PATH=/tmp/bin:$PATH
 # <<HACK!<<
 
 repo=$(empty_repo)
@@ -47,7 +47,7 @@ saas_root_repo=$(mktemp -d -t boilerplate-saas-XXXXXXXX)
 cp -R $REPO_ROOT/test/projects/saas-file-generate-bundle $saas_root_repo/.
 saas_repo=${saas_root_repo}/saas-file-generate-bundle
 pushd $saas_repo 
-git init 
+git init -b master
 git config user.name "Test Boilerplate" 
 git config user.email "test@example.com" 
 git add .
