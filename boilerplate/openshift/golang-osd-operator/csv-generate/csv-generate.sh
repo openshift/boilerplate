@@ -54,6 +54,12 @@ if [[ -z "$CONTAINER_ENGINE" ]]; then
 	CONTAINER_ENGINE=$(command -v podman || command -v docker || true)
 fi
 
+if [[ -z "$CONTAINER_ENGINE" ]]; then
+    YQ_CMD="yq"
+else
+    YQ_CMD="$CONTAINER_ENGINE run --rm -i quay.io/app-sre/yq:3.4.1 yq"
+fi
+
 # Get the image URI as repo URL + image digest
 IMAGE_DIGEST=$(skopeo inspect docker://${operator_image}:v${operator_version} | jq -r .Digest)
 if [[ -z "$IMAGE_DIGEST" ]]; then
@@ -100,7 +106,7 @@ else
     # For customer clusters: /services/osd-operators/namespace/<hive shard>/namespaces/cluster-scope.yaml
     # For hive clusters: /services/osd-operators/namespace/<hive shard>/namespaces/<namespace name>.yaml
     MANAGED_RESOURCE_TYPE=$(curl -s "${SAAS_FILE_URL}" | \
-            $CONTAINER_ENGINE run --rm -i quay.io/app-sre/yq:3.4.1 yq r - "managedResourceTypes[0]"
+            $YQ_CMD r - "managedResourceTypes[0]"
     )
 
     if [[ "${MANAGED_RESOURCE_TYPE}" == "" ]]; then
@@ -122,7 +128,7 @@ else
         if [ -z "$DEPLOYED_HASH" ] ; then
             DEPLOYED_HASH=$(
                 curl -s "${SAAS_FILE_URL}" | \
-                    $CONTAINER_ENGINE run --rm -i quay.io/app-sre/yq:3.4.1 yq r - "resourceTemplates[*].targets(namespace.\$ref==${resource_template_ns_path}).ref"
+                    $YQ_CMD r - "resourceTemplates[*].targets(namespace.\$ref==${resource_template_ns_path}).ref"
             )
         fi
 
@@ -164,9 +170,6 @@ if [[ "$generate_script" = "common" ]] ; then
     # a container.
     # ...Unless we're already in a container, which is how boilerplate
     # CI runs. We have py3 there, so run natively in that case.
-    if [[ -z "$CONTAINER_ENGINE" ]]; then
-        CONTAINER_ENGINE=$(command -v podman || command -v docker || true)
-    fi
     if [[ -z "$CONTAINER_ENGINE" ]]; then
         ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} -p ${OPERATOR_PREV_VERSION} -i ${REPO_DIGEST} -V ${operator_version}
     else
