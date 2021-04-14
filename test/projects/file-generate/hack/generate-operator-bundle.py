@@ -72,9 +72,19 @@ for file_name in crd_files:
 csv['spec']['install']['spec']['clusterPermissions'] = []
 
 # Add operator role to the CSV:
-with open('deploy/role.yaml', 'r') as stream:
+with open('deploy/cluster_role.yaml', 'r') as stream:
     operator_role = yaml.load(stream)
     csv['spec']['install']['spec']['clusterPermissions'].append(
+        {
+            'rules': operator_role['rules'],
+            'serviceAccountName': operator_name,
+        })
+
+csv['spec']['install']['spec']['permissions'] = []
+# Add operator role to the CSV:
+with open('deploy/role.yaml', 'r') as stream:
+    operator_role = yaml.load(stream)
+    csv['spec']['install']['spec']['permissions'].append(
         {
             'rules': operator_role['rules'],
             'serviceAccountName': operator_name,
