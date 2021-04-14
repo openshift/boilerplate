@@ -261,8 +261,6 @@ if 'namespace' not in csv['metadata']:
 namespace = csv['metadata']['namespace']
 
 if 'Role' in by_kind:
-    filtered_roles = []
-    filtered_rolebindings = []
     for role in by_kind['Role']:
         # We assume there is always a rolebinding of defined role
         if role['metadata']['name'] not in rb_by_role:
@@ -270,23 +268,18 @@ if 'Role' in by_kind:
         role_binding = rb_by_role[role['metadata']['name']]
 
         # If the RoleBinding subject is a ServiceAccount in the same namespace as the operator
-        # we add it to CSV. Else it is to be written as-is to the bundle
+        # we add it to CSV and remove it from the by_kind dict
         if len(role_binding['subjects']) == 1 and \
             role_binding['subjects'][0]['kind'] == 'ServiceAccount' and \
-            role_binding['subjects'][0]['namespace'] == namespace:
+            role_binding['subjects'][0].get('namespace', namespace) == namespace:
                 csv['spec']['install']['spec']['permissions'].append(
                     {
                         'rules': role['rules'],
                         'serviceAccountName': role_binding['subjects'][0]['name'] 
                     }
                 )
-        else:
-            filtered_roles.append(role)
-            filtered_rolebindings.append(role_binding)
-
-    # Overwrite the existing Roles and RoleBindings
-    by_kind['Role'] = filtered_roles
-    by_kind['RoleBinding'] = filtered_rolebindings
+                trim_index(by_kind, 'Role', role)
+                trim_index(by_kind, 'RoleBinding', role_binding)
 
 ## Add the Deployment
 # We already made sure there's exactly one Deployment
