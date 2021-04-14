@@ -94,6 +94,18 @@ class BindingsNotSupported(Exception):
             "to provided [Cluster]Roles. Found the following orphans:\n" +
             f"{bindings}")
 
+class UndefinedCSVNamespace(Exception):
+    def __init__(self, operator_name):
+        super().__init__(
+            f"Namespace not defined for operator {operator_name} in CSV template"
+        )
+
+class NoAssociatedRoleBinding(Exception):
+    def __init__(name, namespace):
+        super.__init__(
+            f"The Role {name}/{namespace} does not have an associated RoleBinding"
+        )
+
 def log_resource(resource):
     """Log a message that we're processing the given resource.
 
@@ -238,6 +250,43 @@ for kind, csvkey, binding_map in rolekind_csvkey_bindingmap:
             })
     # Get rid of these so we can iterate over what's left at the end
     trim_index(by_kind, kind, 'ALL')
+
+
+csv['spec']['install']['spec']['permissions'] = []
+
+if 'namespace' not in csv['metadata']:
+    raise UndefinedCSVNamespace(OPERATOR_NAME)
+
+# Find namespace of operator from CSV template
+namespace = csv['metadata']['namespace']
+
+if 'Role' in by_kind:
+    filtered_roles = []
+    filtered_rolebindings = []
+    for role in by_kind['Role']:
+        # We assume there is always a rolebinding of defined role
+        if role['metadata']['name'] not in rb_by_role:
+            raise NoAssociatedRoleBinding(role['metadata']['name'], role['metadata']['namespace'])
+        role_binding = rb_by_role[role['metadata']['name']]
+
+        # If the RoleBinding subject is a ServiceAccount in the same namespace as the operator
+        # we add it to CSV. Else it is to be written as-is to the bundle
+        if len(role_binding['subjects']) == 1 and \
+            role_binding['subjects'][0]['kind'] == 'ServiceAccount' and \
+            role_binding['subjects'][0]['namespace'] == namespace:
+                csv['spec']['install']['spec']['permissions'].append(
+                    {
+                        'rules': role['rules'],
+                        'serviceAccountName': role_binding['subjects'][0]['name'] 
+                    }
+                )
+        else:
+            filtered_roles.append(role)
+            filtered_rolebindings.append(role_binding)
+
+    # Overwrite the existing Roles and RoleBindings
+    by_kind['Role'] = filtered_roles
+    by_kind['RoleBinding'] = filtered_rolebindings
 
 ## Add the Deployment
 # We already made sure there's exactly one Deployment
