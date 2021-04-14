@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 # Common script to generate OSD operator bundles for publishing to OLM. Copies appropriate files
 # into a directory, and composes the ClusterServiceVersion which needs bits and
