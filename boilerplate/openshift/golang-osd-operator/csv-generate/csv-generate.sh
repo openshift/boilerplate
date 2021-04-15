@@ -180,7 +180,7 @@ if [[ "$generate_script" = "common" ]] ; then
     if [[ -z "$CONTAINER_ENGINE" ]]; then
         ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} -p ${OPERATOR_PREV_VERSION} -i ${REPO_DIGEST} -V ${operator_version}
     else
-        $CONTAINER_ENGINE run -it --rm -v `pwd`:`pwd` -u `id -u`:0 -w `pwd` registry.access.redhat.com/ubi8/python-36:1-134 /bin/bash -c "python -m pip install oyaml; python ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} -p ${OPERATOR_PREV_VERSION} -i ${REPO_DIGEST} -V ${operator_version}"
+        $CONTAINER_ENGINE run --rm -v `pwd`:`pwd` -u `id -u`:0 -w `pwd` registry.access.redhat.com/ubi8/python-36:1-134 /bin/bash -c "python -m pip install oyaml; python ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} -p ${OPERATOR_PREV_VERSION} -i ${REPO_DIGEST} -V ${operator_version}"
     fi
 elif [[ "$generate_script" = "hack" ]] ; then
     if [ -z "$OPERATOR_PREV_VERSION" ] ; then
