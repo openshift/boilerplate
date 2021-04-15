@@ -54,7 +54,7 @@ subscribers:
   - name: openshift/cloud-ingress-operator
     conventions:
       - name: openshift/golang-osd-operator
-        status: candidate
+        status: manual
 
   - name: openshift/configure-alertmanager-operator
     conventions:
@@ -74,7 +74,7 @@ subscribers:
   - name: openshift/gcp-project-operator
     conventions:
       - name: openshift/golang-osd-operator
-        status: proposed
+        status: manual
 
   - name: openshift/managed-upgrade-operator
     conventions:
@@ -109,4 +109,4 @@ subscribers:
   - name: openshift/route-monitor-operator
     conventions:
       - name: openshift/golang-osd-operator
-        status: proposed
+        status: manual
