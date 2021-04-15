@@ -32,6 +32,16 @@ chmod +x /tmp/bin/skopeo
 export PATH=/tmp/bin:$PATH
 # <<HACK!<<
 
+# >>HACK!>>
+# csv-generate.sh queries the project's SaaS file in app-interface. Our
+# dummy project doesn't have one. Even if it did, the CI image doesn't
+# have the right certs to query gitlab over https. Use the granny switch
+# to disable those pieces of the script.
+# FIXME -- This should go away when we're querying app-interface via
+# graphql.
+export SKIP_SAAS_FILE_CHECKS=1
+# <<HACK!<<
+
 repo=$(empty_repo)
 saas_repo=$(empty_repo)
 
