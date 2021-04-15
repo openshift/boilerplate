@@ -39,6 +39,14 @@ BUNDLE_DIR="${SAAS_OPERATOR_DIR}/${operator_name}"
 OPERATOR_NEW_VERSION=$(ls "${BUNDLE_DIR}" | sort -t . -k 3 -g | tail -n 1)
 OPERATOR_PREV_VERSION=$(ls "${BUNDLE_DIR}" | sort -t . -k 3 -g | tail -n 2 | head -n 1)
 
+# Use REGISTRY_USER and REGISTRY_TOKEN if available as container registry credentials
+# TODO: Update Jenkins jobs expose credentials in matching REGISTRY_USER and REGISTRY_TOKEN vars
+if [ ! -z "${REGISTRY_USER}" ] && [ ! -x "${REGISTRY_TOKEN}" ] ; then
+    echo "Using REGISTRY_USER and REGISTRY_TOKEN vars for container registry login"
+    QUAY_USER="$REGISTRY_USER"
+    QUAY_TOKEN="$REGISTRY_TOKEN"
+fi
+
 # Checking SAAS_OPERATOR_DIR exist
 if [ ! -d "${SAAS_OPERATOR_DIR}/.git" ] ; then
     echo "${SAAS_OPERATOR_DIR} should exist and be a git repository"
