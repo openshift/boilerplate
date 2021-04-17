@@ -76,6 +76,13 @@ cd $repo
 
 make boilerplate-update
 
+# Check if generation fails when unsupported resource type present
+colorprint $ORANGE "Build with unsupported resource"
+make staging-common-csv-build && err "CSV generation should have failed due to unsupported resource" || echo "unsupported resource present in deploy. CSV generation failed as expected"
+
+# Remove the unsupported file for further tests
+rm deploy/crds/mygroup.com_v1alpha1_testkind_cr.yaml
+
 colorprint $ORANGE "First build and compare on Staging"
 make staging-hack-csv-build
 make staging-common-csv-build-and-diff
