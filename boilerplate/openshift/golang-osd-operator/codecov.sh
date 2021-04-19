@@ -33,7 +33,7 @@ elif [[ "${JOB_TYPE}" == "local" ]]; then
        echo "coverage report available at ${COVER_PROFILE}"
        exit 0
 else
-       echo "${JOB_TYPE} jobs not supported" >&2
+       echo "${JOB_TYPE} jobs not supported"
        exit 1
 fi
 
@@ -44,7 +44,7 @@ export CI_JOB_ID="${BUILD_ID}"
 
 if [[ "${JOB_TYPE}" != "local" ]]; then
        if [[ -z "${ARTIFACT_DIR:-}" ]] || [[ ! -d "${ARTIFACT_DIR}" ]] || [[ ! -w "${ARTIFACT_DIR}" ]]; then
-              echo '${ARTIFACT_DIR} must be set for non-local jobs, and must point to a writable directory' >&2
+              echo '${ARTIFACT_DIR} must be set for non-local jobs, and must point to a writable directory'
               exit 1
        fi
        curl -s https://codecov.io/bash -o " ${ARTIFACT_DIR}/codecov.sh"
