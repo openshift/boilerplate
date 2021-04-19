@@ -47,7 +47,7 @@ if [[ "${JOB_TYPE}" != "local" ]]; then
               echo '${ARTIFACT_DIR} must be set for non-local jobs, and must point to a writable directory' >&2
               exit 1
        fi
-       curl -s https://codecov.io/bash -o " ${ARTIFACT_DIR}/codecov.sh"
+       curl -sS https://codecov.io/bash -o "${ARTIFACT_DIR}/codecov.sh"
        bash <(cat "${ARTIFACT_DIR}/codecov.sh") -Z -K -f "${COVER_PROFILE}" -r "${REPO_OWNER}/${REPO_NAME}" ${REF_FLAGS}
 else
        bash <(curl -s https://codecov.io/bash) -Z -K -f "${COVER_PROFILE}" -r "${REPO_OWNER}/${REPO_NAME}" ${REF_FLAGS}
