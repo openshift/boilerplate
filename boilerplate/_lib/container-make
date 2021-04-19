@@ -12,7 +12,7 @@ source ${0%/*}/common.sh
 CONTAINER_ENGINE=$(command -v podman || command -v docker)
 [[ -n "$CONTAINER_ENGINE" ]] || err "Couldn't find a container engine. Are you already in a container?"
 
-CONTAINER_ENGINE_SHORT=$(echo $CONTAINER_ENGINE | awk -F '/' '{print $NF}')
+CONTAINER_ENGINE_SHORT=${CONTAINER_ENGINE##*/}
 
 # Make sure the mount inside the container is named in such a way that
 # - openapi-gen (which relies on GOPATH) produces absolute paths; and
