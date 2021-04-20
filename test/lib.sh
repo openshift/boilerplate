@@ -23,6 +23,17 @@ ORANGE='\033[0;33m'
 GREEN='\033[0;32m'
 RESET='\033[0m'
 
+# Set SED variable
+if LANG=C sed --help 2>&1 | grep -q GNU; then
+  SED="sed"
+elif command -v gsed &>/dev/null; then
+  SED="gsed"
+else
+  echo "Failed to find GNU sed as sed or gsed. If you are on Mac: brew install gnu-sed." >&2
+  exit 1
+fi
+
+
 colorprint() {
   color=$1
   shift
@@ -107,7 +118,7 @@ bootstrap_project() {
             add_convention . $convention
         done
         make boilerplate-update
-        sed -i '1s,^,include boilerplate/generated-includes.mk\n\n,' Makefile
+        ${SED?} -i '1s,^,include boilerplate/generated-includes.mk\n\n,' Makefile
         make boilerplate-commit
     )
 }
@@ -264,7 +275,7 @@ ensure_nexus_makefile_include() {
 
     if ! _is_line_in_file $line $file; then
         # Put the line at the top.
-        sed -i "1s,^,$line\n\n," $file
+        ${SED?} -i "1s,^,$line\n\n," $file
     fi
 }
 

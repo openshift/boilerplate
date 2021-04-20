@@ -26,7 +26,7 @@ main() {
     fi
 
     echo "Will run test cases:"
-    echo "$cases" | sed 's,^./,  ,'
+    echo "$cases" | ${SED?} 's,^./,  ,'
 
     for test_case_executable in $cases; do
         test_case_name=${test_case_executable#./}
@@ -51,10 +51,10 @@ main() {
     hr
     colorprint ${GREEN} "PASS: ${#_PASS[@]}"
     /bin/echo -n "  "
-    colorprint ${GREEN} ${_PASS[@]} | sed 's/ /\n  /g'
+    colorprint ${GREEN} ${_PASS[@]} | ${SED?} 's/ /\n  /g'
     colorprint ${RED} "FAIL: ${#_FAIL[@]}"
     /bin/echo -n "  "
-    colorprint ${RED} ${_FAIL[@]} | sed 's/ /\n  /g'
+    colorprint ${RED} ${_FAIL[@]} | ${SED?} 's/ /\n  /g'
     hr
     if [[ ${#_FAIL[@]} -ne 0 ]]; then
         exit 1
