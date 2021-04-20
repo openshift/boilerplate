@@ -20,7 +20,7 @@ osdk_version() {
     # or
     #       operator-sdk version: "v0.16.0", commit: "55f1446c5f472e7d8e308dcdf36d0d7fc44fc4fd", go version: "go1.13.8 linux/amd64"
     # Peel out the version number, accounting for the optional quotes.
-    $osdk version | sed 's/operator-sdk version: "*\([^,"]*\)"*,.*/\1/'
+    $osdk version | ${SED?} 's/operator-sdk version: "*\([^,"]*\)"*,.*/\1/'
 }
 
 ## opm_version BINARY
@@ -30,7 +30,7 @@ opm_version() {
     local opm=$1
     # `opm version` output looks like:
     #    Version: version.Version{OpmVersion:"v1.15.2", GitCommit:"fded0bf", BuildDate:"2020-11-18T14:21:24Z", GoOs:"darwin", GoArch:"amd64"}
-    $opm version | sed 's/.*OpmVersion:"//;s/".*//'
+    $opm version | ${SED?} 's/.*OpmVersion:"//;s/".*//'
 }
 
 ## grpcurl_version BINARY
@@ -49,7 +49,7 @@ grpcurl_version() {
 # reasonably.
 repo_name() {
     # Just strip off the first component of the import-ish path
-    repo_import $1 | sed 's,^[^/]*/,,'
+    repo_import $1 | ${SED?} 's,^[^/]*/,,'
 }
 
 ## repo_import REPODIR
@@ -61,7 +61,7 @@ repo_import() {
     # Account for remotes which are
     # - upstream or origin
     # - ssh ("git@host.com:org/name.git") or https ("https://host.com/org/name.git")
-    (git -C $1 config --get remote.upstream.url || git -C $1 config --get remote.origin.url) | sed 's,git@\([^:]*\):,\1/,; s,https://,,; s/\.git$//'
+    (git -C $1 config --get remote.upstream.url || git -C $1 config --get remote.origin.url) | ${SED?} 's,git@\([^:]*\):,\1/,; s,https://,,; s/\.git$//'
 }
 
 ## current_branch REPO
@@ -152,6 +152,16 @@ if [[ "$HERE" == "$CONVENTION_ROOT/"* ]]; then
   # If we got here, we really expected to be able to identify the
   # convention name.
   [[ -n "$CONVENTION_NAME" ]] || err "$_lib couldn't discover the name of the sourcing convention"
+fi
+
+# Set SED variable
+if LANG=C sed --help 2>&1 | grep -q GNU; then
+  SED="sed"
+elif command -v gsed &>/dev/null; then
+  SED="gsed"
+else
+  echo "Failed to find GNU sed as sed or gsed. If you are on Mac: brew install gnu-sed." >&2
+  exit 1
 fi
 
 if [ -z "$BOILERPLATE_GIT_REPO" ]; then
