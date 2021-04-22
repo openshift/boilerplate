@@ -1,16 +1,18 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+
+set -e
 
 set_saas_git_config() {
   # This is to avoid git failure when running within the docker container
   # Container doesn't have global config so complaining for missing user/email
   pushd saas-file-generate-bundle
-  git config user.name "Test Boilerplate" 
-  git config user.email "test@example.com" 
+  git config user.name "Test Boilerplate"
+  git config user.email "test@example.com"
   popd
-   
+
 }
 
-# Scenario : 
+# Scenario :
 # 1 - Create a new CSV and push it to Prod and Staging
 # 2 - Ensure proper history in case of unpushed changed
 # 3 - Validate behaviour when some versions are not pushed to production (history cleanup)
@@ -25,7 +27,7 @@ source $REPO_ROOT/test/lib.sh
 # FIXME
 mkdir -p /tmp/bin
 cat <<EOF >/tmp/bin/skopeo
-#!/bin/bash
+#!/usr/bin/env bash
 echo '{"Digest": "sha256:abc123"}'
 EOF
 chmod +x /tmp/bin/skopeo
@@ -56,10 +58,10 @@ bootstrap_project $repo ${test_project} openshift/golang-osd-operator
 saas_root_repo=$(mktemp -d -t boilerplate-saas-XXXXXXXX)
 cp -R $REPO_ROOT/test/projects/saas-file-generate-bundle $saas_root_repo/.
 saas_repo=${saas_root_repo}/saas-file-generate-bundle
-pushd $saas_repo 
+pushd $saas_repo
 git init -b master
-git config user.name "Test Boilerplate" 
-git config user.email "test@example.com" 
+git config user.name "Test Boilerplate"
+git config user.email "test@example.com"
 git add .
 git commit -m "Initial saas-file-generate-bundle"
 git remote add origin git@example.com:example-org/test-repo.git

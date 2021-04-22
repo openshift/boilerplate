@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+
+set -e
 
 # Usage: push.sh REGISTRY NAMESPACE NAME
 # e.g. push.sh quay.io app-sre boilerplate

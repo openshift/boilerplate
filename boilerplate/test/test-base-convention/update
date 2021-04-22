@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+
+set -e
 
 if [[ -z "$BOILERPLATE_SET_X" ]]; then
     set -x
@@ -27,5 +29,5 @@ echo "Validating variables exported from the main update driver"
 # Granny switch to disable this check for weird tests like reverting to master
 if [[ -z "$SKIP_IMAGE_TAG_CHECK" ]]; then
     # Update this when publishing a new image tag
-    [[ "$LATEST_IMAGE_TAG" == "image-v0.5.1" ]] || err "Bad LATEST_IMAGE_TAG: '$LATEST_IMAGE_TAG'"
+    [[ "$LATEST_IMAGE_TAG" == "image-v0.5.2" ]] || err "Bad LATEST_IMAGE_TAG: '$LATEST_IMAGE_TAG'"
 fi

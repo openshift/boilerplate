@@ -1,4 +1,6 @@
-#!/bin/bash -xe
+#!/usr/bin/env bash
+
+set -xe
 
 # If you mess with the build image, you must publish a new
 # image-v{X}.{Y}.{Z} tag. We can't automatically generate that tag,

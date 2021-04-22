@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+
+set -e
 
 source $CONVENTION_ROOT/_lib/common.sh
 

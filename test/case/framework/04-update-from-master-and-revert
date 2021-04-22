@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+
+set -e
 
 cat <<EOF
 Tests updating from the current boilerplate master to the current
