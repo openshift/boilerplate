@@ -110,3 +110,8 @@ subscribers:
     conventions:
       - name: openshift/golang-osd-operator
         status: manual
+
+  - name: openshift/splunk-forwarder-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
