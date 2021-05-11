@@ -21,6 +21,9 @@ if [ $? -ne 0 ] ; then
 	exit $?
 fi
 
+# So the next update starts "clean"
+./boilerplate/_lib/boilerplate-commit
+
 add_convention $repo test/test-base-convention
 make boilerplate-update
 
