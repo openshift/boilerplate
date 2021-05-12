@@ -1,0 +1,9 @@
+# This Dockerfile comprises everything up to and including the
+# boilerplate backing image at version image-v0.5.2. As of now, it is no
+# longer built directly/explicitly, but is preserved to make it easier
+# to tell what's in subsequent versions (without having to paw through
+# git history).
+FROM registry.ci.openshift.org/openshift/release:golang-1.13
+
+COPY build_image-v0.5.2.sh /build.sh
+RUN /build.sh && rm -f /build.sh

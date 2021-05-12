@@ -20,6 +20,7 @@ This work was inspired by, and partially cribbed from,
     - [Environment setup](#environment-setup)
     - [Tests](#tests)
     - [Build Images](#build-images)
+      - [Making Image Builds Efficient](#making-image-builds-efficient)
 
 ## Quick Start
 
@@ -359,3 +360,8 @@ tagged commit will not exist upstream.
 2. Import that tag via boilerplate's ImageStream in `openshift/release`
    by adding an element to the `spec.tags` list in
    [this configuration file](https://github.com/openshift/release/blob/master/core-services/supplemental-ci-images/boilerplate.yaml).
+
+#### Making Image Builds Efficient
+The backing image is built with every commit, even when nothing about it has changed.
+To make this faster, we periodically ratchet the base image (the `FROM` in the [Dockerfile](config/Dockerfile)) to point to the previously-released image, and reset the [build script](config/build.sh) to start from "scratch".
+To make it easier to tell what's in the cumulative image, we preserve the previous Dockerfile and build script, renaming them according to the image version they represent.
