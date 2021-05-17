@@ -53,6 +53,9 @@ check_update $repo
 # Nexus Makefile include should have only the header
 diff $expected/nmi-header $NEXUS_MK
 
+# So the next update starts "clean"
+./boilerplate/_lib/boilerplate-commit
+
 sub_hdr "Convention with no includes"
 add_convention $repo test/nexus-makefile-include/no-includes
 make boilerplate-update
@@ -60,8 +63,11 @@ check_update $repo
 # Nexus Makefile include should have only the header
 diff $expected/nmi-header $NEXUS_MK
 
-# Clear the config
+# Set up a new repo
+repo=$(empty_repo)
+add_cleanup $repo
 bootstrap_repo $repo
+cd $repo
 
 sub_hdr "Convention with one include"
 convention=test/nexus-makefile-include/one-include
@@ -82,8 +88,11 @@ ensure_nexus_makefile_include $repo
 $make_q one-one > $expected/actual-out
 diff $expected/expected-out $expected/actual-out
 
-# Reset Makefile and config
+# Set up a new repo
+repo=$(empty_repo)
+add_cleanup $repo
 bootstrap_repo $repo
+cd $repo
 
 sub_hdr "Convention with multiple includes"
 convention=test/nexus-makefile-include/multiple-includes
@@ -104,6 +113,7 @@ $make_q mult-one > $expected/actual-out
 diff $expected/expected-out $expected/actual-out
 
 # Reset Makefile and config
+./boilerplate/_lib/boilerplate-commit
 bootstrap_repo $repo
 
 sub_hdr "Multiple conventions"

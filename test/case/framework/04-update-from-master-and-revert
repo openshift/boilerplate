@@ -40,6 +40,8 @@ reset_boilerplate_repo
 
 make boilerplate-update || exit $?
 check_update $repo 04-check-new-version-update || exit $?
+# So the next update starts "clean"
+./boilerplate/_lib/boilerplate-commit
 
 override_boilerplate_repo $boilerplate_master || exit $?
 

@@ -9,6 +9,9 @@ This work was inspired by, and partially cribbed from,
   - [Quick Start](#quick-start)
   - [Overview](#overview)
     - [A Pretty Picture](#a-pretty-picture)
+    - [Consumer Philosophy](#consumer-philosophy)
+      - [Trust](#trust)
+      - [Ignore](#ignore)
   - [Mechanism](#mechanism)
   - [Consuming](#consuming)
     - [Bootstrap](#bootstrap)
@@ -104,6 +107,30 @@ The lifecycle from the consuming repository's perspective:
                  |push|
                  +----+
 ```
+
+### Consumer Philosophy
+Consuming repositories should think about boilerplate deltas the same way you would think about the `vendor/` directory for go dependencies: **trust** and **ignore**.
+
+#### Trust
+When reviewing a PR that includes a boilerplate changes, you can trust:
+- That they have already been **peer reviewed** in the boilerplate repository itself.
+  You may of course wish to review them at a high level to understand how they relate to your specific repository.
+- That they are **unchanged from their original form** in the boilerplate repository itself.
+  Assuming you are using standardized prow jobs, [freeze-check](boilerplate/_lib/freeze-check) is wired in to make sure of this.
+
+#### Ignore
+As with deltas under `vendor/`, changes under `boilerplate/` can be ignored the vast majority of the time.
+To facilitate this, you may wish to take advantage of [linguist](https://github.com/github/linguist), which is used by GitHub, to hide deltas under `boilerplate/` by default.
+This will make them appear the same as generated mocks, `go.sum`, etc.: unrendered by default, but with a link to render them on demand.
+To enable this behavior, add the following to the top of the `.gitattributes` file in the root of your repository:
+
+```
+# Hide most boilerplate deltas by default
+boilerplate/** linguist-generated=true
+```
+
+Note that, for security reasons, boilerplate will generate a block of overrides to force by-default rendering of certain files under `boilerplate/`, as well as the `.gitattributes` file itself.
+This is so that malicious changes attempting to subvert the tooling behind the [trust](#trust) model will always be rendered.
 
 ## Mechanism
 
