@@ -35,6 +35,8 @@ override_boilerplate_repo $boilerplate_master || exit $?
 add_convention $repo test/test-base-convention
 make boilerplate-update || exit $?
 check_update $repo 04-check-after-init || exit $?
+# So the next update starts "clean"
+./boilerplate/_lib/boilerplate-commit
 
 reset_boilerplate_repo
 
