@@ -6,7 +6,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 source $REPO_ROOT/test/lib.sh
 
-for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 ; do
+for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 v0.17.2 v0.18.2; do
     echo "Testing with operator-sdk ${version}"
     repo=$(empty_repo)
     add_cleanup $repo
@@ -16,6 +16,7 @@ for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 ; do
     cd $repo
     make boilerplate-update
     ${SED?} s/__operator_sdk_version__/${version}/g go.mod.tmpl > go.mod
+    go mod download
     export GOPATH=$GOPATH:`pwd`
 
     # Check failure when project is not committed

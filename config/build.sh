@@ -75,6 +75,12 @@ go get k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
 MOCKGEN_VERSION=v1.4.4
 go get github.com/golang/mock/mockgen@${MOCKGEN_VERSION}
 
+############
+# go-bindata
+############
+GO_BINDATA_VERSION=v3.1.2
+go get github.com/go-bindata/go-bindata/...@${GO_BINDATA_VERSION}
+
 # HACK: `go get` creates lots of things under GOPATH that are not group
 # accessible, even if umask is set properly. This causes failures of
 # subsequent go tool usage (e.g. resolving packages) by a non-root user,
@@ -85,12 +91,6 @@ dir=$(go env GOPATH)
 for bit in r x w; do
     find $dir -perm -u+${bit} -a ! -perm -g+${bit} -exec chmod g+${bit} '{}' +
 done
-
-############
-# go-bindata
-############
-GO_BINDATA_VERSION=v3.1.2
-go get github.com/go-bindata/go-bindata/...@${GO_BINDATA_VERSION}
 
 ####
 # yq
