@@ -78,6 +78,9 @@ TESTOPTS :=
 
 ALLOW_DIRTY_CHECKOUT?=false
 
+IS_AWS_ACCOUNT_OPERATOR?=false
+IS_AWS_ACCOUNT_OPERATOR := $(shell ${GOENV} | grep "aws-account-operator")
+
 # TODO: Figure out how to discover this dynamically
 CONVENTION_DIR := boilerplate/openshift/golang-osd-operator
 
@@ -140,7 +143,11 @@ go-generate:
 
 .PHONY: op-generate
 op-generate:
-	${CONVENTION_DIR}/operator-sdk-generate.sh
+	if [ "$(IS_AWS_ACCOUNT_OPERATOR)" == "false" ]; then \
+    	${CONVENTION_DIR}/operator-sdk-generate.sh; \
+  else \
+    	${CONVENTION_DIR}/controller-gen-generate.sh; \
+  fi
 	# HACK: Due to an OLM bug in 3.11, we need to remove the
 	# spec.validation.openAPIV3Schema.type from CRDs. Remove once
 	# 3.11 is no longer supported.
