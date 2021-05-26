@@ -24,6 +24,7 @@ This work was inspired by, and partially cribbed from,
     - [Tests](#tests)
     - [Build Images](#build-images)
       - [Making CI Efficient](#making-ci-efficient)
+      - [Picking Up (Security) Fixes](#picking-up-security-fixes)
 
 ## Quick Start
 
@@ -391,5 +392,11 @@ tagged commit will not exist upstream.
 #### Making CI Efficient
 The backing image is built in prow with every commit, even when nothing about it has changed.
 To make this faster, we periodically ratchet the base image (the `FROM` in the [Dockerfile](config/Dockerfile)) to point to the previously-released image, and clear out the [build script](config/build.sh) to start from that point.
-However, in app-sre we always build from scratch, via a [separate Dockerfile](config/Dockerfile.appsre).
+However, in app-sre we build from scratch (exactly once per `image-v*` tag!), via a [separate Dockerfile](config/Dockerfile.appsre).
 Thus there is a (very small) chance that these builds will behave differently.
+
+#### Picking Up (Security) Fixes
+We only build and publish a new build image on commits tagged with `image-v*`, which we [force](config/tag-check.sh) you to do whenever something about *boilerplate's* image configuration changes.
+If the base image (`golang-*`) is updated for any reason, including security fixes, the boilerplate build image will only pick up those changes the next time we produce a new version.
+To pick up such changes right away, simply produce a new version (identical to the previous in terms of what boilerplate configures) according to the instructions [above](#build-images).
+Of course, consumers will need to update to/past the tagged commit in order to use the new image.
