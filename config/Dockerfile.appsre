@@ -2,7 +2,7 @@
 # and then RUN all the build scripts in order.
 FROM registry.ci.openshift.org/openshift/release:golang-1.16
 
-COPY build_image-v1.0.0.sh /build.sh
+COPY build_image-v2.0.0.sh /build.sh
 RUN /build.sh && rm -f /build.sh
 
 COPY build.sh /build.sh

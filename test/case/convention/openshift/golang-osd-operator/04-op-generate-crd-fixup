@@ -15,8 +15,6 @@ test_project="file-generate"
 bootstrap_project $repo ${test_project} openshift/golang-osd-operator
 cd $repo
 make boilerplate-update
-# Pick a version
-${SED?} s/__operator_sdk_version__/v0.16.0/g go.mod.tmpl > go.mod
 
 make op-generate
 
