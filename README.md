@@ -23,6 +23,7 @@ This work was inspired by, and partially cribbed from,
     - [Environment setup](#environment-setup)
     - [Tests](#tests)
     - [Build Images](#build-images)
+      - [Making CI Efficient](#making-ci-efficient)
 
 ## Quick Start
 
@@ -386,3 +387,9 @@ tagged commit will not exist upstream.
 2. Import that tag via boilerplate's ImageStream in `openshift/release`
    by adding an element to the `spec.tags` list in
    [this configuration file](https://github.com/openshift/release/blob/master/core-services/supplemental-ci-images/boilerplate.yaml).
+
+#### Making CI Efficient
+The backing image is built in prow with every commit, even when nothing about it has changed.
+To make this faster, we periodically ratchet the base image (the `FROM` in the [Dockerfile](config/Dockerfile)) to point to the previously-released image, and clear out the [build script](config/build.sh) to start from that point.
+However, in app-sre we always build from scratch, via a [separate Dockerfile](config/Dockerfile.appsre).
+Thus there is a (very small) chance that these builds will behave differently.
