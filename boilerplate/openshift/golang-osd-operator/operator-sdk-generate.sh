@@ -33,7 +33,7 @@ VER=$(osdk_version $OSDK)
 # - When OCP will remove support for v1beta1 (currently we know it's
 # deprecated in 4.6, but don't know when it's actually removed).
 case $VER in
-  'v0.15.1'|'v0.16.0')
+  'v0.16.0')
       # No-op: just declare support for these osdk versions.
       ;;
   'v0.17.0'|'v0.17.1'|'v0.17.2'|'v0.18.2')

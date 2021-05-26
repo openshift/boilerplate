@@ -6,7 +6,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 source $REPO_ROOT/test/lib.sh
 
-for version in v0.15.1 v0.16.0 v0.17.0 v0.17.1 v0.17.2 v0.18.2; do
+for version in v0.16.0 v0.17.0 v0.17.1 v0.17.2 v0.18.2; do
     echo "Testing with operator-sdk ${version}"
     repo=$(empty_repo)
     add_cleanup $repo
