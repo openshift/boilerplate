@@ -141,6 +141,7 @@ go-generate:
 .PHONY: op-generate
 op-generate:
 	# The artist formerly known as `operator-sdk generate crds`:
+ifeq ($(CRD_VERSION), v1beta1)
 	cd pkg/apis; controller-gen crd paths=./... output:dir=../../deploy/crds
 	# HACK: Due to an OLM bug in 3.11, we need to remove the
 	# spec.validation.openAPIV3Schema.type from CRDs. Remove once
@@ -154,6 +155,9 @@ op-generate:
 	find deploy/crds -name '*.yaml' | xargs -n1 -I{} yq d -i {} 'spec.**.x-kubernetes-list-type'
 	find deploy/crds -name '*.yaml' | xargs -n1 -I{} yq d -i {} 'spec.**.x-kubernetes-map-type'
 	find deploy/crds -name '*.yaml' | xargs -n1 -I{} yq d -i {} 'spec.**.x-kubernetes-struct-type'
+else
+	cd pkg/apis; controller-gen crd:crdVersions=v1 paths=./... output:dir=../../deploy/crds
+endif
 	# The artist formerly known as `operator-sdk generate k8s`:
 	cd pkg/apis; controller-gen object paths=./...
 	# Don't forget to commit generated files
