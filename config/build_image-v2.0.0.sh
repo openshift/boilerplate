@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
 # This script comprises everything up to and including the boilerplate
-# backing image at version image-v1.0.0. It is no longer used since we
-# started from scratch with image-v2.0.0. It is kept for posterity.
+# backing image at version image-v2.0.0. It is used when performing a
+# full build in the appsre pipeline, but is bypassed during presubmit CI
+# in prow to make testing faster there. As such, there is a (very small)
+# possibility of those behaving slightly differently.
 
 set -x
 set -euo pipefail
@@ -21,32 +23,6 @@ curl -L -o golangci-lint.tar.gz $GOCILINT_LOCATION
 echo ${GOCILINT_SHA256SUM} golangci-lint.tar.gz | sha256sum -c
 tar xzf golangci-lint.tar.gz golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint
 mv golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint /usr/local/bin
-
-##############
-# operator-sdk
-##############
-# Install all the versions we support. ensure.sh is set up to find the
-# one it needs.
-declare -A OSDK_VERSION_HASHES
-OSDK_VERSION_HASHES=(
-    ['v0.15.1']="5c8c06bd8a0c47f359aa56f85fe4e3ee2066d4e51b60b75e131dec601b7b3cd6"
-    ['v0.16.0']="3df782f341749f7962ab0fcfedd2961c18b21ad34ff7acd194b49a152f59abcb"
-    ['v0.17.0']="f801a4a061c175fdb4875fbb021d4f8cae9c57cc1c00829ab2de4edf733e1963"
-    ['v0.17.1']="9f6538beb15272d193e9e0d03678ef0f8aa3afd2f719a491fcc83abbb5cd28cf"
-    ['v0.17.2']="4335d231c0733653ccab4e05623501a93367a459100d577cae1f2ed497b33708"
-    ['v0.18.2']="40d35ea77b7b0cb5d2f88b97bb8c5b0684af4a54b9d7056790ecaa5e4a70a0d4"
-    ['v1.2.0']="afd4e24c79166b3241dd21c6c96e77f760202811f7d95f13f4150a1cfae8ec31"
-)
-
-for OPERATOR_SDK_VERSION in "${!OSDK_VERSION_HASHES[@]}"; do
-    OPERATOR_SDK_SHA256SUM="${OSDK_VERSION_HASHES[$OPERATOR_SDK_VERSION]}"
-    OPERATOR_SDK_BINARY=operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
-    OPERATOR_SDK_LOCATION=https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/$OPERATOR_SDK_BINARY
-    curl -L -o $OPERATOR_SDK_BINARY $OPERATOR_SDK_LOCATION
-    echo ${OPERATOR_SDK_SHA256SUM} $OPERATOR_SDK_BINARY | sha256sum -c
-    chmod ugo+x $OPERATOR_SDK_BINARY
-    mv $OPERATOR_SDK_BINARY /usr/local/bin
-done
 
 ###############
 # Set up go env

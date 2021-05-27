@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script builds on build_image-v1.0.0.sh
+# This script builds on build_image-v2.0.0.sh
 
 set -x
 set -euo pipefail
