@@ -21,6 +21,16 @@ test: isclean tag-check ## Runs tests under the /case directory
 .PHONY: pr-check
 pr-check: test ## This is the target run by prow
 
+.PHONY: subscriber-report
+subscriber-report: ## Discover onboarding and prow status of subscribed consumers
+	./boilerplate/_lib/subscriber report onboarding
+	@# TODO: Add:
+	@#            ./boilerplate/_lib/subscriber report pr
+	@# - Requires gh CLI
+	@# - Requires gh auth
+	@echo
+	./boilerplate/_lib/subscriber report release ALL
+
 .PHONY: build-image-deep
 build-image-deep: ## Builds the image from scratch, like appsre does. May require ALLOW_DIRTY_CHECKOUT=true if testing
 	cd config; $(CONTAINER_ENGINE) build -t $(IMG):latest -f Dockerfile.appsre .
