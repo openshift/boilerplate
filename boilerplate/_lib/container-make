@@ -24,7 +24,7 @@ banner "Starting the container"
 if [[ $CONTAINER_ENGINE_SHORT == "podman" ]]; then
 		container_id=$($CONTAINER_ENGINE run --userns keep-id -d -v "$REPO_ROOT":"$CONTAINER_MOUNT":Z $IMAGE_PULL_PATH sleep infinity)
 else
-		container_id=$($CONTAINER_ENGINE run -d -v "$REPO_ROOT":"$CONTAINER_MOUNT" $IMAGE_PULL_PATH sleep 900)
+		container_id=$($CONTAINER_ENGINE run -d -v "$REPO_ROOT":"$CONTAINER_MOUNT" $IMAGE_PULL_PATH sleep infinity)
 fi
 
 if [[ $? -ne 0 ]] || [[ -z "$container_id" ]]; then
