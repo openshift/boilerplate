@@ -7,6 +7,16 @@ Tests updating from the current boilerplate master to the current
 commit, and then reverting to the master.
 EOF
 
+# Sometimes, e.g. when openshift/release runs this test in a rehearsal,
+# we're *at* master. In such cases, this test would legitimately fail on
+# `boilerplate-commit` because there's nothing to update and therefore
+# nothing to commit. We can skip the test in such cases (master has
+# already been tested anyway).
+if [[ $(git rev-parse HEAD) == $(git rev-parse master) ]]; then
+    echo "==SKIP== We're already at master"
+    exit 0
+fi
+
 # TODO: This test requires an active network connection to access the
 # actual boilerplate github repository. We should label it as such and
 # make a granny switch to disable all such tests.
