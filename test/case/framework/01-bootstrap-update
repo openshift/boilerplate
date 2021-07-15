@@ -18,7 +18,7 @@ make boilerplate-update
 check_update $repo 01-no-convention
 
 if [ $? -ne 0 ] ; then
-	exit $?
+    exit $?
 fi
 
 # So the next update starts "clean"

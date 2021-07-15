@@ -55,13 +55,13 @@ isclean:
 
 .PHONY: build
 build: isclean envtest
-	docker build . -f $(OPERATOR_DOCKERFILE) -t $(OPERATOR_IMAGE_URI)
-	docker tag $(OPERATOR_IMAGE_URI) $(OPERATOR_IMAGE_URI_LATEST)
+	${CONTAINER_ENGINE} build . -f $(OPERATOR_DOCKERFILE) -t $(OPERATOR_IMAGE_URI)
+	${CONTAINER_ENGINE} tag $(OPERATOR_IMAGE_URI) $(OPERATOR_IMAGE_URI_LATEST)
 
 .PHONY: push
 push:
-	docker push $(OPERATOR_IMAGE_URI)
-	docker push $(OPERATOR_IMAGE_URI_LATEST)
+	${CONTAINER_ENGINE} push $(OPERATOR_IMAGE_URI)
+	${CONTAINER_ENGINE} push $(OPERATOR_IMAGE_URI_LATEST)
 
 # These names are used by the app-sre pipeline targets
 .PHONY: docker-build
