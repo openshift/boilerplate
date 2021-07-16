@@ -26,7 +26,7 @@ Exits zero if files are clean; nonzero if discrepancies are found.
 OPTIONS
     -f, --fix
         Fixes the problems it finds. (Don't forget to commit the
-	changes.)
+        changes.)
 
 TARGETS:
 $targets
@@ -49,12 +49,12 @@ eval set -- "$OPTS"
 FIX=
 while true; do
     case "$1" in
-	-f | --fix )
-	    FIX=1
-	    shift
-	    ;;
+        -f | --fix )
+            FIX=1
+            shift
+            ;;
         -h | --help ) usage;;
-	-- ) shift; break ;;
+        -- ) shift; break ;;
     esac
 done
 
