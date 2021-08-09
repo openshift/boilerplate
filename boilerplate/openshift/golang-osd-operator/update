@@ -13,6 +13,9 @@ source $CONVENTION_ROOT/_lib/common.sh
 echo "Copying .codecov.yml to your repository root."
 cp ${HERE}/.codecov.yml $REPO_ROOT
 
+echo "Copying OWNERS_ALIASES to your repository root."
+cp ${HERE}/OWNERS_ALIASES $REPO_ROOT
+
 # TODO: boilerplate more of Dockerfile
 echo "Overwriting build/Dockerfile's initial FROM with $IMAGE_PULL_PATH"
 ${SED?} -i "1s,.*,FROM $IMAGE_PULL_PATH AS builder," build/Dockerfile
