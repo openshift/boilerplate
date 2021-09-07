@@ -67,4 +67,4 @@ help: ## Show this help screen.
 	@echo ''
 	@echo 'Available targets are:'
 	@echo ' $(MAKEFILE_LIST)'
-	@grep -Eh '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk '{FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@grep -Eh '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk -F':.*?## ' '{printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
