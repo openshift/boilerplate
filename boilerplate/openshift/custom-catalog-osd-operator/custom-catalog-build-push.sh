@@ -45,7 +45,7 @@ function build_catalog_image() {
 REGISTRY_IMAGE_URI=$1
 
 if image_exists_in_repo "${REGISTRY_IMAGE_URI}"; then
-  echo "Custom catalog image for the latest operator version already exists in the reigstry"
+  echo "Custom catalog image for the latest operator version already exists in the registry"
   echo "Nothing to do here"
 else
   for f in ${VERSIONS_DIR}/*;
