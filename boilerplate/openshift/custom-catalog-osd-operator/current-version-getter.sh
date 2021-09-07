@@ -1,44 +1,23 @@
 #!/usr/bin/env bash
-set -o xtrace
-
-# set -E
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
+OPERATOR_NAME=$(basename ${REPO_ROOT}  | sed 's/-catalog//')
 CERT_DIR="${REPO_ROOT}/service-account/rhcs-request/"
 CERT_FILE_NAME="custom-catalog-source-index-builder"
 PYXIS_ENDPOINT="https://pyxis.engineering.redhat.com"
 VERSIONS_DIR="${REPO_ROOT}/versions"
 
 
-function compare_versions () {
-    if [[ $1 == $2 ]]
-    then
-        return 0
-    fi
-    local IFS=.
-    local i ver1=($1) ver2=($2)
-    # fill empty fields in ver1 with zeros
-    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
-    do
-        ver1[i]=0
-    done
-    for ((i=0; i<${#ver1[@]}; i++))
-    do
-        if [[ -z ${ver2[i]} ]]
-        then
-            # fill empty fields in ver2 with zeros
-            ver2[i]=0
-        fi
-        if ((10#${ver1[i]} > 10#${ver2[i]}))
-        then
-            return 1
-        fi
-        if ((10#${ver1[i]} < 10#${ver2[i]}))
-        then
-            return 2
-        fi
-    done
-    return 0
+# compare_versions accepts two semvers.
+# Its return value indicates how they compare:
+# 0: the semvers are equal
+# 1: the first semver is newer
+# 2: the second semver is newer
+compare_versions() {
+    [[ $1 == $2 ]] && return 0
+    local older=$(printf "$1\n$2\n" | sort -V | head -1)
+    [[ $older == $2 ]] && return 1
+    return 2
 }
 
 function update_latest_version() {
@@ -48,7 +27,7 @@ function update_latest_version() {
   local version_file=${3}
 
   local available_operator_versions=$(curl -X GET --key ${CERT_DIR}/${CERT_FILE_NAME}.key --cert ${CERT_DIR}/${CERT_FILE_NAME}.crt \
-    "${PYXIS_ENDPOINT}/v1/operators/bundles?page_size=100&organization=redhat-operators&filter=package==compliance-operator;in_index_img==true;channel_name==${channel_name}" | \
+    "${PYXIS_ENDPOINT}/v1/operators/bundles?page_size=100&organization=redhat-operators&filter=package==${OPERATOR_NAME};in_index_img==true;channel_name==${channel_name}" | \
     jq -r "[.data[] | {bundle_image: .bundle_path, operator_version: .version, channel_name: .channel_name, operator_name: .package }]" )
 
     jq -c '.[]' <<< ${available_operator_versions} | while read i; do
@@ -121,23 +100,24 @@ function create_missing_version_files() {
   # If a version file for a channel doesnt exist, create it
 
   available_operator_versions=$(curl -X GET --key ${CERT_DIR}/${CERT_FILE_NAME}.key --cert ${CERT_DIR}/${CERT_FILE_NAME}.crt \
-      "${PYXIS_ENDPOINT}/v1/operators/bundles?page_size=100&organization=redhat-operators&filter=package==compliance-operator;in_index_img==true" | \
+      "${PYXIS_ENDPOINT}/v1/operators/bundles?page_size=100&organization=redhat-operators&filter=package==${OPERATOR_NAME};in_index_img==true" | \
       jq -r "[.data[] | {bundle_image: .bundle_path, operator_version: .version, channel_name: .channel_name, operator_name: .package }]" )
 
   jq -c '.[]' <<< ${available_operator_versions} | while read i; do
     upstream_channel=$( jq -r .channel_name <<< "${i}" )
     channel_exists_in_repo ${upstream_channel}
-    if [[ ${?} == 1 ]]; then
-      # write file to repo, as the channle doesnt exist in versions dir
-      operator_name=$( jq -r .operator_name <<< "$i" )
-      echo "Missing channel found creating version file for ${upstream_channel}"
-      echo ${i} | jq > ${VERSIONS_DIR}/${operator_name}.${upstream_channel}.json
-    fi
+    # write file to repo, as the channle doesnt exist in versions dir
+    operator_name=$( jq -r .operator_name <<< "$i" )
+    echo "Missing channel found creating version file for ${upstream_channel}"
+    echo ${i} | jq > ${VERSIONS_DIR}/${operator_name}.${upstream_channel}.json
   done
 }
 
 function print_usage() {
   echo "Usage: ..."
+  echo " This script requires you to provide a directory with the Pyxis certs (using -d option) or set env variables:"
+  echo "     \$PYXIS_CERT - Cert file for the Pyxis API set as environment variable"
+  echo "     \$PYXIS_KEY - Cert key file set as environment variable"
   echo "  $0 [options]"
   echo "    options:"
   echo "       -g   search for new channels and create versions files for each if not present"

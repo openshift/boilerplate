@@ -17,10 +17,10 @@
 #### app-sre
 This convention relies on app-sre jenkins pipelines to run the build and version update jobs. It contains two make targets perform each of the functions
 
-##### `update-versions-push`
-Updates the version file in `${REPO_ROOT}/versions` with the latest operator version available in operatorhub. Invokes `current-version-getter.sh`. You can use the make target `update-versions` if you want to test the version update without 
+##### `update-versions-commit`
+Updates the version file in `${REPO_ROOT}/versions` with the latest operator version available in operatorhub. Invokes `current-version-getter.sh`. You can use the make target `update-versions` if you want to test the version update without committing the changes.
 
-##### `build-push`
+##### `catalog-build-push`
 Builds the mirrored catalog source image using [opm](https://github.com/operator-framework/operator-registry#building-an-index-of-operators-using-opm) and pushed to quay. This image is used to deploy the custom catalog source. The operator's subscription points to this catalog source to install the operator using Operator Lifecycle Manager (OLM). Invokes `app-sre-build-deploy.sh`
 
 ### Summary of scripts
@@ -36,5 +36,5 @@ This section briefly describes the two scripts present in this boilerplate conve
 
 ### Workflow
 * The app-interface job runs every week and calls `make update-versions` which should update the version files if a new version is available.
-* If a new version is available, the job should commit to master which should trigger the automated build job (`make build-push`). This should build and push the newer version of the catalog image to quay.io, ready to be used by OSD clusters.
+* If a new version is available, the job should commit to master which should trigger the automated build job (`make catalog-build-push`). This should build and push the newer version of the catalog image to quay.io, ready to be used by OSD clusters.
 * Depending on app-interface configuration, SREP can choose to either automatically update the operator versions fleet wide as a result of the new version available or manually promote the new version using the same method used to promote SREP maintained operators.
