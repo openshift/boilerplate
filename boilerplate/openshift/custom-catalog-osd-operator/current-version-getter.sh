@@ -31,13 +31,14 @@ function update_latest_version() {
     jq -r "[.data[] | {bundle_image: .bundle_path, operator_version: .version, channel_name: .channel_name, operator_name: .package }]" )
 
     jq -c '.[]' <<< ${available_operator_versions} | while read i; do
-      local upstream_operator_version=$( jq .operator_version <<< "${i}" )
-      upstream_operator_version=$(sed -e 's/^"//' -e 's/"$//' <<< ${upstream_operator_version})
+      local upstream_operator_version=$( jq -r .operator_version <<< "${i}" )
       
       compare_versions ${upstream_operator_version} ${version_in_repo}
       if [[ $? == 1 ]]; then
         echo "Found newer version upstream: ${upstream_operator_version}"
         echo ${i} |jq > ${version_file}
+        # This will make sure we end up with the latest available version
+        version_in_repo=${upstream_operator_version}
       fi
     done
 }
@@ -154,7 +155,7 @@ if [[ ${version_dir} ]]; then
 fi
 
 if [[ ! -f ${CERT_DIR}/${CERT_FILE_NAME}.crt || ! -f ${CERT_DIR}/${CERT_FILE_NAME}.key ]]; then
-  echo "default director not found, creating..."
+  echo "default cert directory ${CERT_DIR} not found, creating..."
   create_cert_dir_files
 fi
 
