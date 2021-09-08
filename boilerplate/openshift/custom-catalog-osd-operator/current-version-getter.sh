@@ -2,7 +2,7 @@
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 OPERATOR_NAME=$(basename ${REPO_ROOT}  | sed 's/-catalog//')
-CERT_DIR="${REPO_ROOT}/service-account/rhcs-request/"
+CERT_DIR="${REPO_ROOT}/service-account/rhcs-request"
 CERT_FILE_NAME="custom-catalog-source-index-builder"
 PYXIS_ENDPOINT="https://pyxis.engineering.redhat.com"
 VERSIONS_DIR="${REPO_ROOT}/versions"
@@ -49,9 +49,12 @@ function create_cert_dir_files() {
     echo "Red hat certificates required for Pyxis API not found. Please set PYXIS_CERT & PYXIS_KEY with appropriate values and try again"
     exit 1
   fi
-  #Write cert files to disk for API calls
+  # Write cert files to disk for API calls
   echo "${PYXIS_CERT}" > ${CERT_DIR}/${CERT_FILE_NAME}.crt
   echo "${PYXIS_KEY}" > ${CERT_DIR}/${CERT_FILE_NAME}.key
+
+  # Remove the cert files from the disk if being written from env variables
+  trap "rm -fr ${CERT_DIR}" EXIT
 }
 
 function channel_exists_in_repo() {
@@ -81,12 +84,12 @@ function update_version_files() {
 function commit_version_file_changes() {
   local latest_operator_version=''
   local version_file=''
-  if [[ -n $(git diff --name-only -q ${VERSIONS_DIR}) ]]; then
-    if [[ $(git diff --name-only -q ${VERSIONS_DIR}| wc -l) != '1' ]]; then
+  if [[ -n $(git diff --name-only ${VERSIONS_DIR}) ]]; then
+    if [[ $(git diff --name-only ${VERSIONS_DIR}| wc -l) != '1' ]]; then
       echo "More than one version file change detected, aborting"
       exit 1
     fi
-    version_file=$( git diff --name-only -q ${VERSIONS_DIR})
+    version_file=$( git diff --name-only ${VERSIONS_DIR})
     latest_operator_version=$(cat ${version_file} | jq -r '.operator_version')
 
     # prepare for app-sre jenkins push
@@ -106,24 +109,24 @@ function create_missing_version_files() {
 
   jq -c '.[]' <<< ${available_operator_versions} | while read i; do
     upstream_channel=$( jq -r .channel_name <<< "${i}" )
-    channel_exists_in_repo ${upstream_channel}
-    # write file to repo, as the channle doesnt exist in versions dir
-    operator_name=$( jq -r .operator_name <<< "$i" )
-    echo "Missing channel found creating version file for ${upstream_channel}"
-    echo ${i} | jq > ${VERSIONS_DIR}/${operator_name}.${upstream_channel}.json
+    if ! channel_exists_in_repo ${upstream_channel}; then
+      # write file to repo, as the channle doesnt exist in versions dir
+      operator_name=$( jq -r .operator_name <<< "$i" )
+      echo "Missing channel found creating version file for ${upstream_channel}"
+      echo ${i} | jq > ${VERSIONS_DIR}/${operator_name}.${upstream_channel}.json
+    fi
   done
 }
 
 function print_usage() {
   echo "Usage: ..."
-  echo " This script requires you to provide a directory with the Pyxis certs (using -d option) or set the following env variables:"
+  echo " This script requires you to provide certs in a ${CERT_DIR}/${CERT_FILE_NAME}.crt/.key or set the following env variables:"
   echo "     \$PYXIS_CERT - Cert file for the Pyxis API set as environment variable"
   echo "     \$PYXIS_KEY - Cert key file set as environment variable"
   echo "  $0 [options]"
   echo "    options:"
   echo "       -g   search for new channels and create versions files for each if not present"
   echo "       -d   provide the directory where version files are stored, default is ${VERSIONS_DIR}."
-  echo "            The version files need to be named: ${CERT_FILE_NAME}.crt/.key"
   echo "       -p   git commit version file changes, if present"
 }
 
