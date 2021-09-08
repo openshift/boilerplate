@@ -21,17 +21,12 @@ EOF
 function build_catalog_image() {
   local bundle_image=${1}
   local image_tag=${2}
-  local opm_local_executable
+  local opm_local_executable=${REPO_ROOT}/.opm/bin/opm
 
-  # install opm binary if it does not exist
-  if which opm >/dev/null 2>&1; then
-      opm_local_executable=$(realpath $(which opm))
-  else
-    opm_local_executable=${REPO_ROOT}/.opm/bin/opm
-    if ! ls ${opm_local_executable}; then
-      echo "opm binary not found, either install it manually or run 'make install-opm' "
-      exit 1
-    fi
+  # install opm binary
+  if ! [[ -x ${opm_local_executable} ]]; then
+    echo "opm binary not found, either install it manually or run 'make install-opm' "
+    exit 1
   fi
 
   ${CONTAINER_ENGINE} pull ${bundle_image}

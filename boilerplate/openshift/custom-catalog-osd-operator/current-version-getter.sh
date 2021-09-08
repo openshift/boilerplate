@@ -116,13 +116,14 @@ function create_missing_version_files() {
 
 function print_usage() {
   echo "Usage: ..."
-  echo " This script requires you to provide a directory with the Pyxis certs (using -d option) or set env variables:"
+  echo " This script requires you to provide a directory with the Pyxis certs (using -d option) or set the following env variables:"
   echo "     \$PYXIS_CERT - Cert file for the Pyxis API set as environment variable"
   echo "     \$PYXIS_KEY - Cert key file set as environment variable"
   echo "  $0 [options]"
   echo "    options:"
   echo "       -g   search for new channels and create versions files for each if not present"
-  echo "       -d   provide the directory where version files are stored, default is ${VERSIONS_DIR} "
+  echo "       -d   provide the directory where version files are stored, default is ${VERSIONS_DIR}."
+  echo "            The version files need to be named: ${CERT_FILE_NAME}.crt/.key"
   echo "       -p   git commit version file changes, if present"
 }
 
