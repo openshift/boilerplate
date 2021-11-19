@@ -102,6 +102,7 @@ with open('deploy/operator.yaml', 'r') as stream:
 
 # Update the deployment to use the defined image:
 csv['spec']['install']['spec']['deployments'][0]['spec']['template']['spec']['containers'][0]['image'] = operator_image
+csv['spec']['install']['spec']['deployments'][0]['spec']['template']['spec']['containers'][0]['env'].append(dict(name='OPERATOR_IMAGE', value=operator_image))
 
 # Update the versions to include git hash:
 csv['metadata']['name'] = "{}.v{}".format(operator_name, full_version)
