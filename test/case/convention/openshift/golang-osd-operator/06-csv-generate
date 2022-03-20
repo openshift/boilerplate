@@ -80,44 +80,41 @@ make boilerplate-update
 
 # Check if generation fails when unsupported resource type present
 colorprint $ORANGE "Build with unsupported resource"
-make staging-common-csv-build && err "CSV generation should have failed due to unsupported resource" || echo "unsupported resource present in deploy. CSV generation failed as expected"
+make staging-csv-build && err "CSV generation should have failed due to unsupported resource" || echo "unsupported resource present in deploy. CSV generation failed as expected"
 
 # Remove the unsupported file for further tests
 rm deploy/crds/mygroup.com_v1alpha1_testkind_cr.yaml
 
 colorprint $ORANGE "First build and compare on Staging"
-make staging-hack-csv-build
-make staging-common-csv-build-and-diff
+make staging-csv-build
 
-# Something to be checked/tested here
+# TODO: Validate generated files
 
 colorprint $ORANGE "First push on Staging"
 set_saas_git_config
 make staging-saas-bundle-push
 
-# Something to be checked/tested here
+# TODO: Something to be checked/tested here
 
 colorprint $ORANGE "First build and compare on Production"
-make production-hack-csv-build
-make production-common-csv-build-and-diff
+make production-csv-build
 
-# Something to be checked/tested here
+# TODO: Validate generated files
 
 colorprint $ORANGE "First push on Production"
 set_saas_git_config
 make production-saas-bundle-push
 
-# Something to be checked/tested here
+# TODO: Something to be checked/tested here
 
 colorprint $ORANGE "Updating project - #1"
 
 local_dummy_commit
 
 colorprint $ORANGE "Un-production build and compare on Staging"
-make staging-hack-csv-build
-make staging-common-csv-build-and-diff
+make staging-csv-build
 
-# Something to be checked/tested here
+# TODO: Validate generated files
 
 colorprint $ORANGE "Push un-production build to Staging"
 set_saas_git_config
@@ -128,10 +125,9 @@ colorprint $ORANGE "Updating project - #2"
 local_dummy_commit
 
 colorprint $ORANGE "Second build and compare on Staging to be pushed to Production"
-make staging-hack-csv-build
-make staging-common-csv-build-and-diff
+make staging-csv-build
 
-# Something to be checked/tested here
+# TODO: Validate generated files
 
 colorprint $ORANGE "Second push on Staging"
 set_saas_git_config
@@ -140,8 +136,9 @@ make staging-saas-bundle-push
 # Something to be checked/tested here
 
 colorprint $ORANGE "Second build and compare on Production"
-make production-hack-csv-build
-make production-common-csv-build-and-diff
+make production-csv-build
+
+# TODO: Validate generated files
 
 # Something to be checked/tested here
 colorprint $ORANGE "Second push on Production"
