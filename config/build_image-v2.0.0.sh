@@ -35,32 +35,32 @@ export GO111MODULE=on
 ###########
 # kustomize
 ###########
-KUSTOMIZE_VERSION=v3.8.8
-go get sigs.k8s.io/kustomize/kustomize/v3@${KUSTOMIZE_VERSION}
+KUSTOMIZE_VERSION=v4.5.3
+go install sigs.k8s.io/kustomize/kustomize/${KUSTOMIZE_VERSION%%.*}@${KUSTOMIZE_VERSION}
 
 ################
 # controller-gen
 ################
 CONTROLLER_GEN_VERSION=v0.3.0
-go get sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
+go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
 
 #############
 # openapi-gen
 #############
 OPENAPI_GEN_VERSION=v0.19.4
-go get k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
+go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
 
 #########
 # mockgen
 #########
 MOCKGEN_VERSION=v1.4.4
-go get github.com/golang/mock/mockgen@${MOCKGEN_VERSION}
+go install github.com/golang/mock/mockgen@${MOCKGEN_VERSION}
 
 ############
 # go-bindata
 ############
 GO_BINDATA_VERSION=v3.1.2
-go get github.com/go-bindata/go-bindata/...@${GO_BINDATA_VERSION}
+go install github.com/go-bindata/go-bindata/...@${GO_BINDATA_VERSION}
 
 # HACK: `go get` creates lots of things under GOPATH that are not group
 # accessible, even if umask is set properly. This causes failures of
@@ -89,29 +89,6 @@ mv yq /usr/local/bin
 # python libraries
 ##################
 python3 -m pip install PyYAML==5.3.1
-
-#####
-# git
-#####
-# Per https://git-scm.com/download/linux, we have two choices for CentOS
-# (which is what we're running on):
-# - Build from source
-# - Use a third party repository
-# For security reasons, we're preferring the former.
-GIT_VERSION="2.28.0"
-GIT_SHASUM="02016d16dbce553699db5c9c04f6d13a3f50727c652061b7eb97a828d045e534"
-GIT_DEPENDENCIES="epel-release perl-CPAN gettext-devel perl-devel openssl-devel zlib-devel curl-devel expat-devel getopt asciidoc xmlto docbook2X"
-yum remove -y git*
-yum -y install ${GIT_DEPENDENCIES}
-yum -y groupinstall "Development Tools"
-curl -L -o git.tar.gz https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz
-echo "${GIT_SHASUM}" git.tar.gz | sha256sum -c
-tar xzf git.tar.gz
-make --directory "git-${GIT_VERSION}" configure
-./git-${GIT_VERSION}/configure --prefix=/usr
-make --directory "git-${GIT_VERSION}" prefix=/usr/local all install
-yum groupremove -y "Development Tools" && \
-yum -y remove ${GIT_DEPENDENCIES}
 
 #########
 # cleanup
