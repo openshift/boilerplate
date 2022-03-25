@@ -392,7 +392,7 @@ for an example.
 
 2. Import that tag via boilerplate's ImageStream in `openshift/release`
    by adding an element to the `spec.tags` list in
-   [this configuration file](https://github.com/openshift/release/blob/master/core-services/supplemental-ci-images/boilerplate.yaml).
+   [this configuration file](https://github.com/openshift/release/blob/master/clusters/app.ci/supplemental-ci-images/boilerplate/boilerplate.yaml).
 
 #### Making CI Efficient
 The backing image is built in prow with every commit, even when nothing about it has changed.
