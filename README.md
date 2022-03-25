@@ -379,11 +379,16 @@ Example:
 
 ```shell
 $ git tag image-v1.2.3
+$ git push origin --tags
 $ git push upstream --tags
 ```
 
-**NOTE:** You must do this *after* creating your PR. Otherwise the
+**NOTE:** You must do the `upstream` push *after* creating your PR. Otherwise the
 tagged commit will not exist upstream.
+
+**NOTE:** Your commit must also update the tag in a couple of places in
+the repository. See https://github.com/openshift/boilerplate/pull/180
+for an example.
 
 2. Import that tag via boilerplate's ImageStream in `openshift/release`
    by adding an element to the `spec.tags` list in
