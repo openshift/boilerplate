@@ -5,12 +5,10 @@ GOLANGCI_OPTIONAL_CONFIG ?=
 
 LINT_CONVENTION_DIR := boilerplate/openshift/golang-lint
 
-.PHONY: go-check
-go-check: ## Golang linting and other static analysis
-	${LINT_CONVENTION_DIR}/ensure.sh golangci-lint
-	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${LINT_CONVENTION_DIR}/golangci.yml ./...
-	test "${GOLANGCI_OPTIONAL_CONFIG}" = "" || test ! -e "${GOLANGCI_OPTIONAL_CONFIG}" || GOLANGCI_LINT_CACHE="${GOLANGCI_LINT_CACHE}" golangci-lint run -c "${GOLANGCI_OPTIONAL_CONFIG}" ./...
-
 # lint: Perform static analysis.
 .PHONY: lint
-lint: go-check
+lint: lint-go-check
+        ${LINT_CONVENTION_DIR}/ensure.sh golangci-lint
+        GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${LINT_CONVENTION_DIR}/golangci.yml ./...
+        test "${GOLANGCI_OPTIONAL_CONFIG}" = "" || test ! -e "${GOLANGCI_OPTIONAL_CONFIG}" || GOLANGCI_LINT_CACHE="${GOLANGCI_LINT_CACHE}" golangci-lint run -c "${GOLANGCI_OPTIONAL_CONFIG}" ./...
+

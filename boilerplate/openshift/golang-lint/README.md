@@ -2,6 +2,10 @@
 
 - [Linting and other static analysis with `golangci-lint`](#linting-and-other-static-analysis-with-golangci-lint)
 
+| Test name / `make` target | Purpose                                                                                                             |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------    |
+| `lint`                    | Perform static analysis.                                                                                            |
+
 
 ## Linting and other static analysis with `golangci-lint`
 
