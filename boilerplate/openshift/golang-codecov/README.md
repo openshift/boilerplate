@@ -4,10 +4,10 @@
 
 ### Prow
 
-| Test name / `make` target | Purpose                                                                                                             |
-|---------------------------|-----------------------------------------------------------------------------------------------------------------    |
-| `test`                    | "Local" unit and functional testing.                                                                                |
-| `coverage`                | [Code coverage](#code-coverage) analysis and reporting.                                                             |
+| `make` target | Purpose                                                                                                             |
+|---------------|-----------------------------------------------------------------------------------------------------------------    |
+| `test`        | "Local" unit and functional testing.                                                                                |
+| `coverage`    | [Code coverage](#code-coverage) analysis and reporting.                                                             |
 
 
 ## Code coverage
