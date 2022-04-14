@@ -46,6 +46,9 @@ OPERATOR_IMAGE_URI=${IMG}
 OPERATOR_IMAGE_URI_LATEST=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME):latest
 OPERATOR_DOCKERFILE ?=build/Dockerfile
 REGISTRY_IMAGE=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME)-registry
+#The api dir that latest osdk generated
+NEW_API_DIR=./api
+USE_OLD_SDK=$(shell if [[ -d "$(NEW_API_DIR)" ]];then echo FALSE;else echo TRUE;fi)
 
 # Consumer can optionally define ADDITIONAL_IMAGE_SPECS like:
 #     define ADDITIONAL_IMAGE_SPECS
@@ -67,7 +70,12 @@ REGISTRY_USER ?=
 REGISTRY_TOKEN ?=
 
 BINFILE=build/_output/bin/$(OPERATOR_NAME)
-MAINPACKAGE ?= ./cmd/manager
+MAINPACKAGE = ./main.go
+API_DIR = $(NEW_API_DIR)
+ifeq ($(USE_OLD_SDK), TRUE)
+MAINPACKAGE = ./cmd/manager
+API_DIR = ./pkg/apis
+endif
 
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
@@ -159,11 +167,32 @@ go-generate:
 	${GOENV} go generate $(TESTTARGETS)
 	# Don't forget to commit generated files
 
+# go-get-tool will 'go install' any package $2 and install it to $1.
+define go-get-tool
+@{ \
+set -e ;\
+TMP_DIR=$$(mktemp -d) ;\
+cd $$TMP_DIR ;\
+go mod init tmp ;\
+echo "Downloading $(2)" ;\
+GOBIN=$(shell dirname $(1)) go install $(2) ;\
+echo "Installed in $(1)" ;\
+rm -rf $$TMP_DIR ;\
+}
+endef
+
+CONTROLLER_GEN_VERSION = v0.8.0
+CONTROLLER_GEN = controller-gen-$(CONTROLLER_GEN_VERSION)
+ifeq ($(USE_OLD_SDK), TRUE)
+#If we are using the old osdk, we use the default controller-gen and it's v0.3.0 for now.
+CONTROLLER_GEN = controller-gen
+endif
+
+
 .PHONY: op-generate
 op-generate:
-	# The artist formerly known as `operator-sdk generate crds`:
+	cd $(API_DIR); $(CONTROLLER_GEN) crd paths=./... output:dir=$(PWD)/deploy/crds
 ifeq ($(CRD_VERSION), v1beta1)
-	cd pkg/apis; controller-gen crd paths=./... output:dir=../../deploy/crds
 	# HACK: Due to an OLM bug in 3.11, we need to remove the
 	# spec.validation.openAPIV3Schema.type from CRDs. Remove once
 	# 3.11 is no longer supported.
@@ -176,16 +205,17 @@ ifeq ($(CRD_VERSION), v1beta1)
 	find deploy/crds -name '*.yaml' | xargs -n1 -I{} yq d -i {} 'spec.**.x-kubernetes-list-type'
 	find deploy/crds -name '*.yaml' | xargs -n1 -I{} yq d -i {} 'spec.**.x-kubernetes-map-type'
 	find deploy/crds -name '*.yaml' | xargs -n1 -I{} yq d -i {} 'spec.**.x-kubernetes-struct-type'
-else
-	cd pkg/apis; controller-gen crd:crdVersions=v1 paths=./... output:dir=../../deploy/crds
 endif
-	# The artist formerly known as `operator-sdk generate k8s`:
-	cd pkg/apis; controller-gen object paths=./...
-	# Don't forget to commit generated files
+	cd $(API_DIR); $(CONTROLLER_GEN) object paths=./...
+
+API_DIR_MIN_DEPTH = 1
+ifeq ($(USE_OLD_SDK), TRUE)
+API_DIR_MIN_DEPTH = 2
+endif
 
 .PHONY: openapi-generate
 openapi-generate:
-	find ./pkg/apis/ -maxdepth 2 -mindepth 2 -type d | xargs -t -n1 -I% \
+	find $(API_DIR) -maxdepth 2 -mindepth $(API_DIR_MIN_DEPTH) -type d | xargs -t -I% \
 		openapi-gen --logtostderr=true \
 			-i % \
 			-o "" \
@@ -193,7 +223,7 @@ openapi-generate:
 			-p % \
 			-h /dev/null \
 			-r "-"
-
+	
 .PHONY: generate
 generate: op-generate go-generate openapi-generate
 
@@ -207,9 +237,24 @@ go-build: ## Build binary
 	# This is temporary until a better container build method is developed
 	${GOENV} GOOS=linux go build ${GOBUILDFLAGS} -o ${BINFILE} ${MAINPACKAGE}
 
+# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
+ENVTEST_K8S_VERSION = 1.23
+
+SETUP_ENVTEST = $(shell pwd)/bin/setup-envtest
+.PHONY: setup-envtest
+setup-envtest: ## Download setup-envtest locally if necessary.
+	$(call go-get-tool,$(SETUP_ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
+	$(eval KUBEBUILDER_ASSETS = "$(shell $(SETUP_ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --bin-dir $(PWD)/bin)")
+	
+# Setting SHELL to bash allows bash commands to be executed by recipes.
+# This is a requirement for 'setup-envtest.sh' in the test target.
+# Options are set to exit when a recipe line exits non-zero or a piped command fails.
+SHELL = /usr/bin/env bash -o pipefail
+.SHELLFLAGS = -ec
+
 .PHONY: go-test
-go-test:
-	${GOENV} go test $(TESTOPTS) $(TESTTARGETS)
+go-test: setup-envtest
+	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test $(TESTOPTS) $(TESTTARGETS)
 
 .PHONY: python-venv
 python-venv:
