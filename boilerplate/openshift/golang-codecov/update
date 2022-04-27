@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e
+
+source $CONVENTION_ROOT/_lib/common.sh
+
+# No PRE
+[[ "$1" == "PRE" ]] && exit 0
+
+# Expect POST
+[[ "$1" == "POST" ]] || err "Got a parameter I don't understand: '$1'. Did the infrastructure change?"
+
+echo "Copying .codecov.yml to your repository root."
+cp ${HERE}/.codecov.yml $REPO_ROOT
+
+cat <<EOF
+
+=====================
+THINGS YOU NEED TO DO
+=====================
+- Make sure the following line is in your base Makefile:
+
+include boilerplate/generated-includes.mk
+
+- Remove any other 'include' lines, unless they're for things truly
+  unique to your repository. (Otherwise, consider proposing them to
+  boilerplate.)
+
+- Delete any obsolete files you're no longer including.
+
+- Make sure you are properly integrated with codecov.io:
+  https://github.com/openshift/ops-sop/blob/8e48d0c1e8d9f2f5a19b1e18cdf5f08f658eb184/services/codecov.md#generate-the-codecovio-token
+
+=====================
+
+EOF
