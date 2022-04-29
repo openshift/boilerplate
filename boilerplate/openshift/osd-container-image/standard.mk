@@ -81,6 +81,11 @@ osd-container-image-build: isclean
 osd-container-image-push: osd-container-image-login osd-container-image-build
 	${CONTAINER_ENGINE} push ${IMAGE_URI}
 
+.PHONY: prow-config
+prow-config:
+	${CONVENTION_DIR}/prow-config ${RELEASE_CLONE}
+
+
 #########################
 # Targets used by app-sre
 #########################
