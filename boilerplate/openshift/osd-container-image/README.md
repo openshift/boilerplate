@@ -25,6 +25,7 @@ endef
 | `make osd-container-image-push` | Push the default container. |
 | `make osd-container-image-build-push` | Build and push the default container and `ADDITIONAL_IMAGE_SPECS`. Meant to be run by app-interface. |
 | `make isclean` | Ensure the local git checkout is clean. |
+| `make prow-config` | Updates the corresponding Prow config file in [openshift/release](https://github.com/openshift/release) to run `make test` on merge requests. This `test` make target should be defined by the consumer. If this is a new repository it should be onboarded to openshift/release first before this is run. |
 
 ## Linting/Testing
 
