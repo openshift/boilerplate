@@ -41,8 +41,14 @@ go install sigs.k8s.io/kustomize/kustomize/${KUSTOMIZE_VERSION%%.*}@${KUSTOMIZE_
 ################
 # controller-gen
 ################
-CONTROLLER_GEN_VERSION=v0.3.0
-go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
+# v0.3.0 is used by the old operator-sdk, v0.8.0 is used by the latest
+CONTROLLER_GEN_VERSIONS=["v0.3.0", "v0.8.0"]
+for CONTROLLER_GEN_VERSION in $CONTROLLER_GEN_VERSIONS;do
+    go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
+    mv $GOPATH/bin/controller-gen $GOPATH/bin/controller-gen-${CONTROLLER_GEN_VERSION}
+done
+# We set the v0.3.0 as default
+ln -s $GOPATH/bin/controller-gen-v0.3.0 $GOPATH/bin/controller-gen
 
 #############
 # openapi-gen
