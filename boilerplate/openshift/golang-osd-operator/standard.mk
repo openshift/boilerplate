@@ -244,7 +244,6 @@ SETUP_ENVTEST = $(shell pwd)/bin/setup-envtest
 .PHONY: setup-envtest
 setup-envtest: ## Download setup-envtest locally if necessary.
 	$(call go-get-tool,$(SETUP_ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
-	$(eval KUBEBUILDER_ASSETS = "$(shell $(SETUP_ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --bin-dir $(PWD)/bin)")
 	
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
@@ -254,7 +253,7 @@ SHELL = /usr/bin/env bash -o pipefail
 
 .PHONY: go-test
 go-test: setup-envtest
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test $(TESTOPTS) $(TESTTARGETS)
+	KUBEBUILDER_ASSETS="$(shell $(SETUP_ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --bin-dir $(PWD)/bin)" go test $(TESTOPTS) $(TESTTARGETS)
 
 .PHONY: python-venv
 python-venv:
