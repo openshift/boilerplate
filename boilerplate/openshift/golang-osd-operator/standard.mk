@@ -181,11 +181,19 @@ rm -rf $$TMP_DIR ;\
 }
 endef
 
+# Deciding on the binary versions
 CONTROLLER_GEN_VERSION = v0.8.0
 CONTROLLER_GEN = controller-gen-$(CONTROLLER_GEN_VERSION)
+
+OPENAPI_GEN_VERSION = v0.19.4
+OPENAPI_GEN = openapi-gen-$(OPENAPI_GEN_VERSION)
+
 ifeq ($(USE_OLD_SDK), TRUE)
-#If we are using the old osdk, we use the default controller-gen and it's v0.3.0 for now.
+#If we are using the old osdk, we use the default controller-gen and openapi-gen versions.
+# Default version is 0.8.0 for now.
 CONTROLLER_GEN = controller-gen
+# Default version is 0.19.4 for now.
+OPENAPI_GEN = openapi-gen
 endif
 
 
@@ -216,7 +224,7 @@ endif
 .PHONY: openapi-generate
 openapi-generate:
 	find $(API_DIR) -maxdepth 2 -mindepth $(API_DIR_MIN_DEPTH) -type d | xargs -t -I% \
-		openapi-gen --logtostderr=true \
+		$(OPENAPI_GEN) --logtostderr=true \
 			-i % \
 			-o "" \
 			-O zz_generated.openapi \
@@ -239,12 +247,11 @@ go-build: ## Build binary
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.23
+SETUP_ENVTEST = setup-envtest
 
-SETUP_ENVTEST = $(shell pwd)/bin/setup-envtest
 .PHONY: setup-envtest
-setup-envtest: ## Download setup-envtest locally if necessary.
-	$(call go-get-tool,$(SETUP_ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
-	$(eval KUBEBUILDER_ASSETS = "$(shell $(SETUP_ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --bin-dir $(PWD)/bin)")
+setup-envtest:
+	$(eval KUBEBUILDER_ASSETS := "$(shell $(SETUP_ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --bin-dir $(PWD)/bin)")
 	
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
