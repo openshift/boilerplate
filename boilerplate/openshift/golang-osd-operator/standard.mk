@@ -185,12 +185,12 @@ endef
 CONTROLLER_GEN_VERSION = v0.8.0
 CONTROLLER_GEN = controller-gen-$(CONTROLLER_GEN_VERSION)
 
-OPENAPI_GEN_VERSION = v0.19.4
+OPENAPI_GEN_VERSION = v0.23.0
 OPENAPI_GEN = openapi-gen-$(OPENAPI_GEN_VERSION)
 
 ifeq ($(USE_OLD_SDK), TRUE)
 #If we are using the old osdk, we use the default controller-gen and openapi-gen versions.
-# Default version is 0.8.0 for now.
+# Default version is 0.3.0 for now.
 CONTROLLER_GEN = controller-gen
 # Default version is 0.19.4 for now.
 OPENAPI_GEN = openapi-gen
