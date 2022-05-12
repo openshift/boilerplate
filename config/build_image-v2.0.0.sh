@@ -53,10 +53,20 @@ ln -s $GOPATH/bin/controller-gen-v0.3.0 $GOPATH/bin/controller-gen
 #############
 # openapi-gen
 #############
-OPENAPI_GEN_VERSION=v0.19.4
-go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
+OPENAPI_GEN_VERSIONS="v0.19.4 v0.23.0"
+for OPENAPI_GEN_VERSION in $OPENAPI_GEN_VERSIONS;do
+    go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
+    mv $GOPATH/bin/openapi-gen $GOPATH/bin/openapi-gen-${OPENAPI_GEN_VERSION}
+done
+# Set v0.19.4 as the default version for backwards compatibility
+ln -s $GOPATH/bin/openapi-gen-v0.19.4 $GOPATH/bin/openapi-gen
 
 #########
+# ENVTEST
+#########
+# We do not enforce versioning on setup-envtest
+go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
 # mockgen
 #########
 MOCKGEN_VERSION=v1.4.4
