@@ -71,6 +71,7 @@ FROM registry.access.redhat.com/ubi8/ubi-micro:8.5-836
 
 COPY --from=builder /bin/registry-server /bin/registry-server
 COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
+COPY --from=builder /bin/initializer /bin/initializer
 
 WORKDIR /registry
 RUN chgrp -R 0 /registry && chmod -R g+rwx /registry
