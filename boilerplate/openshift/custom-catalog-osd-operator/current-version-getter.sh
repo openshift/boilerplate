@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
-OPERATOR_NAME=$(basename ${REPO_ROOT}  | sed 's/-catalog//')
+VERSIONS_DIR="${REPO_ROOT}/versions"
+OPERATOR_NAME=$(jq -r '.operator_name' $VERSIONS_DIR/*)
 CERT_DIR="${REPO_ROOT}/service-account/rhcs-request"
 CERT_FILE_NAME="custom-catalog-source-index-builder"
 PYXIS_ENDPOINT="https://pyxis.engineering.redhat.com"
-VERSIONS_DIR="${REPO_ROOT}/versions"
+
 
 
 # compare_versions accepts two semvers.
