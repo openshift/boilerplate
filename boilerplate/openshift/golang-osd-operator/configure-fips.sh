@@ -2,7 +2,7 @@
 
 set -e
 
-REPO_ROOT=$(git rev-parse --show-toplevel)
+REPO_ROOT=${PWD}
 CONVENTION_DIR="$REPO_ROOT/boilerplate/openshift/golang-osd-operator"
 PRE_V1_SDK_MANAGER_DIR="$REPO_ROOT/cmd/manager"
 
