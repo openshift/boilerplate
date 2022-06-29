@@ -9,7 +9,7 @@
 
 ## Linting and other static analysis with `golangci-lint`
 
-- A `go-check` `make` target, which
+- A `lint` `make` target, which
 - ensures the proper version of `golangci-lint` is installed, and
 - runs it against
 - a `golangci.yml` config.
