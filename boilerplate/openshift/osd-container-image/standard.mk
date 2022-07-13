@@ -38,6 +38,10 @@ IMAGE_VERSION := $(VERSION_MAJOR).$(VERSION_MINOR).$(COMMIT_NUMBER)-$(CURRENT_CO
 IMAGE=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME)
 IMAGE_TAG=v$(IMAGE_VERSION)
 IMAGE_URI?=$(IMAGE):$(IMAGE_TAG)
+# We generate IMAGE_URI_LATEST from IMAGE_URI just in case IMAGE_URI was explicitly set
+# by the user (e.g., as is done in app-sre-build-push.sh). Failing that, we fallback to
+# generating IMAGE_URI_LATEST by just appending ":latest" to IMAGE
+IMAGE_URI_LATEST?=$(or $(firstword $(subst :, ,$(IMAGE_URI))),$(value IMAGE)):latest
 DOCKERFILE ?=./build/Dockerfile
 
 
@@ -76,10 +80,12 @@ isclean:
 .PHONY: osd-container-image-build
 osd-container-image-build: isclean
 	${CONTAINER_ENGINE} build --pull -f $(DOCKERFILE) -t $(IMAGE_URI) .
+	${CONTAINER_ENGINE} tag $(IMAGE_URI) $(IMAGE_URI_LATEST)
 
 .PHONY: osd-container-image-push
 osd-container-image-push: osd-container-image-login osd-container-image-build
 	${CONTAINER_ENGINE} push ${IMAGE_URI}
+	${CONTAINER_ENGINE} push ${IMAGE_URI_LATEST}
 
 .PHONY: prow-config
 prow-config:
@@ -102,7 +108,9 @@ osd-container-image-build-push-one: isclean osd-container-image-login
 	@(if [[ -z "${IMAGE_URI}" ]]; then echo "Must specify IMAGE_URI"; exit 1; fi)
 	@(if [[ -z "${DOCKERFILE_PATH}" ]]; then echo "Must specify DOCKERFILE_PATH"; exit 1; fi)
 	${CONTAINER_ENGINE} build --pull -f $(DOCKERFILE_PATH) -t $(IMAGE_URI) .
+	${CONTAINER_ENGINE} tag $(IMAGE_URI) $(IMAGE_URI_LATEST)
 	${CONTAINER_ENGINE} push ${IMAGE_URI}
+	${CONTAINER_ENGINE} push ${IMAGE_URI_LATEST}
 
 # build-push: Construct, tag, and push all container images.
 # TODO: Boilerplate this script.
