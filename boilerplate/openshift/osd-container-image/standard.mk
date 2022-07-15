@@ -79,8 +79,7 @@ isclean:
 
 .PHONY: osd-container-image-build
 osd-container-image-build: isclean
-	${CONTAINER_ENGINE} build --pull -f $(DOCKERFILE) -t $(IMAGE_URI) .
-	${CONTAINER_ENGINE} tag $(IMAGE_URI) $(IMAGE_URI_LATEST)
+	${CONTAINER_ENGINE} build --pull -f $(DOCKERFILE) -t $(IMAGE_URI) -t $(IMAGE_URI_LATEST) .
 
 .PHONY: osd-container-image-push
 osd-container-image-push: osd-container-image-login osd-container-image-build
@@ -107,8 +106,7 @@ osd-container-image-login:
 osd-container-image-build-push-one: isclean osd-container-image-login
 	@(if [[ -z "${IMAGE_URI}" ]]; then echo "Must specify IMAGE_URI"; exit 1; fi)
 	@(if [[ -z "${DOCKERFILE_PATH}" ]]; then echo "Must specify DOCKERFILE_PATH"; exit 1; fi)
-	${CONTAINER_ENGINE} build --pull -f $(DOCKERFILE_PATH) -t $(IMAGE_URI) .
-	${CONTAINER_ENGINE} tag $(IMAGE_URI) $(IMAGE_URI_LATEST)
+	${CONTAINER_ENGINE} build --pull -f $(DOCKERFILE_PATH) -t $(IMAGE_URI) -t $(IMAGE_URI_LATEST) .
 	${CONTAINER_ENGINE} push ${IMAGE_URI}
 	${CONTAINER_ENGINE} push ${IMAGE_URI_LATEST}
 
