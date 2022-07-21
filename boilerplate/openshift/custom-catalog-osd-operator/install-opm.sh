@@ -3,7 +3,7 @@
 set -e
 
 # global envs
-OPM_VERSION="v1.15.2"
+OPM_VERSION="v1.23.2"
 GOOS=$(go env GOOS)
 REPO_ROOT=$(git rev-parse --show-toplevel)
 OPM_LOCAL_EXECUTABLE_DIR=${REPO_ROOT}/.opm/bin

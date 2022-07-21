@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ev
+set -v
 
 # Global vars
 CONTAINER_ENGINE=$(command -v podman || command -v docker)
@@ -12,8 +12,9 @@ source $REPO_ROOT/boilerplate/_lib/common.sh
 
 function usage() {
     cat <<EOF
-    Usage: $0 REGISTRY_IMAGE_URI
+    Usage: $0 REGISTRY_IMAGE_URI BASE_IMAGE_PATH
     REGISTRY_IMAGE_URI is the complete image URI that needs to be built
+    BASE_IMAGE_PATH is the base URI path in the contaienr registry (ie. quay.io/app-sre/image)
 EOF
     exit -1
 }
@@ -30,28 +31,51 @@ function build_catalog_image() {
   fi
 
   ${CONTAINER_ENGINE} pull ${bundle_image}
-  ${opm_local_executable} index add --bundles ${bundle_image} --tag ${image_tag} \
-    --container-tool ${CONTAINER_ENGINE_SHORT}
+  #some upstream bundles images are built specifying a "replaces" field, which 
+  # means it builds on top of the previous minor version
+  # we need to check if the build fails for that reason and use another method
+  BUILD=$("${opm_local_executable} index add \
+    --bundles ${bundle_image} \
+    --tag ${image_tag} \
+    --container-tool ${CONTAINER_ENGINE_SHORT} 2>&1")
+  echo $BUILD
+  ERR_COUNT=$(echo $BUILD | grep -c 'non-existent replacement')
 
+  if [[ ${ERR_COUNT} > 0 ]]; then 
+    echo "adding bundle failed -- bundle specifies a non-existent replacement"
+    echo "re-attempting by using the previous catalog image as the index"
+    
+    # grab the latest catalog image tag to use as an arg to --from-index
+    CATALOG_LATEST_TAG=$(skopeo list-tags docker://${BASE_IMAGE_PATH} | jq -r '.Tags[-1]')
+    ${opm_local_executable} index add \
+      --bundles ${bundle_image} \
+      --tag ${image_tag} \
+      --container-tool ${CONTAINER_ENGINE_SHORT} \
+      --from-index "${BASE_IMAGE_PATH}:${CATALOG_LATEST_TAG}"
+  fi
 }
 
-[[ $# -eq 1 ]] || usage
+[[ $# -eq 2 ]] || usage
 
 REGISTRY_IMAGE_URI=$1
+BASE_IMAGE_PATH=$2
 
-if image_exists_in_repo "${REGISTRY_IMAGE_URI}"; then
-  echo "Custom catalog image for the latest operator version already exists in the registry"
-  echo "Nothing to do here"
-else
+# if image_exists_in_repo "${REGISTRY_IMAGE_URI}"; then
+#   echo "Custom catalog image for the latest operator version already exists in the registry"
+#   echo "Nothing to do here"
+# else
   for f in ${VERSIONS_DIR}/*;
   do
     bundle_image=$( cat ${f} | jq -r .bundle_image )
-    build_catalog_image ${bundle_image} ${REGISTRY_IMAGE_URI}
+    build_catalog_image ${bundle_image} ${REGISTRY_IMAGE_URI} ${BASE_IMAGE_PATH}
     if [[ ${?} == 0 ]]; then
       echo "pushing image"
       cd ${REPO_ROOT}
-      make docker-push-catalog
+      #make docker-push-catalog
+    else
+      echo "building from index failed"
+      exit 1
     fi
   done
-fi
+# fi
 
