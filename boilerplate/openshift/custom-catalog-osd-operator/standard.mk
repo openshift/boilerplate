@@ -14,7 +14,6 @@ CONTAINER_ENGINE=$(shell command -v podman 2>/dev/null || command -v docker 2>/d
 
 # Generate version and tag information from inputs
 CURRENT_COMMIT=$(shell git rev-parse --short=7 HEAD)
-PREVIOUS_COMMIT=$(shell git rev-list --max-count=2 --reverse HEAD | head -n 1 -c 7)
 
 REGISTRY_IMAGE=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME)
 REGISTRY_IMAGE_URI=$(REGISTRY_IMAGE):$(CURRENT_COMMIT)
@@ -26,20 +25,20 @@ CONVENTION_DIR := boilerplate/openshift/custom-catalog-osd-operator
 
 .PHONY: docker-push-catalog
 docker-push-catalog: docker-login ## push custom catalog image to quay.io
-	${CONTAINER_ENGINE}  push ${REGISTRY_IMAGE_URI}
+	${CONTAINER_ENGINE} --config=${CONTAINER_ENGINE_CONFIG_DIR} push ${REGISTRY_IMAGE_URI}
 
 .PHONY: docker-login
 docker-login: ## docker login to quay.io
 	@test "${REGISTRY_USER}" != "" && test "${REGISTRY_TOKEN}" != "" || (echo "REGISTRY_USER and REGISTRY_TOKEN must be defined" && exit 1)
 	mkdir -p ${CONTAINER_ENGINE_CONFIG_DIR}
-	@${CONTAINER_ENGINE} login -u="${REGISTRY_USER}" -p="${REGISTRY_TOKEN}" quay.io
+	@${CONTAINER_ENGINE} --config=${CONTAINER_ENGINE_CONFIG_DIR} login -u="${REGISTRY_USER}" -p="${REGISTRY_TOKEN}" quay.io
 
 
 .PHONY: docker-login-rh-registry
  docker-login-rh-registry: ## docker login to registry.redhat.io
 	@test "${REGISTRY_RH_IO_USER}" != "" && test "${REGISTRY_RH_IO_TOKEN}" != "" || (echo "REGISTRY_RH_IO_USER and REGISTRY_RH_IO_TOKEN must be defined" && exit 1)
 	mkdir -p ${CONTAINER_ENGINE_CONFIG_DIR}
-	@${CONTAINER_ENGINE}  login -u="${REGISTRY_RH_IO_USER}" -p="${REGISTRY_RH_IO_TOKEN}" registry.redhat.io
+	@${CONTAINER_ENGINE} --config=${CONTAINER_ENGINE_CONFIG_DIR} login -u="${REGISTRY_RH_IO_USER}" -p="${REGISTRY_RH_IO_TOKEN}" registry.redhat.io
 
 .PHONY: install-opm
 install-opm: ## install opm binary used to build the catalog image if it not already installed
