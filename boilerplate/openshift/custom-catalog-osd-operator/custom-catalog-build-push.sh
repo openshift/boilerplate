@@ -12,7 +12,7 @@ source $REPO_ROOT/boilerplate/_lib/common.sh
 
 function usage() {
     cat <<EOF
-    Usage: $0 REGISTRY_IMAGE_URI BASE_IMAGE_PATH
+    Usage: $0 REGISTRY_IMAGE_URI
     REGISTRY_IMAGE_URI is the complete image URI that needs to be built
 EOF
     exit -1
@@ -81,7 +81,6 @@ else
   do
     bundle_image=$( cat ${f} | jq -r .bundle_image )
     build_catalog_image ${bundle_image} ${REGISTRY_IMAGE_URI}
-    echo $?
     if [[ ${?} == 0 ]]; then
       echo "pushing image"
       cd ${REPO_ROOT}
