@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ev
+set -v
 
 # Global vars
 CONTAINER_ENGINE=$(command -v podman || command -v docker)
@@ -30,14 +30,48 @@ function build_catalog_image() {
   fi
 
   ${CONTAINER_ENGINE} pull ${bundle_image}
-  ${opm_local_executable} index add --bundles ${bundle_image} --tag ${image_tag} \
-    --container-tool ${CONTAINER_ENGINE_SHORT}
+  # some upstream bundles images are built specifying a "replaces" field, which means it builds on top of the 
+  # previous minor version. we need to check if the build fails for that reason and use another method
+  echo "building catalog image..."
 
+  # preserve logging output from command by duplicating the file descriptor
+  exec 5>&1
+  BUILD=$(${opm_local_executable} index add \
+    --bundles ${bundle_image} \
+    --tag ${image_tag} \
+    --container-tool ${CONTAINER_ENGINE_SHORT} 2>&1 | tee /dev/fd/5; exit ${PIPESTATUS[0]})
+  RC=$?
+  ERR_COUNT=$(echo $BUILD | grep -c 'non-existent replacement')
+    
+  if [[ ${RC} > 0 ]] && [[ ${ERR_COUNT} == 0 ]]; then
+    echo "adding bundle failed"
+    exit 1
+  fi
+  
+  if [[ ${ERR_COUNT} > 0 ]]; then
+    echo "adding bundle failed -- bundle specifies a non-existent replacement"
+    echo "re-attempting by using the previous catalog image as the index"
+    
+    # grab the latest catalog image tag to use as an arg to --from-index
+    CATALOG_LATEST_TAG=$(skopeo list-tags docker://${BASE_IMAGE_PATH} | jq -r '.Tags[-1]')
+
+    ${opm_local_executable} index add \
+      --bundles ${bundle_image} \
+      --tag ${image_tag} \
+      --container-tool ${CONTAINER_ENGINE_SHORT} \
+      --from-index "${BASE_IMAGE_PATH}:${CATALOG_LATEST_TAG}"
+
+    if [[ ${?} > 0 ]]; then
+      echo "building from index failed"
+      exit 1
+    fi
+  fi
 }
 
 [[ $# -eq 1 ]] || usage
 
 REGISTRY_IMAGE_URI=$1
+BASE_IMAGE_PATH=${REGISTRY_IMAGE_URI%:*}
 
 if image_exists_in_repo "${REGISTRY_IMAGE_URI}"; then
   echo "Custom catalog image for the latest operator version already exists in the registry"
