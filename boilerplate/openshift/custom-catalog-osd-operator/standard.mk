@@ -10,7 +10,7 @@ REGISTRY_TOKEN?=$(QUAY_TOKEN)
 
 
 # Accommodate docker or podman
-CONTAINER_ENGINE=$(shell command -v podman 2>/dev/null || echo docker --config=$(CONTAINER_ENGINE_CONFIG_DIR))
+CONTAINER_ENGINE=$(shell command -v podman 2>/dev/null || echo "docker --config=$(CONTAINER_ENGINE_CONFIG_DIR)")
 
 # Generate version and tag information from inputs
 CURRENT_COMMIT=$(shell git rev-parse --short=7 HEAD)
@@ -50,7 +50,7 @@ install-opm: ## install opm binary used to build the catalog image if it not alr
 
 .PHONY: catalog-build-push
 catalog-build-push:  docker-login-rh-registry docker-login install-opm ## called by app-sre automation to build a new catalog image
-	${CONVENTION_DIR}/custom-catalog-build-push.sh ${REGISTRY_IMAGE_URI} ${REGISTRY_IMAGE}
+	${CONVENTION_DIR}/custom-catalog-build-push.sh ${REGISTRY_IMAGE_URI}
 
 .PHONY: update-versions
 update-versions: ## update the version file with the latest operator version (if available)
