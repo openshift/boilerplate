@@ -86,6 +86,9 @@ else
       echo "pushing image"
       cd ${REPO_ROOT}
       make docker-push-catalog
+    else
+      echo "failed to build catalog image"
+      exit 1
     fi
   done
 fi
