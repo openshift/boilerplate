@@ -41,7 +41,7 @@ function build_catalog_image() {
     --tag ${image_tag} \
     --container-tool ${CONTAINER_ENGINE_SHORT} 2>&1 | tee /dev/fd/5; exit ${PIPESTATUS[0]})
   RC=$?
-  ERR_COUNT=$(echo $BUILD | grep -c 'non-existent replacement')
+  ERR_COUNT=$(echo $BUILD | grep -c 'replaces nonexistent bundle')
     
   if [[ ${RC} > 0 ]] && [[ ${ERR_COUNT} == 0 ]]; then
     echo "adding bundle failed"
