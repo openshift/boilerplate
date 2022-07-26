@@ -41,7 +41,7 @@ function build_catalog_image() {
     --tag ${image_tag} \
     --container-tool ${CONTAINER_ENGINE_SHORT} 2>&1 | tee /dev/fd/5; exit ${PIPESTATUS[0]})
   RC=$?
-  ERR_COUNT=$(echo $BUILD | grep -c 'non-existent replacement')
+  ERR_COUNT=$(echo "$BUILD" | grep -c 'replaces nonexistent bundle')
     
   if [[ ${RC} > 0 ]] && [[ ${ERR_COUNT} == 0 ]]; then
     echo "adding bundle failed"
@@ -76,6 +76,7 @@ BASE_IMAGE_PATH=${REGISTRY_IMAGE_URI%:*}
 if image_exists_in_repo "${REGISTRY_IMAGE_URI}"; then
   echo "Custom catalog image for the latest operator version already exists in the registry"
   echo "Nothing to do here"
+  exit 0
 else
   for f in ${VERSIONS_DIR}/*;
   do
@@ -85,6 +86,9 @@ else
       echo "pushing image"
       cd ${REPO_ROOT}
       make docker-push-catalog
+    else
+      echo "failed to build catalog image"
+      exit 1
     fi
   done
 fi
