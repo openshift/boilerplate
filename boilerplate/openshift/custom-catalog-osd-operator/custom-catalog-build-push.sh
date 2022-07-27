@@ -54,7 +54,7 @@ function build_catalog_image() {
     echo "re-attempting by using the previous catalog image as the index"
     
     # grab the latest catalog image tag using skopeo in a container as the os level one is too old
-    # this valies is needed as an arg to --from-index
+    # this value is needed as an arg to --from-index
     CATALOG_LATEST_TAG=$(jq -r '.Tags[-1]' < <(${CONTAINER_ENGINE} run ${SKOPEO_IMAGE} -- skopeo list-tags docker://${BASE_IMAGE_PATH}))
     if [[ ${?} > 0 ]]; then 
       echo "skopeo failed to fetch the latest image tag"
