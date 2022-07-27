@@ -7,6 +7,7 @@ CONTAINER_ENGINE=$(command -v podman || command -v docker)
 CONTAINER_ENGINE_SHORT=${CONTAINER_ENGINE##*/}
 REPO_ROOT=$(git rev-parse --show-toplevel)
 VERSIONS_DIR=${REPO_ROOT}/versions
+SKOPEO_IMAGE="quay.io/skopeo/stable:v1.8.0"
 
 source $REPO_ROOT/boilerplate/_lib/common.sh
 
@@ -52,8 +53,14 @@ function build_catalog_image() {
     echo "adding bundle failed -- bundle specifies a non-existent replacement"
     echo "re-attempting by using the previous catalog image as the index"
     
-    # grab the latest catalog image tag to use as an arg to --from-index
-    CATALOG_LATEST_TAG=$(skopeo list-tags docker://${BASE_IMAGE_PATH} | jq -r '.Tags[-1]')
+    # grab the latest catalog image tag using skopeo in a container as the os level one is too old
+    # this valies is needed as an arg to --from-index
+    CATALOG_LATEST_TAG=$(jq -r '.Tags[-1]' < <(${CONTAINER_ENGINE} run ${SKOPEO_IMAGE} -- skopeo list-tags docker://${BASE_IMAGE_PATH}))
+    if [[ ${?} > 0 ]]; then 
+      echo "skopeo failed to fetch the latest image tag"
+      echo "error: $CATALOG_LATEST_TAG"
+      exit 1
+    fi
 
     ${opm_local_executable} index add \
       --bundles ${bundle_image} \
@@ -92,4 +99,3 @@ else
     fi
   done
 fi
-
