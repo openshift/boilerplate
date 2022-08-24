@@ -27,3 +27,4 @@ comment:
 
 ignore:
   - "**/mocks"
+  - "**/zz_generated*.go"
