@@ -200,8 +200,10 @@ OPENAPI_GEN = openapi-gen-$(OPENAPI_GEN_VERSION)
 ifeq ($(USE_OLD_SDK), TRUE)
 #If we are using the old osdk, we use the default controller-gen and openapi-gen versions.
 # Default version is 0.3.0 for now.
+CONTROLLER_GEN_VERSION = v0.3.0
 CONTROLLER_GEN = controller-gen
 # Default version is 0.19.4 for now.
+OPENAPI_GEN_VERSION = v0.19.4
 OPENAPI_GEN = openapi-gen
 endif
 
@@ -239,6 +241,16 @@ go-build: ## Build binary
 	# Force GOOS=linux as we may want to build containers in other *nix-like systems (ie darwin).
 	# This is temporary until a better container build method is developed
 	${GOENV} GOOS=linux go build ${GOBUILDFLAGS} -o ${BINFILE} ${MAINPACKAGE}
+
+.PHONY: tools
+tools: ## Install binaries locally
+	go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+	go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
+	go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
+	@if [ "$(USE_OLD_SDK)" == "FALSE" ]; then \
+		ln -sf $(GOBIN)/openapi-gen $(GOBIN)/$(OPENAPI_GEN); \
+		ln -sf $(GOBIN)/controller-gen $(GOBIN)/$(CONTROLLER_GEN); \
+	fi
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.23
