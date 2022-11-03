@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 
 # This script comprises everything up to and including the boilerplate
-# backing image at version image-v2.0.0. It is no longer used since the
-# latest version is based on image-v3.0.0. It is kept for posterity.
+# backing image at version image-v3.0.0. It is used when performing a
+# full build in the appsre pipeline, but is bypassed during presubmit CI
+# in prow to make testing faster there. As such, there is a (very small)
+# possibility of those behaving slightly differently.
+
+# Compatible with Operator-SDK v1.25.0+ which first supported Go 1.19
+# https://github.com/operator-framework/operator-sdk/releases/tag/v1.25.0
 
 set -x
 set -euo pipefail
@@ -13,8 +18,8 @@ pushd $tmpd
 ###############
 # golangci-lint
 ###############
-GOCILINT_VERSION="1.31.0"
-GOCILINT_SHA256SUM="9a5d47b51442d68b718af4c7350f4406cdc087e2236a5b9ae52f37aebede6cb3"
+GOCILINT_VERSION="1.50.0"
+GOCILINT_SHA256SUM="b4b329efcd913082c87d0e9606711ecb57415b5e6ddf233fde9e76c69d9b4e8b"
 GOCILINT_LOCATION=https://github.com/golangci/golangci-lint/releases/download/v${GOCILINT_VERSION}/golangci-lint-${GOCILINT_VERSION}-linux-amd64.tar.gz
 
 curl -L -o golangci-lint.tar.gz $GOCILINT_LOCATION
@@ -30,34 +35,27 @@ unset GOFLAGS
 # No, really, we want to use modules
 export GO111MODULE=on
 
+# print go version for fun
+go version
+
 ###########
 # kustomize
 ###########
-KUSTOMIZE_VERSION=v4.5.3
+KUSTOMIZE_VERSION=v4.5.5
 go install sigs.k8s.io/kustomize/kustomize/${KUSTOMIZE_VERSION%%.*}@${KUSTOMIZE_VERSION}
 
 ################
 # controller-gen
 ################
-# v0.3.0 is used by the old operator-sdk, v0.8.0 is used by the latest
-CONTROLLER_GEN_VERSIONS="v0.3.0 v0.8.0"
-for CONTROLLER_GEN_VERSION in $CONTROLLER_GEN_VERSIONS;do
-    go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
-    mv $GOPATH/bin/controller-gen $GOPATH/bin/controller-gen-${CONTROLLER_GEN_VERSION}
-done
-# We set the v0.3.0 as default
-ln -s $GOPATH/bin/controller-gen-v0.3.0 $GOPATH/bin/controller-gen
+# controller-gen v0.10.0 is used by operator-sdk v1.25.0
+CONTROLLER_GEN_VERSION="v0.10.0"
+go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
 
 #############
 # openapi-gen
 #############
-OPENAPI_GEN_VERSIONS="v0.19.4 v0.23.0"
-for OPENAPI_GEN_VERSION in $OPENAPI_GEN_VERSIONS;do
-    go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
-    mv $GOPATH/bin/openapi-gen $GOPATH/bin/openapi-gen-${OPENAPI_GEN_VERSION}
-done
-# Set v0.19.4 as the default version for backwards compatibility
-ln -s $GOPATH/bin/openapi-gen-v0.19.4 $GOPATH/bin/openapi-gen
+OPENAPI_GEN_VERSION="v0.23.0"
+go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
 
 #########
 # ENVTEST
@@ -65,9 +63,10 @@ ln -s $GOPATH/bin/openapi-gen-v0.19.4 $GOPATH/bin/openapi-gen
 # We do not enforce versioning on setup-envtest
 go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
+#########
 # mockgen
 #########
-MOCKGEN_VERSION=v1.4.4
+MOCKGEN_VERSION=v1.6.0
 go install github.com/golang/mock/mockgen@${MOCKGEN_VERSION}
 
 ############
@@ -98,6 +97,18 @@ curl -L -o yq $YQ_LOCATION
 echo ${YQ_SHA256SUM} yq | sha256sum -c
 chmod ugo+x yq
 mv yq /usr/local/bin
+
+####
+# gh
+####
+GH_VERSION=2.19.0
+GH_SHA256SUM="b1d062f1c0d44465e4f9f12521e93e9b3b650d3876eb157acf875347b971f4d8"
+GH_LOCATION=https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
+
+curl -L -o gh.tar.gz $GH_LOCATION
+echo ${GH_SHA256SUM} gh.tar.gz | sha256sum -c
+tar -xvzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh
+mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
 
 ##################
 # python libraries

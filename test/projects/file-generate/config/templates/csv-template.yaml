@@ -8,15 +8,14 @@ metadata:
     certified: "false"
     description: Test operator
     containerImage: quay.io/app-sre/file-generate:latest
-    createdAt: "2019-04-10T17:34:33Z"
-    support: Carl Brumm
+    createdAt: "2022-11-04T17:34:33Z"
+    support: Boilerplate
 spec:
   displayName: file-generate
   description: Test operator
   keywords:
   - kubernetes
   - openshift
-  - multi-cluster
   - cluster
   version: 1.0.0
   provider:

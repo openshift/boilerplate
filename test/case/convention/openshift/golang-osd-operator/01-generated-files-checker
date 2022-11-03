@@ -2,45 +2,33 @@
 
 set -e
 
-REPO_ROOT=$(git rev-parse --show-toplevel)
+REPO_ROOT="$(git rev-parse --show-toplevel)"
 
-source $REPO_ROOT/test/lib.sh
+source "${REPO_ROOT}/test/lib.sh"
 
 echo "Testing generators"
-repo=$(empty_repo)
-add_cleanup $repo
+repo="$(empty_repo)"
+add_cleanup "${repo}"
 test_project="file-generate"
 
-bootstrap_project $repo ${test_project} openshift/golang-osd-operator
-cd $repo
+# Attempt to boilerplate the test project with the openshift/golang-osd-operator convention
+bootstrap_project "${repo}" "${test_project}" openshift/golang-osd-operator
+cd "${repo}"
 make boilerplate-update
 go mod download
 export GOPATH=$GOPATH:`pwd`
 
-# Check failure when project is not committed
-make generate-check && err "make generate-check should have failed" || echo "Project is not committed. Checks failed as expected"
+# Generate files and check if the generated files matches the expected content
+make generate
 
-# Checking files haven't been generated and the project is not committed
-make isclean || echo "Project is detected as uncommitted as expected"
-if [ -f src/test/test-generation ] || [ -f src/test/subfolder/test-generation-subfolder ] || [ -f pkg/apis/mygroup/v1alpha1/zz_generated.deepcopy.go ] ; then
-    err "Files have been generated while the project wasn't committed..."
-fi
-
-# Check failure when project is committed but generated content not generated/committed
-git add -A
-git commit -m "initial commit"
-
-make generate-check && err "make generate-check should have failed" || echo "Generated files are not committed. Checks failed as expected"
-
-# Check the generated files matches the expected content
 diff src/test/test.txt expected/test.txt || err "generate from src/test/test.go didn't work properly"
 diff src/test/subfolder/test.txt expected/subfolder/test.txt || err "generate from src/test/subfolder/test.go didn't work properly"
-    if [ ! -f pkg/apis/mygroup/v1alpha1/zz_generated.deepcopy.go ] ; then
-        err "crd generate didn't work properly"
-    fi
-    if [ ! -f pkg/apis/mygroup/v1alpha1/zz_generated.openapi.go ] ; then
-        err "openapi generate didn't work properly"
-    fi
+if [[ ! -f api/v1beta1/zz_generated.deepcopy.go ]] ; then
+    err "crd generate didn't work properly"
+fi
+if [[ ! -f api/v1beta1/zz_generated.openapi.go ]] ; then
+    err "openapi generate didn't work properly"
+fi
 
 git add -A
 git commit -m "commit generated files"
