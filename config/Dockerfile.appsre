@@ -1,11 +1,8 @@
 # Cumulative Dockerfile for app-sre. It should start FROM the base image
 # and then RUN all the build scripts in order.
 
-# https://github.com/openshift/ocp-build-data/blob/1a16e3dc96b8e4845d4b960628ccbe5edafe0510/streams.yml#L40
-FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.10
+# https://github.com/openshift/ocp-build-data/blob/c368f52d7558eaa249c409f444596057bc5c737a/streams.yml#L43-L47
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.12
 
-COPY build_image-v2.0.0.sh /build.sh
-RUN /build.sh && rm -f /build.sh
-
-COPY build.sh /build.sh
+COPY build_image-v3.0.0.sh /build.sh
 RUN /build.sh && rm -f /build.sh

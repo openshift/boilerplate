@@ -1,7 +1,8 @@
-apiVersion: mygroup.com/v1alpha1
+# This is a no-op and shouldn't exist normally.
+# But it exists just so the test/case/conventions/openshift/golang-osd-operator/06-csv-generate will fail as expected
+apiVersion: mygroup.operators.coreos.com/v1alpha1
 kind: TestKind
 metadata:
   name: example-testkind
 spec:
-  # Add fields here
   size: 3

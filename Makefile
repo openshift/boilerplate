@@ -15,11 +15,11 @@ tag-check: ## Perform a tag-check that validates a new tag has been created when
 	config/tag-check.sh
 
 .PHONY: test
-test: isclean tag-check ## Runs tests under the /case directory
+test: isclean ## Runs tests under the /case directory
 	test/driver $(CASE_GLOB)
 
 .PHONY: pr-check
-pr-check: test ## This is the target run by prow
+pr-check: test tag-check ## This is the target run by prow
 
 .PHONY: subscriber-report
 subscriber-report: ## Discover onboarding and prow status of subscribed consumers

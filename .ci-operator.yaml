@@ -1,5 +1,7 @@
 # NOTE: Keep this in sync with config/Dockerfile's FROM
 build_root_image:
   namespace: openshift
-  name: boilerplate
-  tag: image-v2.0.0
+  # TODO: should be boilerplate
+  name: release
+  # TODO: should be image-v3.0.0
+  tag: rhel-8-release-golang-1.19-openshift-4.12

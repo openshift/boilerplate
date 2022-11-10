@@ -18,4 +18,4 @@ make boilerplate-update
 
 make op-generate
 
-diff deploy/crds/mygroup.com_testkinds_crd.yaml expected/mygroup.com_testkinds_crd.yaml || err "CRD v1 generation didn't work properly."
+diff deploy/crds/mygroup.operators.coreos.com_testkinds.yaml expected/mygroup.operators.coreos.com_testkinds.yaml || err "CRD generation didn't work properly."

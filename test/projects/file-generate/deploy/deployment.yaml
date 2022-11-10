@@ -13,6 +13,20 @@ spec:
         name: file-generate
     spec:
       serviceAccountName: file-generate
+      securityContext:
+        runAsNonRoot: true
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/infra
+                    operator: Exists
+              weight: 1
+      tolerations:
+        - operator: Exists
+          key: node-role.kubernetes.io/infra
+          effect: NoSchedule
       containers:
         - name: file-generate
           # Replace this with the built image name
@@ -20,14 +34,3 @@ spec:
           command:
           - file-generate
           imagePullPolicy: Always
-          env:
-            - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: "file-generate"
