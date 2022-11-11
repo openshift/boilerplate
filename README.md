@@ -369,36 +369,32 @@ See existing test cases for examples.
 If you make a change to the build image produced by boilerplate -- i.e.
 by changing anything in [config/](config/) -- you must:
 
-1. Publish a new tag. This will be picked up by appsre and used to
-   publish a new tagged image for consumption via `LATEST_IMAGE_TAG` in
-   conventions. The tag must be named `image-v{X}.{Y}.{Z}`, using
-   [semver](https://semver.org/) principles when deciding what
-   `{X}.{Y}.{Z}` should be.
-
-Example:
-
-```shell
-$ git tag image-v1.2.3
-$ git push origin --tags
-$ git push upstream --tags
-```
-
-**NOTE:** You must do the `upstream` push *after* creating your PR. Otherwise the
-tagged commit will not exist upstream.
-
-**NOTE:** Your commit must also update the tag in a couple of places in
-the repository. See https://github.com/openshift/boilerplate/pull/180
+1. Publish a new tag. This will be picked up by AppSRE and used to publish a new tagged image for consumption via
+`LATEST_IMAGE_TAG` in conventions. The tag must be named `image-v{X}.{Y}.{Z}`, using [semver](https://semver.org/)
+principles when deciding what `{X}.{Y}.{Z}` should be. See https://github.com/openshift/boilerplate/pull/180
 for an example.
 
-2. Import that tag via boilerplate's ImageStream in `openshift/release`
-   by adding an element to the `spec.tags` list in
-   [this configuration file](https://github.com/openshift/release/blob/master/clusters/app.ci/supplemental-ci-images/boilerplate/boilerplate.yaml).
+    ```shell
+    git tag image-v1.2.3
+    git push origin --tags
+    # Create PR here
+    # Typically only team leads can push tags to upstream, so they will need to continue by
+    # checking out your fork and then running
+    git push upstream --tags
+    ```
+
+    >**NOTE**: You must do the `upstream` push *after* creating your PR. Otherwise, the tagged commit will not exist
+upstream.
+
+2. Import that tag via boilerplate's ImageStream in `openshift/release` by adding an element to the `spec.tags` list in
+[this configuration file](https://github.com/openshift/release/blob/master/clusters/app.ci/supplemental-ci-images/boilerplate/boilerplate.yaml).
 
 #### Making CI Efficient
 The backing image is built in prow with every commit, even when nothing about it has changed.
-To make this faster, we periodically ratchet the base image (the `FROM` in the [Dockerfile](config/Dockerfile)) to point to the previously-released image, and clear out the [build script](config/build.sh) to start from that point.
+To make this faster, we periodically ratchet the base image (the `FROM` in the [Dockerfile](config/Dockerfile))
+to point to the previously-released image, and clear out the [build script](config/build.sh) to start from that point.
 However, in app-sre we build from scratch (exactly once per `image-v*` tag!), via a [separate Dockerfile](config/Dockerfile.appsre).
-Thus there is a (very small) chance that these builds will behave differently.
+Thus, there is a (very small) chance that these builds will behave differently.
 
 #### Picking Up (Security) Fixes
 We only build and publish a new build image on commits tagged with `image-v*`, which we [force](config/tag-check.sh) you to do whenever something about *boilerplate's* image configuration changes.
