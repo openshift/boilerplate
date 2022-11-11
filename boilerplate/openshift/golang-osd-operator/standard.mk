@@ -46,9 +46,6 @@ OPERATOR_IMAGE_URI=${IMG}
 OPERATOR_IMAGE_URI_LATEST=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME):latest
 OPERATOR_DOCKERFILE ?=build/Dockerfile
 REGISTRY_IMAGE=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME)-registry
-#The api dir that latest osdk generated
-NEW_API_DIR=./api
-USE_OLD_SDK=$(shell if [[ -d "$(NEW_API_DIR)" ]];then echo FALSE;else echo TRUE;fi)
 
 # Consumer can optionally define ADDITIONAL_IMAGE_SPECS like:
 #     define ADDITIONAL_IMAGE_SPECS
@@ -68,14 +65,6 @@ OLM_CHANNEL ?= alpha
 
 REGISTRY_USER ?=
 REGISTRY_TOKEN ?=
-
-BINFILE=build/_output/bin/$(OPERATOR_NAME)
-MAINPACKAGE = ./
-API_DIR = $(NEW_API_DIR)
-ifeq ($(USE_OLD_SDK), TRUE)
-MAINPACKAGE = ./cmd/manager
-API_DIR = ./pkg/apis
-endif
 
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
@@ -122,7 +111,7 @@ BOILERPLATE_CONTAINER_MAKE := boilerplate/_lib/container-make
 
 # Set the default goal in a way that works for older & newer versions of `make`:
 # Older versions (<=3.8.0) will pay attention to the `default` target.
-# Newer versions pay attention to .DEFAULT_GOAL, where uunsetting it makes the next defined target the default:
+# Newer versions pay attention to .DEFAULT_GOAL, where unsetting it makes the next defined target the default:
 # https://www.gnu.org/software/make/manual/make.html#index-_002eDEFAULT_005fGOAL-_0028define-default-goal_0029
 .DEFAULT_GOAL :=
 .PHONY: default
@@ -134,7 +123,7 @@ clean:
 
 .PHONY: isclean
 isclean:
-	@(test "$(ALLOW_DIRTY_CHECKOUT)" != "false" || test 0 -eq $$(git status --porcelain | wc -l)) || (echo "Local git checkout is not clean, commit changes and try again." >&2 && git --no-pager diff && exit 1)
+	@(test "$(ALLOW_DIRTY_CHECKOUT)" != "false" || test 0 -eq $$(git status --porcelain | wc -l)) || (echo "Local git checkout is not clean, commit changes and try again or use ALLOW_DIRTY_CHECKOUT=true to override." >&2 && git --no-pager diff && exit 1)
 
 # TODO: figure out how to docker-login only once across multiple `make` calls
 .PHONY: docker-build-push-one
@@ -197,17 +186,12 @@ OPENAPI_GEN = openapi-gen
 .PHONY: op-generate
 ## CRD v1beta1 is no longer supported.
 op-generate:
-	cd $(API_DIR); $(CONTROLLER_GEN) crd:crdVersions=v1 paths=./... output:dir=$(PWD)/deploy/crds
-	cd $(API_DIR); $(CONTROLLER_GEN) object paths=./...
-
-API_DIR_MIN_DEPTH = 1
-ifeq ($(USE_OLD_SDK), TRUE)
-API_DIR_MIN_DEPTH = 2
-endif
+	cd ./api; $(CONTROLLER_GEN) crd:crdVersions=v1 paths=./... output:dir=$(PWD)/deploy/crds
+	cd ./api; $(CONTROLLER_GEN) object paths=./...
 
 .PHONY: openapi-generate
 openapi-generate:
-	find $(API_DIR) -maxdepth 2 -mindepth $(API_DIR_MIN_DEPTH) -type d | xargs -t -I% \
+	find ./api -maxdepth 2 -mindepth 1 -type d | xargs -t -I% \
 		$(OPENAPI_GEN) --logtostderr=true \
 			-i % \
 			-o "" \
@@ -227,7 +211,7 @@ endif
 go-build: ## Build binary
 	# Force GOOS=linux as we may want to build containers in other *nix-like systems (ie darwin).
 	# This is temporary until a better container build method is developed
-	${GOENV} GOOS=linux go build ${GOBUILDFLAGS} -o ${BINFILE} ${MAINPACKAGE}
+	${GOENV} GOOS=linux go build ${GOBUILDFLAGS} -o build/_output/bin/$(OPERATOR_NAME) .
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.23
