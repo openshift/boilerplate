@@ -28,6 +28,8 @@ This work was inspired by, and partially cribbed from,
 
 ## Quick Start
 
+ignore, testing CI
+
 [Bootstrap](#bootstrap) and [subscribe](#configure) to
 [openshift/golang-osd-operator](boilerplate/openshift/golang-osd-operator/) by
 pasting the following scriptlet into your terminal. Your pwd should be a clean
