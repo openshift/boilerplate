@@ -396,6 +396,25 @@ to point to the previously-released image, and clear out the [build script](conf
 However, in app-sre we build from scratch (exactly once per `image-v*` tag!), via a [separate Dockerfile](config/Dockerfile.appsre).
 Thus, there is a (very small) chance that these builds will behave differently.
 
+When the underlying base image changes significantly, the `FROM` directive in [config/Dockerfile](config/Dockerfile)
+may be temporarily changed to the new upstream image. However, as soon as it is stable, a new commit should be made
+to increment the version so that the `FROM` directive is the base image created in step 2. This speeds up CI for
+ourselves and consumers.
+
+For example, let's say that the current base image has Go 1.18, but we need Go 1.19, and
+it's not available in boilerplate:image-v2.Y.Z
+
+1. Update config/Dockerfile and config/Dockerfile.appsre
+    ```
+    FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.12
+    ```
+2. Then, update the rest of boilerplate accordingly, push a new tag, and mirror the image into openshift/release
+to create boilerplate:image-v3.0.0
+3. Finally, update config/Dockerfile's FROM directive to speed up CI and tag a new version for image-v3.0.1
+    ```
+    FROM registry.ci.openshift.org/openshift/boilerplate:image-v3.0.0
+    ```
+
 #### Picking Up (Security) Fixes
 We only build and publish a new build image on commits tagged with `image-v*`, which we [force](config/tag-check.sh) you to do whenever something about *boilerplate's* image configuration changes.
 If the base image (`golang-*`) is updated for any reason, including security fixes, the boilerplate build image will only pick up those changes the next time we produce a new version.
