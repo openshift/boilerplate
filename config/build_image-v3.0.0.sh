@@ -124,7 +124,7 @@ yum -y autoremove
 # autoremove removes ssh (which it presumably wouldn't if we were able
 # to install git from a repository, because git has a dep on ssh.)
 # Do we care to restrict this to a particular version?
-yum -y install openssh-clients
+yum -y install openssh-clients jq
 
 rm -rf /var/cache/yum
 
