@@ -26,7 +26,7 @@ ${SED?} -i "1s,.*,FROM $IMAGE_PULL_PATH AS builder," $DOCKERFILE
 
 # Update any UBI images using latest tags to use a versioned tag that is compatible with dependabot
 for ubi_latest in $(grep -oE 'registry.access.redhat.com/ubi[7-9]/ubi.*?:latest' ${DOCKERFILE}); do
-    replacement_image=$(skopeo inspect --override-os linux --override-arch amd64 docker://${ubi_latest} --format "{{.Name}}:{{.Labels.version}}-{{.Labels.release}}")
+    replacement_image=$(skopeo inspect --override-os linux --override-arch amd64 docker://${ubi_latest} --format "{{.Name}}:{{.Labels.version}}-{{.Labels.release}}" | ${SED?} 's,\.[0-9]\+$,,')
     echo "Overwriting ${DOCKERFILE}'s ${ubi_latest} image to ${replacement_image}"
     ${SED?} -i "s,${ubi_latest},${replacement_image}," ${DOCKERFILE}
 done
