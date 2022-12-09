@@ -14,6 +14,10 @@ source $CONVENTION_ROOT/_lib/common.sh
 echo "Copying .codecov.yml to your repository root."
 cp ${HERE}/.codecov.yml $REPO_ROOT
 
+# Add OWNER_ALIASES to $REPO_ROOT
+echo "Copying OWNER_ALIASES to your repository root."
+cp ${HERE}/OWNER_ALIASES $REPO_ROOT
+
 # Add dependabot configuration
 mkdir -p $REPO_ROOT/.github
 echo "Copying dependabot.yml to .github/dependabot.yml"
