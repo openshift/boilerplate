@@ -262,6 +262,26 @@ olm-deploy-yaml-validate: python-venv
 prow-config:
 	${CONVENTION_DIR}/prow-config ${RELEASE_CLONE}
 
+######################
+# Targets used by osde2e test harness
+######################
+
+# create e2e scaffolding
+.PHONY: e2e-harness-generate
+e2e-harness-generate:
+	${CONVENTION_DIR}/e2e-harness-generate.sh $(OPERATOR_NAME) $(CONVENTION_DIR)
+
+# create binary
+GOFLAGS=-mod=mod
+.PHONY: e2e-harness-build
+e2e-harness-build:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go test ./osde2e -v -c --tags=integration -o harness.test
+
+# push harness image
+# currently e2e harness image is run with latest tag only. todo: build operator-versioned test harness instead of latest, and publish using ADDITONAL_IMAGE_SPECS to the appropriate channel
+.PHONY: e2e-image-build-push
+e2e-image-build-push:
+	${CONVENTION_DIR}/e2e-image-build-push.sh "./osde2e/Dockerfile $(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(HARNESS_IMAGE_NAME):latest"
 
 ######################
 # Targets used by prow

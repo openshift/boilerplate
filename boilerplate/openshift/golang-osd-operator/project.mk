@@ -5,6 +5,7 @@ OPERATOR_NAMESPACE?=$(shell sed -n 's/.*OperatorNamespace .*"\([^"]*\)".*/\1/p' 
 IMAGE_REGISTRY?=quay.io
 IMAGE_REPOSITORY?=app-sre
 IMAGE_NAME?=$(OPERATOR_NAME)
+HARNESS_IMAGE_NAME?=$(IMAGE_NAME)-test-harness
 
 VERSION_MAJOR?=0
 VERSION_MINOR?=1

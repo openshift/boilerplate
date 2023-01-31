@@ -5,6 +5,8 @@
     - [Prow](#prow)
       - [Local Testing](#local-testing)
     - [app-sre](#app-sre)
+    - [E2E Test Harness](#e2e-test-harness)
+      - [Local Testing](#e2e-harness-local-testing) 
   - [Code coverage](#code-coverage)
   - [Linting and other static analysis with `golangci-lint`](#linting-and-other-static-analysis-with-golangci-lint)
   - [Checks on generated code](#checks-on-generated-code)
@@ -80,6 +82,18 @@ ready to be SaaS-deployed.
 By default it is configured to be run from the app-sre jenkins pipelines.
 Consult [this doc](app-sre.md) for information on local execution/testing.
 
+### E2e Test Harness
+
+| `make` target      | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `e2e-harness-generate` | Generate scaffolding for end to end test harness. Creates osde2e/ directory where tests reside. The harness has access to cloud client and addon passthrough secrets within the cluster. Add your operated related ginkgo e2e tests under the `osde2e/tests/<operator-name>_tests.go` file. See [this README](https://github.com/openshift/osde2e-example-test-harness/blob/main/README.md#locally-running-this-example) for more details on test harness. |
+| `e2e-harness-build`| Compiles ginkgo tests under osde2e/tests and creates the binary to be used by docker image used by osde2e.                                                                                                                                                                                                                                                                                                                                                 |
+| `e2e-image-build-push` | Builds osde2e test harness image and pushes to operator's quay repo. Image name is defaulted to <operator-image-name>-test-harness. Quay repository must be created beforehand.                                                                                                                                                                                                                                                                            |
+
+#### E2E Harness Local Testing
+
+Please follow [this README](https://github.com/openshift/osde2e-example-test-harness/blob/main/README.md#locally-running-this-example) to test your e2e harness with Osde2e locally
+
 ## Code coverage
 
 - A `codecov.sh` script, referenced by the `coverage` `make` target, to
@@ -136,3 +150,5 @@ include boilerplate/generated-includes.mk
 `fips.go` will import the necessary packages to restrict all TLS configuration to FIPS-approved settings.
 
 With `FIPS_ENABLED=true`, `ensure-fips` is always run before `make go-build`
+
+
