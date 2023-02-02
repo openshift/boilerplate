@@ -48,6 +48,6 @@ while read dockerfile_path image_uri junk; do
         exit 1
     fi
  
-    make IMAGE_URI="${image_uri}" DOCKERFILE_PATH="${dockerfile_path}" docker-build-push-one
+    make IMAGE_URI="${image_uri}" DOCKERFILE_PATH="${dockerfile_path}" container-build-push-one
  
 done <<< "$1"
