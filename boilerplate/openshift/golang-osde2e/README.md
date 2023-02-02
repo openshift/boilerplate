@@ -11,7 +11,7 @@
 To adopt this convention, your`boilerplate/update.cfg` should include:
 
 ```
-openshift/golang-osd-operator
+openshift/golang-osde2e
 ```
 ## `make` targets and functions.
 
