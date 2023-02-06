@@ -6,14 +6,14 @@ cmd=${0##*/}
 
 usage() {
     cat <<EOF
-Usage: $0 OPERATOR_NAME CONVENTION_DIR
+Usage: $0 OPERATOR_NAME OSDE2E_CONVENTION_DIR
  
 EOF
     exit -1
 }
 
 OPERATOR_NAME=$1
-CONVENTION_DIR=$2
+OSDE2E_CONVENTION_DIR=$2
 REPO_ROOT=$(git rev-parse --show-toplevel)
 HARNESS_DIR=$REPO_ROOT/osde2e
 
