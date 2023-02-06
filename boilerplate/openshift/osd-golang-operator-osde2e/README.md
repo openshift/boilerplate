@@ -8,10 +8,10 @@
 
   
 ## Consuming
-To adopt this convention, your`boilerplate/update.cfg` should include:
+Currently, this convention is only intended for OSD operators. To adopt this convention, your`boilerplate/update.cfg` should include:
 
 ```
-openshift/golang-osde2e
+openshift/osd-golang-operator-osde2e
 ```
 ## `make` targets and functions.
 

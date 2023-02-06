@@ -1,4 +1,7 @@
 # Validate variables in project.mk exist
+ifndef OPERATOR_NAME
+$(error OPERATOR_NAME is not set; only operators should consume this convention; check project.mk file)
+endif 
 ifndef HARNESS_IMAGE_REGISTRY
 $(error HARNESS_IMAGE_REGISTRY is not set; check project.mk file)
 endif
@@ -48,7 +51,7 @@ GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS="${GOFLAGS_MOD}"
 ALLOW_DIRTY_CHECKOUT?=false
 
 # TODO: Figure out how to discover this dynamically
-CONVENTION_DIR := boilerplate/openshift/golang-osde2e
+CONVENTION_DIR := boilerplate/openshift/osd-golang-operator-osde2e
 
 # Set the default goal in a way that works for older & newer versions of `make`:
 # Older versions (<=3.8.0) will pay attention to the `default` target.
