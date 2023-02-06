@@ -4,14 +4,14 @@
   - [Consuming](#consuming)
   - [`make` targets and functions.](#make-targets-and-functions)
     - [E2E Test Harness](#e2e-test-harness)
-      - [Local Testing](#e2e-harness-local-testing) 
+      - [Local Testing](#e2e-harness-local-testing)
 
-  
+
 ## Consuming
 Currently, this convention is only intended for OSD operators. To adopt this convention, your`boilerplate/update.cfg` should include:
 
 ```
-openshift/osd-golang-operator-osde2e
+openshift/golang-osd-operator-osde2e
 ```
 ## `make` targets and functions.
 
@@ -26,7 +26,7 @@ One of the primary purposes of these `make` targets is to allow you to
 standardize your prow and app-sre pipeline configurations using the
 following:
 
- 
+
 
 ### E2e Test Harness
 
@@ -40,4 +40,4 @@ following:
 
 Please follow [this README](https://github.com/openshift/osde2e-example-test-harness/blob/main/README.md#locally-running-this-example) to test your e2e harness with Osde2e locally
 
- 
+
