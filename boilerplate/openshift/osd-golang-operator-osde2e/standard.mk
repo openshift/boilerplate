@@ -51,7 +51,7 @@ GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS="${GOFLAGS_MOD}"
 ALLOW_DIRTY_CHECKOUT?=false
 
 # TODO: Figure out how to discover this dynamically
-CONVENTION_DIR := boilerplate/openshift/osd-golang-operator-osde2e
+OSDE2E_CONVENTION_DIR := $(CURDIR)
 
 # Set the default goal in a way that works for older & newer versions of `make`:
 # Older versions (<=3.8.0) will pay attention to the `default` target.
@@ -84,7 +84,7 @@ container-engine-login:
 # create e2e scaffolding
 .PHONY: e2e-harness-generate
 e2e-harness-generate:
-	${CONVENTION_DIR}/e2e-harness-generate.sh $(OPERATOR_NAME) $(CONVENTION_DIR)
+	${OSDE2E_CONVENTION_DIR}/e2e-harness-generate.sh $(OPERATOR_NAME) $(OSDE2E_CONVENTION_DIR)
 
 # create binary
 GOFLAGS=-mod=mod
@@ -97,5 +97,5 @@ e2e-harness-build:
 .PHONY: e2e-image-build-push
 e2e-image-build-push:
 	echo imageurl1:$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(HARNESS_IMAGE_NAME):latest
-	${CONVENTION_DIR}/e2e-image-build-push.sh "./osde2e/Dockerfile $(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(HARNESS_IMAGE_NAME):latest"
+	${OSDE2E_CONVENTION_DIR}/e2e-image-build-push.sh "./osde2e/Dockerfile $(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(HARNESS_IMAGE_NAME):latest"
  
