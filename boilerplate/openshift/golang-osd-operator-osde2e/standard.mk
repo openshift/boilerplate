@@ -1,16 +1,16 @@
 # Validate variables in project.mk exist
 ifndef OPERATOR_NAME
 $(error OPERATOR_NAME is not set; only operators should consume this convention; check project.mk file)
-endif 
+endif
 ifndef HARNESS_IMAGE_REGISTRY
 $(error HARNESS_IMAGE_REGISTRY is not set; check project.mk file)
 endif
 ifndef HARNESS_IMAGE_REPOSITORY
 $(error HARNESS_IMAGE_REPOSITORY is not set; check project.mk file)
 endif
- 
 
- 
+
+
 ### Accommodate docker or podman
 #
 # The docker/podman creds cache needs to be in a location unique to this
@@ -35,7 +35,7 @@ endif
 ifndef CONTAINER_ENGINE
 CONTAINER_ENGINE=$(shell command -v podman 2>/dev/null || echo docker --config=$(CONTAINER_ENGINE_CONFIG_DIR))
 endif
- 
+
 REGISTRY_USER ?=
 REGISTRY_TOKEN ?=
 
@@ -46,14 +46,14 @@ GOBIN?=$(shell go env GOBIN)
 # Consumers may override GOFLAGS_MOD e.g. to use `-mod=vendor`
 unexport GOFLAGS
 GOFLAGS_MOD ?=
-GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS="${GOFLAGS_MOD}" 
+GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS="${GOFLAGS_MOD}"
 
 ALLOW_DIRTY_CHECKOUT?=false
 
 # TODO: Figure out how to discover this dynamically
-OSDE2E_CONVENTION_DIR := boilerplate/openshift/osd-golang-operator-osde2e
+OSDE2E_CONVENTION_DIR := boilerplate/openshift/golang-osd-operator-osde2e
 
-  
+
 # TODO: figure out how to container-engine-login only once across multiple `make` calls
 .PHONY: container-build-push-one
 container-build-push-one: isclean container-engine-login
@@ -69,7 +69,7 @@ container-engine-login:
 	mkdir -p ${CONTAINER_ENGINE_CONFIG_DIR}
 	@${CONTAINER_ENGINE} login -u="${REGISTRY_USER}" -p="${REGISTRY_TOKEN}" quay.io
 
- 
+
 ######################
 # Targets used by osde2e test harness
 ######################
@@ -91,4 +91,4 @@ e2e-harness-build:
 e2e-image-build-push:
 	echo imageurl1:$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(HARNESS_IMAGE_NAME):latest
 	${OSDE2E_CONVENTION_DIR}/e2e-image-build-push.sh "./osde2e/Dockerfile $(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(HARNESS_IMAGE_NAME):latest"
- 
+
