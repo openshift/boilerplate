@@ -51,7 +51,7 @@ GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS="${GOFLAGS_MOD}"
 ALLOW_DIRTY_CHECKOUT?=false
 
 # TODO: Figure out how to discover this dynamically
-OSDE2E_CONVENTION_DIR := $(CURDIR)
+OSDE2E_CONVENTION_DIR := boilerplate/openshift/osd-golang-operator-osde2e
 
 # Set the default goal in a way that works for older & newer versions of `make`:
 # Older versions (<=3.8.0) will pay attention to the `default` target.
