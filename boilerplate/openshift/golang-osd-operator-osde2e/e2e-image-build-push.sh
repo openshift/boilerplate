@@ -13,7 +13,7 @@ dockerfile_path image_uri
 
 # This is the test harness image
 ./build/Dockerfile quay.io/app-sre/my-wizbang-operator-test-harness:latest
- 
+
 
     The parameter is mandatory; if only building the catalog image,
     specify the empty string.
@@ -28,7 +28,7 @@ source $REPO_ROOT/boilerplate/_lib/common.sh
 
 
 IMAGE_SPECS="$1"
- 
+
 
 while read dockerfile_path image_uri junk; do
     # Support comment lines
@@ -47,7 +47,7 @@ while read dockerfile_path image_uri junk; do
         echo "Invalid image spec: no such dockerfile: '$dockerfile_path'"
         exit 1
     fi
- 
+
     make IMAGE_URI="${image_uri}" DOCKERFILE_PATH="${dockerfile_path}" container-build-push-one
- 
+
 done <<< "$1"
