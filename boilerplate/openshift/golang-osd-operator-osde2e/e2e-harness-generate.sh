@@ -46,7 +46,6 @@ echo "package osde2etests
 import \"github.com/onsi/ginkgo/v2\"
 
 var _ = ginkgo.Describe(\"$OPERATOR_NAME\", func() {
-	defer ginkgo.GinkgoRecover()
 	//	 Add your tests 
 })
 " > ${HARNESS_DIR}/${OPERATOR_HYPHEN_NAME}_tests.go
