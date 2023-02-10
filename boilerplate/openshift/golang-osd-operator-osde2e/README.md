@@ -1,11 +1,10 @@
 # Conventions for Ginkgo based e2e tests
 
 - [Conventions for Ginkgo based e2e tests](#conventions-for-ginkgo-based-e2e-tests)
-  - [Consuming](#consuming)
-  - [`make` targets and functions.](#make-targets-and-functions)
-    - [E2E Test Harness](#e2e-test-harness)
-      - [Local Testing](#e2e-harness-local-testing)
-
+    - [Consuming](#consuming)
+    - [`make` targets and functions.](#make-targets-and-functions)
+        - [E2E Test Harness](#e2e-test-harness)
+            - [Local Testing](#e2e-harness-local-testing)
 
 ## Consuming
 Currently, this convention is only intended for OSD operators. To adopt this convention, your `boilerplate/update.cfg` should include:
@@ -13,6 +12,7 @@ Currently, this convention is only intended for OSD operators. To adopt this con
 ```
 openshift/golang-osd-operator-osde2e
 ```
+
 ## `make` targets and functions.
 
 **Note:** Your repository's main `Makefile` needs to be edited to include the
@@ -25,8 +25,6 @@ include boilerplate/generated-includes.mk
 One of the primary purposes of these `make` targets is to allow you to
 standardize your prow and app-sre pipeline configurations using the
 following:
-
-
 
 ### E2e Test Harness
 
