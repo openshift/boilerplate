@@ -24,8 +24,9 @@ fi
 
 # Since we're in a PR, and there may be multiple commits, we want to
 # check all of them; so compare against the fork point of this branch.
-# Don't compare
-default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+# Don't compare the config/Dockerfile or config/tag-check.sh files, as
+# they're not impacted by build image changes.
+default_branch="master"
 fork_point=$(git merge-base --fork-point $default_branch)
 diff=$(git diff $fork_point --name-only -- config/ ':!config/Dockerfile' ':!config/tag-check.sh')
 if [[ -n "${diff}" ]]; then
