@@ -1,5 +1,4 @@
-# NOTE: Keep this in sync with config/Dockerfile's FROM
 build_root_image:
   namespace: openshift
   name: boilerplate
-  tag: image-v3.0.1
+  tag: image-v3.0.3
