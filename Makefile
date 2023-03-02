@@ -12,7 +12,7 @@ isclean: ## Validate the local checkout is clean. Use ALLOW_DIRTY_CHECKOUT=true 
 
 .PHONY: tag-check
 tag-check: ## Perform a tag-check that validates a new tag has been created when changing the build image
-	config/tag-check.sh
+	@config/tag-check.sh
 
 .PHONY: test
 test: isclean ## Runs tests under the /case directory
