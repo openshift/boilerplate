@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -xe
+set -e
 
 # If you mess with the build image, you must publish a new
 # image-v{X}.{Y}.{Z} tag. We can't automatically generate that tag,
@@ -23,14 +23,14 @@ fi
 # image.
 
 # Since we're in a PR, and there may be multiple commits, we want to
-# check all of them; so compare against the last merge commit before
-# this one. This should work both locally (that should correspond to
-# upstream/master) and in CI (which creates a merge commit to test
-# against).
-# NOTE: This assumes we always merge with merge commits.
-last_merge_commit=$(git log --merges -n1 HEAD^ --format=%H)
-if [[ -n "$(git diff $last_merge_commit --name-only config/)" ]]; then
+# check all of them; so compare against the fork point of this branch.
+# Don't compare
+default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+fork_point=$(git merge-base --fork-point $default_branch)
+diff=$(git diff $fork_point --name-only -- config/ ':!config/Dockerfile' ':!config/tag-check.sh')
+if [[ -n "${diff}" ]]; then
     echo "Image build configuration has changed!"
+    echo "${diff}"
     echo "You must push a new image-v{X}.{Y}.{Z} tag at commit $commit!"
     echo "See https://github.com/openshift/boilerplate/blob/$commit/README.md#build-images"
     exit 1
