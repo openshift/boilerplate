@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Global vars
+OPERATOR_NAME=$(sed -n 's/.*OperatorName .*"\([^"]*\)".*/\1/p' "${REPO_ROOT}/config/config.go")
+OPERATOR_NAMESPACE=$(sed -n 's/.*OperatorNamespace .*"\([^"]*\)".*/\1/p' "${REPO_ROOT}/config/config.go")
+TEST_IMAGE='quay.io/openshift/origin-tools:latest'
+
+# No PRE
+[[ "$1" == "PRE" ]] && exit 0
+
+# Expect POST
+[[ "$1" == "POST" ]] || err "Got a parameter I don't understand: '$1'. Did the infrastructure change?"
+
+DEST_TEST_DIR=$REPO_ROOT/hack/tests
+if [[ ! -d "DEST_TEST_DIR" ]]; then
+    mkdir -p "DEST_TEST_DIR"
+fi
+
+cp -r boilerplate/openshift/golang-osd-operator-acceptance-test/acceptance-test.yaml "$DEST_TEST_DIR"/acceptance-test.yaml
+sed -i "s/{{OPERATOR_NAME}}/$OPERATOR_NAME/g; s/{{OPERATOR_NAMESPACE}}/$OPERATOR_NAMESPACE/g; s/{{TEST_IMAGE}}/$TEST_IMAGE/g" "$DEST_TEST_DIR"/acceptance-test.yaml
