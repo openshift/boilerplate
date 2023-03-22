@@ -19,4 +19,4 @@ if [[ ! -d "DEST_TEST_DIR" ]]; then
 fi
 
 cp -r boilerplate/openshift/golang-osd-operator-acceptance-test/acceptance-test.yaml "$DEST_TEST_DIR"/acceptance-test.yaml
-sed -i "s/{{OPERATOR_NAME}}/$OPERATOR_NAME/g; s/{{OPERATOR_NAMESPACE}}/$OPERATOR_NAMESPACE/g; s/{{TEST_IMAGE}}/$TEST_IMAGE/g" "$DEST_TEST_DIR"/acceptance-test.yaml
+sed -i "s/{{OPERATOR_NAME}}/$OPERATOR_NAME/g; s/{{OPERATOR_NAMESPACE}}/$OPERATOR_NAMESPACE/g; s,{{TEST_IMAGE}},$TEST_IMAGE,g" "$DEST_TEST_DIR"/acceptance-test.yaml
