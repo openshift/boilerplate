@@ -11,10 +11,15 @@ endif
 
 ### Accommodate docker or podman
 #
-# secret file volume for prow jobs
-CONTAINER_ENGINE_CONFIG_DIR = /etc/pull-secret
-# docker config file loaded by prow  
-export REGISTRY_AUTH_FILE = ${CONTAINER_ENGINE_CONFIG_DIR}/.dockerconfigjson
+# The docker/podman creds cache needs to be in a location unique to this
+# invocation; otherwise it could collide across jenkins jobs. We'll use
+# a .docker folder relative to pwd (the repo root).
+CONTAINER_ENGINE_CONFIG_DIR = .docker
+# But docker and podman use different options to configure it :eyeroll:
+# ==> Podman uses --authfile=PATH *after* the `login` subcommand; but
+# also accepts REGISTRY_AUTH_FILE from the env. See
+# https://www.mankier.com/1/podman-login#Options---authfile=path
+export REGISTRY_AUTH_FILE = ${CONTAINER_ENGINE_CONFIG_DIR}/config.json
 # If this configuration file doesn't exist, podman will error out. So
 # we'll create it if it doesn't exist.
 ifeq (,$(wildcard $(REGISTRY_AUTH_FILE)))
