@@ -76,4 +76,4 @@ e2e-harness-build:
 # push harness image
 .PHONY: e2e-image-build-push
 e2e-image-build-push:
-	${OSDE2E_CONVENTION_DIR}/e2e-image-build-push.sh "./osde2e/Dockerfile $(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(HARNESS_IMAGE_NAME):latest"
+	${OSDE2E_CONVENTION_DIR}/e2e-image-build-push.sh "./osde2e/Dockerfile $(IMAGE_REGISTRY)/$(HARNESS_IMAGE_REPOSITORY)/$(HARNESS_IMAGE_NAME):latest"
