@@ -70,7 +70,7 @@ e2e-harness-build: GOFLAGS_MOD=-mod=mod
 e2e-harness-build: GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS="${GOFLAGS_MOD}"
 e2e-harness-build:
 	go mod tidy
-	${GOENV} go test ./osde2e -v -c --tags=integration -o harness.test
+	${GOENV} go test ./osde2e -v -c --tags=osde2e -o harness.test
 
 # TODO: Push to a known image tag and commit id
 # push harness image
