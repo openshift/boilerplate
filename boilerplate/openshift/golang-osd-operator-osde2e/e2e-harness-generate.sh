@@ -65,7 +65,7 @@ import (
 
 const (
 	testResultsDirectory = \"/test-run-results\"
-	jUnitOutputFilename  = \"junit-example-addon.xml\"
+	jUnitOutputFilename  = \"junit-${OPERATOR_NAME}.xml\"
 )
 
 // Test entrypoint. osde2e runs this as a test suite on test pod.
