@@ -3,8 +3,15 @@ ARG SAAS_OPERATOR_DIR
 COPY ${SAAS_OPERATOR_DIR} manifests
 RUN initializer --permissive
 
+# addresses issues with registry images failing to run on FIPS enabled clusters
+FROM registry.access.redhat.com/ubi8/ubi:latest AS ubi-micro-build
+RUN mkdir -p /mnt/rootfs
+RUN yum install --installroot /mnt/rootfs --releasever 8 --setopt install_weak_deps=false --nodocs -y coreutils-single glibc-minimal-langpack openssl; yum clean all
+RUN rm -rf /mnt/rootfs/var/cache/*
+
 FROM registry.access.redhat.com/ubi8/ubi-micro:latest
 
+COPY --from=ubi-micro-build /mnt/rootfs/ /
 COPY --from=builder /bin/registry-server /bin/registry-server
 COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
 COPY --from=builder /bin/initializer /bin/initializer
