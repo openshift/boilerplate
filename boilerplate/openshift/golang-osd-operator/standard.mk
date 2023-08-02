@@ -94,7 +94,7 @@ GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPAT
 ifeq (${FIPS_ENABLED}, true)
 GOFLAGS_MOD+=-tags=fips_enabled
 GOFLAGS_MOD:=$(strip ${GOFLAGS_MOD})
-echo 'Setting GOEXPERIMENT=strictfipsruntime,boringcrypto - this generally does not work locally, if running locally consider FIPS_ENABLED=false.'
+$(warning Setting GOEXPERIMENT=strictfipsruntime,boringcrypto - this generally causes builds to fail unless building inside the provided Dockerfile. If building locally consider calling 'go build .')
 GOENV+=GOEXPERIMENT=strictfipsruntime,boringcrypto
 GOENV:=$(strip ${GOENV})
 endif
