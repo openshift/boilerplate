@@ -63,6 +63,12 @@ go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
 # We do not enforce versioning on setup-envtest
 go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
+##############
+# govulncheck
+##############
+GOVULNCHECK_VERSION=v1.0.0
+go install golang.org/x/vuln/cmd/govulncheck@${GOVULNCHECK_VERSION}
+
 #########
 # mockgen
 #########
