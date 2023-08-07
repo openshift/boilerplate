@@ -25,7 +25,7 @@ Some caveats:
 - The command lives at `./boilerplate/_lib/subscriber`. You may wish to alias or `$PATH` this. But note:
 - It (probably) only works if your PWD is the root of the boilerplate repository. (FIXME?)
 - Certain subcommands rely on the [`gh` command](https://github.com/cli/cli) being installed and properly configured.
-- It relies on [`yq` version 3.x](https://mikefarah.gitbook.io/yq/v/v3.x/). (FIXME: v3 is deprecated.)
+- It relies on [`yq` version 4.x](https://mikefarah.gitbook.io/yq/v/v4.x/).
 
 Subcommands follow:
 
