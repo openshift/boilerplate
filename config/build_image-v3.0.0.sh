@@ -81,6 +81,12 @@ go install github.com/golang/mock/mockgen@${MOCKGEN_VERSION}
 GO_BINDATA_VERSION=v3.1.2
 go install github.com/go-bindata/go-bindata/...@${GO_BINDATA_VERSION}
 
+####
+# yq
+####
+YQ_VERSION="v4.34.2"
+go install github.com/mikefarah/yq/v4@${YQ_VERSION}
+
 # HACK: `go get` creates lots of things under GOPATH that are not group
 # accessible, even if umask is set properly. This causes failures of
 # subsequent go tool usage (e.g. resolving packages) by a non-root user,
@@ -91,18 +97,6 @@ dir=$(go env GOPATH)
 for bit in r x w; do
     find $dir -perm -u+${bit} -a ! -perm -g+${bit} -exec chmod g+${bit} '{}' +
 done
-
-####
-# yq
-####
-YQ_VERSION="3.4.1"
-YQ_SHA256SUM="adbc6dd027607718ac74ceac15f74115ac1f3caef68babfb73246929d4ffb23c"
-YQ_LOCATION=https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-
-curl -L -o yq $YQ_LOCATION
-echo ${YQ_SHA256SUM} yq | sha256sum -c
-chmod ugo+x yq
-mv yq /usr/local/bin
 
 ####
 # gh
