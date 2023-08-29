@@ -77,3 +77,5 @@ func Test$REPLACE_FUNC(t *testing.T) {
 	RunSpecs(t, \"$REPLACE_SPECNAME\", suiteConfig, reporterConfig)
 }
 " >${HARNESS_DIR}/${OPERATOR_HYPHEN_NAME}_runner_test.go
+
+cp $(dirname $0)/test-harness-template.yaml ${HARNESS_DIR}/
