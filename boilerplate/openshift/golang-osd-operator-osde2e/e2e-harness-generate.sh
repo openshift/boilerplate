@@ -79,4 +79,4 @@ func Test$REPLACE_FUNC(t *testing.T) {
 }
 " > ${HARNESS_DIR}/${OPERATOR_HYPHEN_NAME}_runner_test.go
 
-cp $(dirname $0)/test-harness-template.yml ${HARNESS_DIR}/
+$(echo sed -e "s/\${OPERATOR_NAME}/$1/" $(dirname $0)/test-harness-template.yml) > ${HARNESS_DIR}/test-harness-template.yml

@@ -27,7 +27,7 @@ objects:
   - apiVersion: batch/v1
     kind: Job
     metadata:
-      name: osde2e-focused-test-job-${IMAGE_TAG}-${JOBID}
+      name: osde2e-${OPERATOR_NAME}-${IMAGE_TAG}-${JOBID}
     spec:
       backoffLimit: 0
       template:
