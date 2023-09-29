@@ -1,5 +1,6 @@
 # Project specific values
 OPERATOR_NAME?=$(shell sed -n 's/.*OperatorName .*"\([^"]*\)".*/\1/p' config/config.go)
+OPERATOR_GITHUB_ORG?=openshift
 
 HARNESS_IMAGE_REGISTRY?=quay.io
 HARNESS_IMAGE_REPOSITORY?=app-sre

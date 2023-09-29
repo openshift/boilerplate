@@ -66,7 +66,7 @@ container-engine-login:
 # create e2e scaffolding
 .PHONY: e2e-harness-generate
 e2e-harness-generate:
-	${OSDE2E_CONVENTION_DIR}/e2e-harness-generate.sh $(OPERATOR_NAME) $(OSDE2E_CONVENTION_DIR)
+	${OSDE2E_CONVENTION_DIR}/e2e-harness-generate.sh $(OPERATOR_NAME) $(OSDE2E_CONVENTION_DIR) $(OPERATOR_GITHUB_ORG)
 
 # create binary
 .PHONY: e2e-harness-build
