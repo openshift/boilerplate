@@ -1,6 +1,4 @@
 build_root_image:
   namespace: openshift
-  # name: boilerplate
-  # tag: image-v4.0.0
   name: release
   tag: rhel-9-release-golang-1.20-openshift-4.14
