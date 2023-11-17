@@ -16,6 +16,7 @@ tag-check: ## Perform a tag-check that validates a new tag has been created when
 	@config/tag-check.sh
 
 .PHONY: test
+test: export GO_COMPLIANCE_INFO = 0
 test: isclean ## Runs tests under the /case directory
 	test/driver $(CASE_GLOB)
 
