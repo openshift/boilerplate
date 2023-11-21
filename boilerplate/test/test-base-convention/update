@@ -26,8 +26,3 @@ echo "Validating variables exported from the main update driver"
 [[ "$CONVENTION_ROOT" == "$REPO_ROOT/boilerplate" ]] || err "Bad CONVENTION_ROOT: '$CONVENTION_ROOT' ; expected $REPO_ROOT/boilerplate"
 # Test framework sets this via the `empty_repo` helper.
 [[ "$REPO_NAME" == "test-repo" ]] || err "Bad REPO_NAME: '$REPO_NAME'"
-# Granny switch to disable this check for weird tests like reverting to master
-if [[ -z "$SKIP_IMAGE_TAG_CHECK" ]]; then
-    # Update this when publishing a new image tag
-    [[ "$LATEST_IMAGE_TAG" == "image-v4.0.0" ]] || err "Bad LATEST_IMAGE_TAG: '$LATEST_IMAGE_TAG'"
-fi

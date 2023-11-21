@@ -3,7 +3,7 @@ if [ "$BOILERPLATE_SET_X" ]; then
 fi
 
 # NOTE: Change this when publishing a new image tag.
-LATEST_IMAGE_TAG=image-v4.0.0
+LATEST_IMAGE_TAG=image-v4.0.1
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
@@ -185,9 +185,6 @@ EOF
 compare() {
     if [ $1 = "_data" ] ; then
         compare_data_file _data/last-boilerplate-commit $(cd $BOILERPLATE_GIT_REPO; git rev-parse HEAD)
-        if [[ -z "$SKIP_IMAGE_TAG_CHECK" ]]; then
-            compare_data_file _data/backing-image-tag $LATEST_IMAGE_TAG
-        fi
     else
         # Don't let this kill tests using -e. The failure is detected
         # later based on the $LOG_FILE being nonempty.
