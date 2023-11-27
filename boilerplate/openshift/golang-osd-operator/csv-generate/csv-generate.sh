@@ -4,10 +4,10 @@ set -e
 
 source `dirname $0`/common.sh
 
-usage() { echo "Usage: $0 -o operator-name -c saas-repository-channel -H operator-commit-hash -n operator-commit-number -i operator-image -V operator-version" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -o operator-name -c saas-repository-channel -H operator-commit-hash -n operator-commit-number -i operator-image -V operator-version -s supplementary-image" 1>&2; exit 1; }
 
 # TODO : Add support of long-options
-while getopts "c:dg:H:i:n:o:V:" option; do
+while getopts "c:dg:H:i:n:o:V:s:" option; do
     case "${option}" in
         c)
             operator_channel=${OPTARG}
@@ -31,6 +31,9 @@ while getopts "c:dg:H:i:n:o:V:" option; do
             # `{major}.{minor}.{commit-number}-{hash}`
             # Notably, it does *not* start with `v`.
             operator_version=${OPTARG}
+            ;;
+        s)
+            supplementary_image=${OPTARG}
             ;;
         *)
             usage
@@ -61,6 +64,17 @@ if [[ -z "$IMAGE_DIGEST" ]]; then
 fi
 REPO_DIGEST=${operator_image}@${IMAGE_DIGEST}
 
+# Given a supplementary image is specified,
+# generate the image digest.
+if [ ! -z supplementary_image ]; then
+    IMAGE_DIGEST=$(skopeo inspect docker://${supplementary_image}:v${operator_version} | jq -r .Digest)
+    if [[ -z "$IMAGE_DIGEST" ]]; then
+        echo "Couldn't discover IMAGE_DIGEST for docker://${supplementary_image}:v${operator_version}!"
+        exit 1
+    fi
+    SECONDARY_REPO_DIGEST=${supplementary_image}@${IMAGE_DIGEST}
+fi
+
 # If no override, using the gitlab repo
 if [ -z "$GIT_PATH" ] ; then
     GIT_PATH="https://app:"${APP_SRE_BOT_PUSH_TOKEN}"@gitlab.cee.redhat.com/service/saas-${operator_name}-bundle.git"
@@ -76,7 +90,7 @@ git clone --branch "$operator_channel" ${GIT_PATH} "$SAAS_OPERATOR_DIR"
 # If this is a brand new SaaS setup, then set up accordingly
 if [[ ! -d "${BUNDLE_DIR}" ]]; then
     echo "Setting up new SaaS operator dir: ${BUNDLE_DIR}"
-    mkdir "${BUNDLE_DIR}"
+    mkdir -p "${BUNDLE_DIR}"
 fi
 
 # For testing purposes, support disabling anything that relies on
@@ -175,12 +189,12 @@ fi
 # ...Unless we're already in a container, which is how boilerplate
 # CI runs. We have py3 there, so run natively in that case.
 if [[ -z "$CONTAINER_ENGINE" ]]; then
-    ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREV_VERSION_OPTS} -i ${REPO_DIGEST} -V ${operator_version}
+    ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREV_VERSION_OPTS} -i ${REPO_DIGEST} -V ${operator_version} -s ${SECONDARY_REPO_DIGEST}
 else
     if [[ ${CONTAINER_ENGINE##*/} == "podman" ]]; then
         CE_OPTS="--userns keep-id -v `pwd`:`pwd`:Z"
     else
         CE_OPTS="-v `pwd`:`pwd`"
     fi
-    $CONTAINER_ENGINE run --pull=always --rm ${CE_OPTS} -u `id -u`:0 -w `pwd` registry.access.redhat.com/ubi8/python-36 /bin/bash -c "python -m pip install --disable-pip-version-check oyaml; python ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREV_VERSION_OPTS} -i ${REPO_DIGEST} -V ${operator_version}"
+    $CONTAINER_ENGINE run --pull=always --rm ${CE_OPTS} -u `id -u`:0 -w `pwd` registry.access.redhat.com/ubi8/python-36 /bin/bash -c "python -m pip install --disable-pip-version-check oyaml; python ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREV_VERSION_OPTS} -i ${REPO_DIGEST} -V ${operator_version} -s ${SECONDARY_REPO_DIGEST}"
 fi
