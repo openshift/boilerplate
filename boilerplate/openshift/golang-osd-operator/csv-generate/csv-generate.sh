@@ -56,23 +56,12 @@ else
     YQ_CMD="$CONTAINER_ENGINE run --rm -i $yq_image"
 fi
 
-# Get the image URI as repo URL + image digest
-IMAGE_DIGEST=$(skopeo inspect docker://${operator_image}:v${operator_version} | jq -r .Digest)
-if [[ -z "$IMAGE_DIGEST" ]]; then
-    echo "Couldn't discover IMAGE_DIGEST for docker://${operator_image}:v${operator_version}!"
-    exit 1
-fi
-REPO_DIGEST=${operator_image}@${IMAGE_DIGEST}
+REPO_DIGEST=$(generateImageDigest $operator_image $operator_version)
 
 # Given a supplementary image is specified,
 # generate the image digest.
-if [ ! -z supplementary_image ]; then
-    IMAGE_DIGEST=$(skopeo inspect docker://${supplementary_image}:v${operator_version} | jq -r .Digest)
-    if [[ -z "$IMAGE_DIGEST" ]]; then
-        echo "Couldn't discover IMAGE_DIGEST for docker://${supplementary_image}:v${operator_version}!"
-        exit 1
-    fi
-    SECONDARY_REPO_DIGEST=${supplementary_image}@${IMAGE_DIGEST}
+if [[ -n $supplementary_image ]]; then
+    SECONDARY_REPO_DIGEST=$(generateImageDigest $supplementary_image $operator_version)
 fi
 
 # If no override, using the gitlab repo
