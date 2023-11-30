@@ -45,6 +45,7 @@ parser.add_argument("-p", "--previous-version", type=str, help="Semver of the ve
 parser.add_argument("-i", "--operator-image", type=str, help="Base index image to be used", required=True)
 parser.add_argument("-V", "--operator-version", type=str, help="The full version of the operator (without the leading `v`): {major}.{minor}.{commit-number}-{hash}", required=True)
 parser.add_argument("-s", "--supplementary-image", type=str, help="Image of the supplementary deployment", required=False)
+parser.add_argument("-e", "--skip-range-enabled", type=str, help="OLM skip range is enabled", required=False)
 args = parser.parse_args()
 
 OPERATOR_NAME   = args.operator_name
@@ -53,6 +54,7 @@ prev_version    = args.previous_version
 operator_image  = args.operator_image
 full_version    = args.operator_version
 supplementary_image = args.supplementary_image
+skip_range_enabled=args.skip_range_enabled
 
 hasMultipleDeployments = False
 
@@ -382,7 +384,12 @@ for kind, docs in by_kind.items():
 # Update the versions to include git hash:
 csv['metadata']['name'] = f"{OPERATOR_NAME}.v{full_version}"
 csv['spec']['version'] = full_version
-if prev_version:
+
+# Support cross-catalog upgrades via OLM skiprange.
+# Attributes 'skiprange' and 'replaces' cannot coexists in a CSV.
+if skip_range_enabled == "true":
+    csv['metadata']['annotations']['olm.skipRange'] = f">=0.0.1 <{full_version}"
+elif prev_version:
     csv['spec']['replaces'] = f"{OPERATOR_NAME}.v{prev_version}"
 
 # Set the CSV createdAt annotation:
