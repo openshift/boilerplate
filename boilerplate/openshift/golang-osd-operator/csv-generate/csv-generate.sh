@@ -4,10 +4,10 @@ set -e
 
 source `dirname $0`/common.sh
 
-usage() { echo "Usage: $0 -o operator-name -c saas-repository-channel -H operator-commit-hash -n operator-commit-number -i operator-image -V operator-version -s supplementary-image" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -o operator-name -c saas-repository-channel -H operator-commit-hash -n operator-commit-number -i operator-image -V operator-version -s supplementary-image -e skip-range-enabled" 1>&2; exit 1; }
 
 # TODO : Add support of long-options
-while getopts "c:dg:H:i:n:o:V:s:" option; do
+while getopts "c:dg:H:i:n:o:V:s:e:" option; do
     case "${option}" in
         c)
             operator_channel=${OPTARG}
@@ -34,6 +34,9 @@ while getopts "c:dg:H:i:n:o:V:s:" option; do
             ;;
         s)
             supplementary_image=${OPTARG}
+            ;;
+        s)
+            skip_range_enabled=${OPTARG}
             ;;
         *)
             usage
@@ -62,6 +65,9 @@ REPO_DIGEST=$(generateImageDigest $operator_image $operator_version)
 # generate the image digest.
 if [[ -n $supplementary_image ]]; then
     SECONDARY_REPO_DIGEST=$(generateImageDigest $supplementary_image $operator_version)
+    SECONDARY_REPO_DIGEST="-s ${SECONDARY_REPO_DIGEST}"
+else
+    SECONDARY_REPO_DIGEST=""
 fi
 
 # If no override, using the gitlab repo
@@ -178,12 +184,12 @@ fi
 # ...Unless we're already in a container, which is how boilerplate
 # CI runs. We have py3 there, so run natively in that case.
 if [[ -z "$CONTAINER_ENGINE" ]]; then
-    ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREV_VERSION_OPTS} -i ${REPO_DIGEST} -V ${operator_version} -s ${SECONDARY_REPO_DIGEST}
+    ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREV_VERSION_OPTS} -i ${REPO_DIGEST} -V ${operator_version} ${SECONDARY_REPO_DIGEST} -e ${skip_range_enabled}
 else
     if [[ ${CONTAINER_ENGINE##*/} == "podman" ]]; then
         CE_OPTS="--userns keep-id -v `pwd`:`pwd`:Z"
     else
         CE_OPTS="-v `pwd`:`pwd`"
     fi
-    $CONTAINER_ENGINE run --pull=always --rm ${CE_OPTS} -u `id -u`:0 -w `pwd` registry.access.redhat.com/ubi8/python-36 /bin/bash -c "python -m pip install --disable-pip-version-check oyaml; python ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREV_VERSION_OPTS} -i ${REPO_DIGEST} -V ${operator_version} -s ${SECONDARY_REPO_DIGEST}"
+    $CONTAINER_ENGINE run --pull=always --rm ${CE_OPTS} -u `id -u`:0 -w `pwd` registry.access.redhat.com/ubi8/python-36 /bin/bash -c "python -m pip install --disable-pip-version-check oyaml; python ./boilerplate/openshift/golang-osd-operator/csv-generate/common-generate-operator-bundle.py -o ${operator_name} -d ${OUTPUT_DIR} ${PREV_VERSION_OPTS} -i ${REPO_DIGEST} -V ${operator_version} ${SECONDARY_REPO_DIGEST} -e ${skip_range_enabled}"
 fi
