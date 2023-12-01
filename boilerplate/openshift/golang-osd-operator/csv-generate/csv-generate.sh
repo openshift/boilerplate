@@ -35,7 +35,7 @@ while getopts "c:dg:H:i:n:o:V:s:e:" option; do
         s)
             supplementary_image=${OPTARG}
             ;;
-        s)
+        e)
             skip_range_enabled=${OPTARG}
             ;;
         *)
