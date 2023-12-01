@@ -8,6 +8,9 @@
   - [Code coverage](#code-coverage)
   - [Linting and other static analysis with `golangci-lint`](#linting-and-other-static-analysis-with-golangci-lint)
   - [Checks on generated code](#checks-on-generated-code)
+  - [FIPS](#fips-federal-information-processing-standards)
+  - [Additional deployment support](#additional-deployment-support)
+  - [OLM SkipRange](#olm-skiprange)
 
 This convention is suitable for both cluster- and hive-deployed operators.
 
