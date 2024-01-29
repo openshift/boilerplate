@@ -56,6 +56,11 @@ subscribers:
       - name: openshift/golang-osd-operator
         status: manual
 
+  - name: openshift/compliance-audit-router
+    conventions:
+      - name: openshift/osd-container-image
+        status: manual
+
   - name: openshift/configure-alertmanager-operator
     conventions:
       - name: openshift/golang-osd-operator
