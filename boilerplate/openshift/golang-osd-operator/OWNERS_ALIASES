@@ -5,12 +5,12 @@
 aliases:
   srep-functional-team-aurora:
     - abyrne55
-    - bdematte
-    - boranx
+    - AlexVulaj
     - dakotalongRH
     - lnguyen1401
     - luis-falcon
     - rafael-azevedo
+    - reedcort
   srep-functional-team-fedramp:
     - tonytheleg
     - theautoroboto
@@ -29,8 +29,9 @@ aliases:
     - devppratik
   srep-functional-team-orange:
     - bng0y
+    - bergmannf
     - typeid
-    - Makdaam
+    - mrWinston
     - Nikokolas3270
     - ninabauer
     - RaphaelBut
@@ -39,7 +40,8 @@ aliases:
     - aliceh
     - anispate
     - clcollins
-    - mjlshen
+    - geowa4
+    - iamkirkbater
     - tnierman
     - yithian
   srep-functional-team-security:
@@ -55,21 +57,12 @@ aliases:
     - feichashao
     - Tafhim
     - samanthajayasinghe
-  srep-functional-team-v1alpha1:
-    - iamkirkbater
-    - AlexVulaj
-    - T0MASD
-    - bergmannf
-    - dkeohane
-    - reedcort
-    - mrWinston
   srep-functional-leads:
     - rafael-azevedo
     - iamkirkbater
     - Nikokolas3270
     - theautoroboto
     - bmeng
-    - mjlshen
     - sam-nguyen7
     - ravitri
   srep-team-leads:
