@@ -9,7 +9,7 @@ GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=${GOFLAGS_MOD}
 CODECOV_CONVENTION_DIR := boilerplate/openshift/golang-codecov
 
 ifeq ($(origin TESTTARGETS), undefined)
-TESTTARGETS := $(shell ${GOENV} go list -e ./... | egrep -v "/(vendor)/")
+TESTTARGETS := $(shell ${GOENV} go list -e ./... | grep -E -v "/(vendor)/")
 endif
 # ex, -v
 TESTOPTS :=
