@@ -31,15 +31,20 @@ push_for_tag() {
         "docker://${quay_image}:$tag"
 }
 
-# Decide whether we need to build and push a new image "release" tag.
-# This gets us the last non-merge commit:
-commit=$(git rev-list --no-merges -n 1 HEAD)
-# If that commit corresponds to an image tag, this gets the tag:
-tag=$(git describe --exact-match --tag --match image-v* $commit 2>/dev/null || true)
-if [[ -n "$tag" ]]; then
-    build_cumulative $tag
-    push_for_tag $tag
-else
-    echo "No tag here. All done."
+# Get the most recent tag starting with "image-v*"
+latest_tag=$(git describe --tags --match "image-v*" --abbrev=0)
+
+if [ -z ${latest_tag} ]; then
+    echo "No tag matching pattern 'image-v*' found."
+    exit 1
 fi
+
+if podman manifest inspect "quay.io/app-sre/boilerplate:${latest_tag}" &>/dev/null; then
+    echo "Image 'quay.io/app-sre/boilerplate:${latest_tag}' already exists."
+else
+    echo "Creating image 'quay.io/app-sre/boilerplate:${latest_tag}'"
+    build_cumulative ${latest_tag}
+    push_for_tag ${latest_tag}
+fi
+
 exit 0
