@@ -15,10 +15,10 @@ name=$3
 quay_image=$registry/$namespace/$name
 
 HERE=$(realpath ${0%/*})
+container_engine=${CONTAINER_ENGINE:-$(command -v podman || echo docker)}
 
 build_cumulative() {
     local tag=$1
-    local container_engine=${CONTAINER_ENGINE:-$(command -v podman || echo docker)}
     echo "Building for tag $tag"
     $container_engine build -t ${name}:${tag} -f ${HERE}/Dockerfile.appsre ${HERE}
 }
@@ -39,15 +39,17 @@ if [ -z ${latest_tag} ]; then
 fi
 
 # Run podman manifest inspect in a subshell and capture the output and rc
-inspect_output=$(podman manifest inspect "quay.io/app-sre/boilerplate:${latest_tag}" 2>&1) && return_code=0 || return_code=$?
+inspect_output=$($container_engine manifest inspect "quay.io/app-sre/boilerplate:${latest_tag}" 2>&1) && return_code=0 || return_code=$?
 
 # We need to make sure we don't re-create in case there's a different error
 # so we also check that the returned output is something like 
 # podman manifest inspect quay.io/app-sre/boilerplate:image-v5.0.0
 # Error: reading image "docker://quay.io/app-sre/boilerplate:image-v5.0.0": reading manifest image-v5.0.0 in quay.io/app-sre/boilerplate: manifest unknow
+# docker manifest inspect quay.io/app-sre/boilerplate:image-v5.0.0
+# no such manifest: quay.io/app-sre/boilerplate:image-v5.0.0
 if [ "$return_code" -eq 0 ]; then
     echo "Image 'quay.io/app-sre/boilerplate:${latest_tag}' already exists."
-elif [ "$return_code" -ne 0 ] && [[ $inspect_output == *"manifest unknown"* ]]; then
+elif [ "$return_code" -ne 0 ] && { [[ $inspect_output == *"manifest unknown"* ]] || [[ $inspect_output == *"no such manifest"* ]]; }; then
     echo "Creating image 'quay.io/app-sre/boilerplate:${latest_tag}' does not exist."
     git checkout ${latest_tag}
     echo "Creating image 'quay.io/app-sre/boilerplate:${latest_tag}'"
