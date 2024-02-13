@@ -4,8 +4,8 @@ set -ex
 
 # Usage: push.sh REGISTRY NAMESPACE NAME
 # e.g. push.sh quay.io app-sre boilerplate
-# Builds and pushes a new tagged image IFF we are on a tag. Otherwise it
-# is a no-op.
+# Builds and pushes a new tagged image IF the most recent tag does not yet have an image.
+# Checks out the right version for the tag beforehand. 
 # Assumes $QUAY_USER and $QUAY_TOKEN are set in the env.
 
 registry=$1
@@ -33,18 +33,29 @@ push_for_tag() {
 
 # Get the most recent tag starting with "image-v*"
 latest_tag=$(git describe --tags --match "image-v*" --abbrev=0)
-
 if [ -z ${latest_tag} ]; then
     echo "No tag matching pattern 'image-v*' found."
     exit 1
 fi
 
-if podman manifest inspect "quay.io/app-sre/boilerplate:${latest_tag}" &>/dev/null; then
+# Run podman manifest inspect in a subshell and capture the output and rc
+inspect_output=$(podman manifest inspect "quay.io/app-sre/boilerplate:${latest_tag}" 2>&1) && return_code=0 || return_code=$?
+
+# We need to make sure we don't re-create in case there's a different error
+# so we also check that the returned output is something like 
+# podman manifest inspect quay.io/app-sre/boilerplate:image-v5.0.0
+# Error: reading image "docker://quay.io/app-sre/boilerplate:image-v5.0.0": reading manifest image-v5.0.0 in quay.io/app-sre/boilerplate: manifest unknow
+if [ "$return_code" -eq 0 ]; then
     echo "Image 'quay.io/app-sre/boilerplate:${latest_tag}' already exists."
-else
+elif [ "$return_code" -ne 0 ] && [[ $inspect_output == *"manifest unknown"* ]]; then
+    echo "Creating image 'quay.io/app-sre/boilerplate:${latest_tag}' does not exist."
+    git checkout ${latest_tag}
     echo "Creating image 'quay.io/app-sre/boilerplate:${latest_tag}'"
     build_cumulative ${latest_tag}
     push_for_tag ${latest_tag}
+else
+    echo "Error checking for image existence. Exit code: $return_code, Output: $inspect_output"
+    exit 1
 fi
 
 exit 0
