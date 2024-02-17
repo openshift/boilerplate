@@ -44,6 +44,7 @@ endif
 COMMIT_NUMBER=$(shell git rev-list `git rev-list --parents HEAD | grep -E "^[a-f0-9]{40}$$"`..HEAD --count)
 CURRENT_COMMIT=$(shell git rev-parse --short=7 HEAD)
 OPERATOR_VERSION=$(VERSION_MAJOR).$(VERSION_MINOR).$(COMMIT_NUMBER)-$(CURRENT_COMMIT)
+VERSION_BRANCH=release-$(VERSION_MAJOR).$(VERSION_MINOR)
 
 OPERATOR_IMAGE=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME)
 OPERATOR_IMAGE_TAG=v$(OPERATOR_VERSION)
@@ -296,10 +297,12 @@ prow-config:
 # Targets used by prow
 ######################
 
-# validate: Ensure code generation has not been forgotten; and ensure
-# generated and boilerplate code has not been modified.
+# validate: Ensure 
+# 1. code generation has not been forgotten; 
+# 2. generated and boilerplate code has not been modified 
+# 3. specified major and minor version match release branch
 .PHONY: validate
-validate: boilerplate-freeze-check generate-check
+validate: boilerplate-freeze-check generate-check branch-version-check
 
 # lint: Perform static analysis.
 .PHONY: lint
@@ -376,6 +379,10 @@ container-lint:
 .PHONY: container-validate
 container-validate:
 	${BOILERPLATE_CONTAINER_MAKE} validate
+
+.PHONY: branch-version-check
+branch-version-check:
+	@(if shell git branch --list $(VERSION_BRANCH); then git checkout $(VERSION_BRANCH); else echo  Version set to $(VERSION_MAJOR).$(VERSION_MINOR), but branch $(VERSION_BRANCH) not found.; exit 1; fi)
 
 .PHONY: container-coverage
 container-coverage:
