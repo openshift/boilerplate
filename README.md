@@ -386,8 +386,8 @@ for an example.
     >**NOTE**: You must do the `upstream` push *after* creating your PR. Otherwise, the tagged commit will not exist
 upstream.
 
-2. Import that tag via boilerplate's ImageStream in `openshift/release` by adding an element to the `spec.tags` list in
-[this configuration file](https://github.com/openshift/release/blob/master/clusters/app.ci/supplemental-ci-images/boilerplate/boilerplate.yaml).
+2. Import that tag via boilerplate's ImageStream in `openshift/release` by adding an element to the `supplementalCIImages` list in
+[this configuration file](https://github.com/openshift/release/blob/master/core-services/image-mirroring/_config.yaml).
 
 #### Making CI Efficient
 The backing image is built in prow with every commit, even when nothing about it has changed.
