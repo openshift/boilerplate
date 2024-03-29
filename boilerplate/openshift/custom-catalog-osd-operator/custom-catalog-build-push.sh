@@ -7,7 +7,7 @@ CONTAINER_ENGINE=$(command -v podman || command -v docker)
 CONTAINER_ENGINE_SHORT=${CONTAINER_ENGINE##*/}
 REPO_ROOT=$(git rev-parse --show-toplevel)
 VERSIONS_DIR=${REPO_ROOT}/versions
-SKOPEO_IMAGE="quay.io/skopeo/stable:v1.8.0"
+SKOPEO_IMAGE="quay.io/skopeo/stable:v1.14.2"
 
 source $REPO_ROOT/boilerplate/_lib/common.sh
 

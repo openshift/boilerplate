@@ -95,7 +95,7 @@ popd
 
 if [ "$push_catalog" = true ] ; then
     # push image
-    skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
+    ${CONTAINER_ENGINE} run ${SKOPEO_IMAGE} -- skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
         "${SRC_CONTAINER_TRANSPORT}:${registry_image}:${operator_channel}-latest" \
         "docker://${registry_image}:${operator_channel}-latest"
 
@@ -104,7 +104,7 @@ if [ "$push_catalog" = true ] ; then
         exit 1
     fi
 
-    skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
+    ${CONTAINER_ENGINE} run ${SKOPEO_IMAGE} -- skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
         "${SRC_CONTAINER_TRANSPORT}:${registry_image}:${operator_channel}-latest" \
         "docker://${registry_image}:${operator_channel}-${operator_commit_hash}"
 
