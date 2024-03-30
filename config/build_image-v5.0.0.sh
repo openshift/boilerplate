@@ -39,8 +39,10 @@ go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
 #########
 # ENVTEST
 #########
-# We do not enforce versioning on setup-envtest
-go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+# Latest is only compatible with Go 1.22
+# https://github.com/kubernetes-sigs/controller-runtime/issues/2744
+ENVTEST_VERSION="bf15e44028f908c790721fc8fe67c7bf2d06a611"
+go install sigs.k8s.io/controller-runtime/tools/setup-envtest@${ENVTEST_VERSION}
 
 ##############
 # govulncheck
