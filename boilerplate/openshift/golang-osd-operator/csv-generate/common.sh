@@ -2,7 +2,6 @@
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 source $REPO_ROOT/boilerplate/_lib/common.sh
-SKOPEO_IMAGE="quay.io/skopeo/stable:v1.14.2"
 
 function check_mandatory_params() {
     local csv_missing_param_error
