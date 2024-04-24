@@ -171,7 +171,7 @@ VERSION_DIR="${OUTPUT_DIR}/${OPERATOR_NEW_VERSION}"
 # anything, as only timestamps would be changed.
 if [[ -d "${VERSION_DIR}" && -n $(ls -A "${VERSION_DIR}") ]]; then
     echo "Output directory for bundle already exists and is not empty: ${VERSION_DIR}. Skipping bundle creation."
-    exit 1
+    exit 0
 fi
 
 # If setting up a new SaaS repo, there is no previous version when building a bundle
