@@ -62,8 +62,8 @@ done <<< "$3"
 
 if [[ "${RELEASE_BRANCHED_BUILDS}" ]]; then
     # If the catalog image already exists, short out
-    if image_exists_in_repo "${REGISTRY_IMAGE}:${}"; then
-        echo "Catalog image ${REGISTRY_IMAGE}:${} already "
+    if image_exists_in_repo "${REGISTRY_IMAGE}:v${OPERATOR_VERSION}"; then
+        echo "Catalog image ${REGISTRY_IMAGE}:v${OPERATOR_VERSION} already "
         echo "exists. Assuming this means the saas bundle work has also been done "
         echo "properly. Nothing to do!"
     else
