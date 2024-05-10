@@ -60,6 +60,20 @@ while read dockerfile_path image_uri junk; do
     fi
 done <<< "$3"
 
+if [[ "${RELEASE_BRANCHED_BUILDS}" ]]; then
+    # If the catalog image already exists, short out
+    if image_exists_in_repo "${REGISTRY_IMAGE}:${}"; then
+        echo "Catalog image ${REGISTRY_IMAGE}:${} already "
+        echo "exists. Assuming this means the saas bundle work has also been done "
+        echo "properly. Nothing to do!"
+    else
+        # build the CSV and create & push image catalog for the appropriate channel
+        make stable-csv-build stable-catalog-build stable-catalog-publish
+    fi
+
+    exit
+fi
+
 for channel in staging production; do
     # If the catalog image already exists, short out
     if image_exists_in_repo "${REGISTRY_IMAGE}:${channel}-${CURRENT_COMMIT}"; then
