@@ -80,7 +80,11 @@ SAAS_OPERATOR_DIR="saas-${operator_name}-bundle"
 BUNDLE_DIR="$SAAS_OPERATOR_DIR/${operator_name}/"
 
 rm -rf "$SAAS_OPERATOR_DIR"
-git clone --branch "$operator_channel" ${GIT_PATH} "$SAAS_OPERATOR_DIR"
+BRANCH="$operator_channel"
+if [[ "${RELEASE_BRANCHED_BUILDS}" ]]; then
+    BRANCH="release-${operator_version%.*}"
+fi
+git clone --branch "${BRANCH}" ${GIT_PATH} "$SAAS_OPERATOR_DIR"
 
 # If this is a brand new SaaS setup, then set up accordingly
 if [[ ! -d "${BUNDLE_DIR}" ]]; then

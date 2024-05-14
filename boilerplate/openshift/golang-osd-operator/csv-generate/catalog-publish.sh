@@ -84,7 +84,7 @@ replaces ${OPERATOR_PREV_VERSION}
 removed versions: ${REMOVED_VERSIONS}"
 
 git commit -m "${MESSAGE}"
-git push origin "${operator_channel}"
+git push origin HEAD
 
 if [ $? -ne 0 ] ; then
     echo "git push failed, exiting..."
