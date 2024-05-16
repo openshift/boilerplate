@@ -71,7 +71,7 @@ if [[ "${RELEASE_BRANCHED_BUILDS}" ]]; then
         make stable-csv-build stable-catalog-build stable-catalog-publish
     fi
 
-    exit
+    exit 0
 fi
 
 for channel in staging production; do

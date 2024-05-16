@@ -105,7 +105,7 @@ if [ "$push_catalog" = true ] ; then
           exit 1
       fi
 
-      exit
+      exit 0
     fi
 
     skopeo copy --dest-creds "${QUAY_USER}:${QUAY_TOKEN}" \
