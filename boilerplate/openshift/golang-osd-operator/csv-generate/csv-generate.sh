@@ -82,6 +82,8 @@ BUNDLE_DIR="$SAAS_OPERATOR_DIR/${operator_name}/"
 rm -rf "$SAAS_OPERATOR_DIR"
 BRANCH="$operator_channel"
 if [[ "${RELEASE_BRANCHED_BUILDS}" ]]; then
+    # operator version will be set to `X.Y.BUILD_NUMBER-commit sha`, this will
+    # be `release-X.Y`
     BRANCH="release-${operator_version%.*}"
 fi
 git clone --branch "${BRANCH}" ${GIT_PATH} "$SAAS_OPERATOR_DIR"
