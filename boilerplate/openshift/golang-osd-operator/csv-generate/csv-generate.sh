@@ -86,7 +86,14 @@ if [[ "${RELEASE_BRANCHED_BUILDS}" ]]; then
     # be `release-X.Y`
     BRANCH="release-${operator_version%.*}"
 fi
-git clone --branch "${BRANCH}" ${GIT_PATH} "$SAAS_OPERATOR_DIR"
+
+git clone ${GIT_PATH} "$SAAS_OPERATOR_DIR"
+pushd "${SAAS_OPERATOR_DIR}"
+# if branch doesn't exist, checkout a new branch based on staging
+if ! git show-ref --verify --quiet refs/heads/${BRANCH}; then
+    git checkout -b "${BRANCH}" --track origin/staging
+fi
+popd
 
 # If this is a brand new SaaS setup, then set up accordingly
 if [[ ! -d "${BUNDLE_DIR}" ]]; then
