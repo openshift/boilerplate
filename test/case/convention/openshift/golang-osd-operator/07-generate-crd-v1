@@ -19,3 +19,4 @@ make boilerplate-update
 make op-generate
 
 diff deploy/crds/mygroup.operators.coreos.com_testkinds.yaml expected/mygroup.operators.coreos.com_testkinds.yaml || err "CRD generation didn't work properly."
+diff api/v1beta1/zz_generated.deepcopy.go expected/zz_generated.deepcopy.go || err "controller-gen code generation didn't work properly."
