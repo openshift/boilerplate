@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
 
-# This script comprises everything up to and including the boilerplate
-# backing image at version image-v4.0.0. It is used when performing a
-# full build in the appsre pipeline, but is bypassed during presubmit CI
-# in prow to make testing faster there. As such, there is a (very small)
-# possibility of those behaving slightly differently.
-
-# Compatible with Operator-SDK v1.25.0+ which first supported Go 1.19
-# https://github.com/operator-framework/operator-sdk/releases/tag/v1.25.0
+# boilerplate v5.0.1
+# Go 1.22
 
 set -x
 set -euo pipefail
@@ -39,8 +33,6 @@ go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION}
 #########
 # ENVTEST
 #########
-# Latest is only compatible with Go 1.22
-# https://github.com/kubernetes-sigs/controller-runtime/issues/2744
 ENVTEST_VERSION="release-0.18"
 go install sigs.k8s.io/controller-runtime/tools/setup-envtest@${ENVTEST_VERSION}
 

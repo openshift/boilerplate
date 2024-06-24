@@ -3,5 +3,5 @@
 FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17
 
 # TODO: remove this COPY/RUN
-COPY build_image-v5.0.0.sh /build.sh
-RUN /build.sh && rm /build.sh
+COPY build_image.sh /build_image.sh
+RUN /build_image.sh && rm /build_image.sh
