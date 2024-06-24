@@ -17,7 +17,7 @@ parameters:
     required: false
   - name: AWS_SECRET_ACCESS_KEY
     required: false
-  - name: AWS_REGION
+  - name: CLOUD_PROVIDER_REGION
     required: false
   - name: GCP_CREDS_JSON
     required: false
@@ -66,8 +66,8 @@ objects:
                   value: ${AWS_ACCESS_KEY_ID}
                 - name: AWS_SECRET_ACCESS_KEY
                   value: ${AWS_SECRET_ACCESS_KEY}
-                - name: AWS_REGION
-                  value: ${AWS_REGION}
+                - name: CLOUD_PROVIDER_REGION
+                  value: ${CLOUD_PROVIDER_REGION}
                 - name: GCP_CREDS_JSON
                   value: ${GCP_CREDS_JSON}
                 - name: LOG_BUCKET
