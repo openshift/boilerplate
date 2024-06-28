@@ -3,7 +3,7 @@
 
 # To check for existence of an image: https://docs.ci.openshift.org/docs/how-tos/use-registries-in-build-farm/
 # Log into build farm's registry and validate the image exists
-FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.21-openshift-4.16
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.22-openshift-4.17
 
-COPY build_image-v5.0.0.sh /build.sh
-RUN /build.sh && rm -f /build.sh
+COPY build_image.sh /build_image.sh
+RUN /build_image.sh && rm -f /build_image.sh
