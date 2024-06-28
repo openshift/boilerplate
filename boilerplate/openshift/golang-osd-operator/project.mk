@@ -17,6 +17,9 @@ VERSION_MAJOR?=0
 VERSION_MINOR?=1
 
 ifdef RELEASE_BRANCHED_BUILDS
+    # Make sure all called shell scripts know what's up
+    export RELEASE_BRANCHED_BUILDS
+
     # RELEASE_BRANCH from env vars takes precedence; if not set, try to figure it out
     RELEASE_BRANCH:=${RELEASE_BRANCH}
     ifneq ($(RELEASE_BRANCH),)
