@@ -5,7 +5,7 @@ set -eo pipefail
 REPO_ROOT=$(git rev-parse --show-toplevel)
 source $REPO_ROOT/boilerplate/_lib/common.sh
 
-GOLANGCI_LINT_VERSION="1.54.2"
+GOLANGCI_LINT_VERSION="1.59.1"
 DEPENDENCY=${1:-}
 GOOS=$(go env GOOS)
 

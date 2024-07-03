@@ -17,9 +17,17 @@ linters:
   disable-all: true
   enable:
   - errcheck
+  - gosec
   - gosimple
   - govet
   - ineffassign
+  - misspell
   - staticcheck
   - typecheck
   - unused
+
+linters-settings:
+  misspell:
+    extra-words:
+      - typo: "openshit"
+        correction: "OpenShift"
