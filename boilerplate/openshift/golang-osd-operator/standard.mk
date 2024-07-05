@@ -52,6 +52,7 @@ OPERATOR_IMAGE_URI=${IMG}
 OPERATOR_IMAGE_URI_LATEST=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME):latest
 OPERATOR_DOCKERFILE ?=build/Dockerfile
 REGISTRY_IMAGE=$(IMAGE_REGISTRY)/$(IMAGE_REPOSITORY)/$(IMAGE_NAME)-registry
+OPERATOR_REPO_NAME=$(shell git config --get remote.origin.url | sed 's,.*/,,; s/\.git$$//')
 
 ifeq ($(SUPPLEMENTARY_IMAGE_NAME),)
 # We need SUPPLEMENTARY_IMAGE to be defined for csv-generate.mk
@@ -385,8 +386,9 @@ container-coverage:
 .PHONY: rvmo-bundle
 rvmo-bundle:
 	RELEASE_BRANCH=$(RELEASE_BRANCH) \
+	REPO_NAME=$(OPERATOR_REPO_NAME) \
 	OPERATOR_NAME=$(OPERATOR_NAME) \
 	OPERATOR_VERSION=$(OPERATOR_VERSION) \
 	OPERATOR_OLM_REGISTRY_IMAGE=$(REGISTRY_IMAGE) \
-	TEMPLATE_FILE=$(abspath hack/artifacts/olm-artifacts-template.gotmpl) \
+	TEMPLATE_DIR=$(abspath hack/release-bundle) \
 	bash ${CONVENTION_DIR}/rvmo-bundle.sh
