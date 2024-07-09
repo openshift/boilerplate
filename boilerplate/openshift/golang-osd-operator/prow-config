@@ -56,6 +56,11 @@ build_root:
 images:
 - dockerfile_path: build/Dockerfile
   to: unused
+promotion:
+  to:
+#  keep updated to current ocp release branch
+  - name: "4.16"
+    namespace: ocp
 resources:
   '*':
     limits:
