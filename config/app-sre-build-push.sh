@@ -17,16 +17,19 @@ fi
 
 # E.g. quay.io/app-sre/boilerplate:image-v1.0.0
 IMAGE="quay.io/app-sre/boilerplate:${latest_tag}"
-
 HERE=$(realpath ${0%/*})
+
+# Copy the node container auth file so that we get access to the registries the
+# parent node has access to, i.e. registry.ci.openshift.org
 CONTAINER_ENGINE_CONFIG_DIR=.docker
 mkdir -p "${CONTAINER_ENGINE_CONFIG_DIR}"
-REGISTRY_AUTH_FILE = ${CONTAINER_ENGINE_CONFIG_DIR}/config.json
+export REGISTRY_AUTH_FILE=${CONTAINER_ENGINE_CONFIG_DIR}/config.json
+cp /var/lib/jenkins/.docker/config.json "$REGISTRY_AUTH_FILE"
 
 podman login -u="${QUAY_USER}" -p="${QUAY_TOKEN}" quay.io
 
 # Check if the image exists already
-inspect_output=$(skopeo inspect "${IMAGE}" 2>&1)
+inspect_output=$(skopeo inspect "docker://${IMAGE}" 2>&1)
 return_code=$?
 
 # We need to make sure we don't re-create in case there's a different error
