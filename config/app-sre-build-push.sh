@@ -1,12 +1,64 @@
 #!/usr/bin/env bash
 
-set -ex
-
-# Usage: app-sre-build-push.sh REGISTRY NAMESPACE NAME
-# e.g. app-sre-build-push push.sh quay.io app-sre boilerplate
+# Usage: app-sre-build-push.sh
+# e.g. ./app-sre-build-push.sh
 # Builds and pushes a new tagged image IF the most recent tag does not yet have an image.
 # Checks out the right version for the tag beforehand. 
 # Assumes $QUAY_USER and $QUAY_TOKEN are set in the env.
+
+image_exists_in_repo() {
+    local image_uri=$1
+    local output
+    local rc
+
+    local skopeo_stderr=$(mktemp)
+
+    output=$(skopeo inspect docker://${image_uri} 2>$skopeo_stderr)
+    rc=$?
+    # So we can delete the temp file right away...
+    stderr=$(cat $skopeo_stderr)
+    rm -f $skopeo_stderr
+    if [[ $rc -eq 0 ]]; then
+        # The image exists. Sanity check the output.
+        local digest=$(echo $output | jq -r .Digest)
+        if [[ -z "$digest" ]]; then
+            echo "Unexpected error: skopeo inspect succeeded, but output contained no .Digest"
+            echo "Here's the output:"
+            echo "$output"
+            echo "...and stderr:"
+            echo "$stderr"
+            exit 1
+        fi
+        echo "Image ${image_uri} exists with digest $digest."
+        return 0
+    elif [[ "$stderr" == *"manifest unknown"* ]]; then
+        # We were able to talk to the repository, but the tag doesn't exist.
+        # This is the normal "green field" case.
+        echo "Image ${image_uri} does not exist in the repository."
+        return 1
+    elif [[ "$stderr" == *"was deleted or has expired"* ]]; then
+        # This should be rare, but accounts for cases where we had to
+        # manually delete an image.
+        echo "Image ${image_uri} was deleted from the repository."
+        echo "Proceeding as if it never existed."
+        return 1
+    else
+        # Any other error. For example:
+        #   - "unauthorized: access to the requested resource is not
+        #     authorized". This happens not just on auth errors, but if we
+        #     reference a repository that doesn't exist.
+        #   - "no such host".
+        #   - Network or other infrastructure failures.
+        # In all these cases, we want to bail, because we don't know whether
+        # the image exists (and we'd likely fail to push it anyway).
+        echo "Error querying the repository for ${image_uri}:"
+        echo "stdout: $output"
+        echo "stderr: $stderr"
+        exit 1
+    fi
+}
+
+set -ex
 
 # Get the most recent tag starting with "image-v*"
 latest_tag=$(git describe --tags --match "image-v*" --abbrev=0)
@@ -29,23 +81,14 @@ cp /var/lib/jenkins/.docker/config.json "$REGISTRY_AUTH_FILE"
 podman login -u="${QUAY_USER}" -p="${QUAY_TOKEN}" quay.io
 
 # Check if the image exists already
-inspect_output=$(skopeo inspect "docker://${IMAGE}" 2>&1)
-return_code=$?
-
-# We need to make sure we don't re-create in case there's a different error
-# so we also check that the returned output is something like 
-# skopeo inspect "docker://quay.io/app-sre/boilerplate:image-v5.0.1" 2>&1
-# time="2024-07-08T22:52:52-04:00" level=fatal msg="Error parsing image name \"docker://quay.io/app-sre/boilerplate:image-v5.0.1\": reading manifest image-v5.0.1 in quay.io/app-sre/boilerplate: manifest unknown"
-if [ "$return_code" -eq 0 ]; then
+if image_exists_in_repo "${IMAGE}"; then
     echo "Image: ${IMAGE} already exists. Skipping image build/push."
-elif [ "$return_code" -ne 0 ] && { [[ $inspect_output == *"manifest unknown"* ]] }; then
-    echo "Image: ${IMAGE} does not exist. Starting image build/push"
-    git checkout ${latest_tag}
-    podman build "${HERE}" -f "${HERE}/Dockerfile.appsre" -t "${IMAGE}"
-    podman push "${IMAGE}"
-else
-    echo "Unexpected error checking for image existence. Exit code: $return_code, Output: $inspect_output"
-    exit 1
+    exit 0
 fi
+
+echo "Image: ${IMAGE} does not exist. Starting image build/push"
+git checkout ${latest_tag}
+podman build "${HERE}" -f "${HERE}/Dockerfile.appsre" -t "${IMAGE}"
+podman push "${IMAGE}"
 
 exit 0
