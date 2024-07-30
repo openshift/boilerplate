@@ -6,8 +6,13 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "master"
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "push" &&
+      target_branch == "master" &&
+      (
+        "config/***".pathChanged() ||
+        ".tekton/image-pull-request.yaml".pathChanged()
+      )
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: boilerplate-master
@@ -24,9 +29,9 @@ spec:
   - name: output-image
     value: quay.io/redhat-user-workloads/boilerplate-cicada-tenant/boilerplate-master/image:{{revision}}
   - name: dockerfile
-    value: Dockerfile.konflux
-  - name: path-context
-    value: config
+    value: config/Dockerfile.konflux
+  - name: build-source-image
+    value: 'true'
   pipelineSpec:
     finally:
     - name: show-sbom
