@@ -29,9 +29,7 @@ spec:
   - name: output-image
     value: quay.io/redhat-user-workloads/boilerplate-cicada-tenant/boilerplate-master/image:{{revision}}
   - name: dockerfile
-    value: Dockerfile.konflux
-  - name: path-context
-    value: config
+    value: config/Dockerfile.konflux
   - name: build-source-image
     value: 'true'
   pipelineSpec:

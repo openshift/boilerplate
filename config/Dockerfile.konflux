@@ -1,3 +1,5 @@
 FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22
-COPY build_image.sh /build_image.sh
+COPY config/build_image.sh /build_image.sh
+COPY LICENSE /licenses/.
 RUN /build_image.sh && rm /build_image.sh
+USER 65532:65532
