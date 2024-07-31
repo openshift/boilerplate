@@ -52,7 +52,13 @@ go install go.uber.org/mock/mockgen@${MOCKGEN_VERSION}
 # yq
 ####
 YQ_VERSION="v4.44.2"
-go install github.com/mikefarah/yq/v4@${YQ_VERSION}
+YQ_SHA256SUM=e4c2570249e3993e33ffa44e592b5eee8545bd807bfbeb596c2986d86cb6c85c
+YQ_LOCATION=https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64.tar.gz
+curl -LO ${YQ_LOCATION}
+echo ${YQ_SHA256SUM} yq_linux_amd64.tar.gz | sha256sum -c
+tar xvf yq_linux_amd64.tar.gz ./yq_linux_amd64
+mv yq_linux_amd64 /usr/local/bin/yq
+rm -f yq_linux_amd64.tar.gz
 
 # HACK: `go get` creates lots of things under GOPATH that are not group
 # accessible, even if umask is set properly. This causes failures of
