@@ -346,7 +346,8 @@ function main() {
         return 0
     fi
 
-    local bundle_image_current_commit="${OLM_BUNDLE_IMAGE}:${CURRENT_COMMIT}"
+    # the commit needs a `g' prefix for the bundle image
+    local bundle_image_current_commit="${OLM_BUNDLE_IMAGE}:g${CURRENT_COMMIT}"
     local bundle_image_latest="$OLM_BUNDLE_IMAGE:latest"
     local catalog_image_current_commit="${OLM_CATALOG_IMAGE}:${CURRENT_COMMIT}"
     local catalog_image_latest="$OLM_CATALOG_IMAGE:latest"
