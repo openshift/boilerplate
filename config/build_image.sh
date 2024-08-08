@@ -2,6 +2,7 @@
 
 # boilerplate v5.0.1
 # Go 1.22
+# wow
 
 set -x
 set -euo pipefail
