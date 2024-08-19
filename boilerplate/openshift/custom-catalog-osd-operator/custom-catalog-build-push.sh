@@ -39,6 +39,7 @@ function build_catalog_image() {
   exec 5>&1
   BUILD=$(${opm_local_executable} index add \
     --bundles ${bundle_image} \
+    --mode=semver \
     --tag ${image_tag} \
     --container-tool ${CONTAINER_ENGINE_SHORT} 2>&1 | tee /dev/fd/5; exit ${PIPESTATUS[0]})
   RC=$?
