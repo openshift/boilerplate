@@ -64,6 +64,12 @@ aliases:
     - xiaoyu74
     - Dee-6777
     - Tessg22
+  srep-infra-cicd:
+    - mmazur
+    - mrsantamaria
+    - ritmun
+    - jbpratt
+    - yiqinzhang
   srep-functional-leads:
     - rafael-azevedo
     - iamkirkbater
@@ -73,6 +79,7 @@ aliases:
     - mjlshen
     - sam-nguyen7
     - ravitri
+    - mmazur
   srep-team-leads:
     - NautiluX
     - rogbas
