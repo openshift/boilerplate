@@ -87,8 +87,8 @@ rm -f golangci-lint.tar.gz
 ####
 # gh
 ####
-GH_VERSION="2.51.0"
-GH_SHA256SUM="d7725fb2a643ca024edf5b4e2f2cca0431a404bbc2e251086ffca2b25e37be11"
+GH_VERSION="2.57.0"
+GH_SHA256SUM="d6b3621aa0ca383866716fc664d827a21bd1ac4a918a10c047121d8031892bf8"
 GH_LOCATION=https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
 
 curl -L -o gh.tar.gz $GH_LOCATION
