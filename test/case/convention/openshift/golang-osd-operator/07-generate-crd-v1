@@ -14,7 +14,7 @@ test_project="file-generate"
 
 bootstrap_project $repo ${test_project} openshift/golang-osd-operator
 cd $repo
-make boilerplate-update
+BOILERPLATE_IN_CI=1 make boilerplate-update
 
 make op-generate
 

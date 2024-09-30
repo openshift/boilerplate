@@ -18,7 +18,7 @@ cd $repo
 LOG=$LOG_DIR/${0##*/}.log
 
 # A little cheat so we can get the RC from `make`
-make boilerplate-update >$LOG 2>&1
+BOILERPLATE_IN_CI=1 make boilerplate-update >$LOG 2>&1
 rc=$?
 cat $LOG
 
