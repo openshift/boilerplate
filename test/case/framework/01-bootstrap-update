@@ -13,7 +13,7 @@ bootstrap_repo $repo
 
 cd $repo
 
-make boilerplate-update
+BOILERPLATE_IN_CI=1 make boilerplate-update
 
 check_update $repo 01-no-convention
 
@@ -25,7 +25,7 @@ fi
 ./boilerplate/_lib/boilerplate-commit
 
 add_convention $repo test/test-base-convention
-make boilerplate-update
+BOILERPLATE_IN_CI=1 make boilerplate-update
 
 check_update $repo 01-with-convention
 

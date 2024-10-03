@@ -39,7 +39,7 @@ bootstrap_repo $repo
 cd $repo
 
 sub_hdr "Baseline"
-make boilerplate-update
+BOILERPLATE_IN_CI=1 make boilerplate-update
 check_update $repo
 
 sub_hdr "Include with no conventions"
@@ -58,7 +58,7 @@ diff $expected/nmi-header $NEXUS_MK
 
 sub_hdr "Convention with no includes"
 add_convention $repo test/nexus-makefile-include/no-includes
-make boilerplate-update
+BOILERPLATE_IN_CI=1 make boilerplate-update
 check_update $repo
 # Nexus Makefile include should have only the header
 diff $expected/nmi-header $NEXUS_MK
@@ -72,7 +72,7 @@ cd $repo
 sub_hdr "Convention with one include"
 convention=test/nexus-makefile-include/one-include
 add_convention $repo $convention
-make boilerplate-update
+BOILERPLATE_IN_CI=1 make boilerplate-update
 check_update $repo
 cat $expected/nmi-header > $exp_nmi
 /bin/echo "include boilerplate/$convention/one.mk" >> $exp_nmi
@@ -97,7 +97,7 @@ cd $repo
 sub_hdr "Convention with multiple includes"
 convention=test/nexus-makefile-include/multiple-includes
 add_convention $repo $convention
-make boilerplate-update
+BOILERPLATE_IN_CI=1 make boilerplate-update
 check_update $repo
 cat $expected/nmi-header > $exp_nmi
 # NOTE: These are added in lexical sort order!
@@ -120,7 +120,7 @@ sub_hdr "Multiple conventions"
 for c in no-includes one-include multiple-includes; do
     add_convention $repo test/nexus-makefile-include/$c
 done
-make boilerplate-update
+BOILERPLATE_IN_CI=1 make boilerplate-update
 check_update $repo
 cat $expected/nmi-header > $exp_nmi
 # NOTE: The *convention* order is honored, even though the *includes*

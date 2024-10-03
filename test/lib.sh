@@ -79,7 +79,7 @@ add_cleanup() {
 empty_repo() {
     tmpd=$(mktemp -d -t boilerplate-test-XXXXXXXX)
     pushd $tmpd >&2
-    git init >&2
+    git init -b main >&2
     git config user.name "Test Boilerplate" >&2
     git config user.email "test@example.com" >&2
     # Add a remote for REPO_NAME discovery
@@ -117,9 +117,9 @@ bootstrap_project() {
         for convention in $3 ; do
             add_convention . $convention
         done
-        make boilerplate-update
+        BOILERPLATE_IN_CI=1 make boilerplate-update
         ${SED?} -i '1s,^,include boilerplate/generated-includes.mk\n\n,' Makefile
-        make boilerplate-commit
+        BOILERPLATE_IN_CI=1 make boilerplate-commit
     )
 }
 
@@ -286,7 +286,9 @@ ensure_nexus_makefile_include() {
 new_boilerplate_clone() {
     local clone=$(mktemp -d -t boilerplate-clone-XXXXXXXX)
     add_cleanup $clone
-    git clone https://github.com/openshift/boilerplate.git $clone >&2
+    # HACK: Set safe.directory using environment variables in CI because we can't modify the global config, e.g. with
+    # git config --global --add safe.directory '/go/src/github.com/openshift/boilerplate/.git'
+    GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0='safe.directory' GIT_CONFIG_VALUE_0='/go/src/github.com/openshift/boilerplate/.git' git clone https://github.com/openshift/boilerplate.git $clone >&2
     if [ $# = 1 ] ; then
         pushd $clone > /dev/null
         git checkout $1
