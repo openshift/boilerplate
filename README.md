@@ -393,8 +393,7 @@ upstream.
 The backing image is built in prow with every commit, even when nothing about it has changed.
 To make this faster, we periodically ratchet the base image (the `FROM` in the [Dockerfile](config/Dockerfile))
 to point to the previously-released image, and clear out the [build script](config/build.sh) to start from that point.
-However, in app-sre we build from scratch (exactly once per `image-v*` tag!), via a [separate Dockerfile](config/Dockerfile.appsre).
-Thus, there is a (very small) chance that these builds will behave differently.
+However, in app-sre we build from scratch (exactly once per `image-v*` tag!).
 
 When the underlying base image changes significantly, the `FROM` directive in [config/Dockerfile](config/Dockerfile)
 may be temporarily changed to the new upstream image. However, as soon as it is stable, a new commit should be made
@@ -404,7 +403,7 @@ ourselves and consumers.
 For example, let's say that the current base image has Go 1.18, but we need Go 1.19, and
 it's not available in boilerplate:image-v2.Y.Z
 
-1. Update config/Dockerfile and config/Dockerfile.appsre
+1. Update config/Dockerfile
     ```
     FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.12
     ```

@@ -1,4 +1,6 @@
-FROM registry.ci.openshift.org/ocp/builder:rhel-8-release-golang-1.22-openshift-4.17 AS builder
+# When updating this default BASE_IMAGE, remember to also update it in app-sre-build-push.sh
+ARG BASE_IMAGE="registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17"
+FROM ${BASE_IMAGE} AS builder
 
 ARG GOCILINT_VERSION="1.59.1"
 ARG GOCILINT_SHA256SUM="c30696f1292cff8778a495400745f0f9c0406a3f38d8bb12cef48d599f6c7791"
@@ -18,7 +20,7 @@ RUN curl -L -o gh.tar.gz $GH_LOCATION && \
     tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
     mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
 
-FROM registry.ci.openshift.org/ocp/builder:rhel-8-release-golang-1.22-openshift-4.17
+FROM ${BASE_IMAGE}
 ENV GOFLAGS=-mod=mod
 
 ARG KUSTOMIZE_VERSION="v5.4.1" \
