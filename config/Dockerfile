@@ -1,7 +1,46 @@
-# This file is used to confirm that the imagestream is valid and working
-# the below statement will always be replaced by the source in .ci-operator.yaml
-FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-release-golang-1.22-openshift-4.17 AS builder
 
-# TODO: remove this COPY/RUN
-COPY build_image.sh /build_image.sh
-RUN /build_image.sh && rm /build_image.sh
+ARG GOCILINT_VERSION="1.59.1"
+ARG GOCILINT_SHA256SUM="c30696f1292cff8778a495400745f0f9c0406a3f38d8bb12cef48d599f6c7791"
+ARG GOCILINT_LOCATION=https://github.com/golangci/golangci-lint/releases/download/v${GOCILINT_VERSION}/golangci-lint-${GOCILINT_VERSION}-linux-amd64.tar.gz
+
+RUN curl -L -o golangci-lint.tar.gz $GOCILINT_LOCATION && \
+    echo ${GOCILINT_SHA256SUM} golangci-lint.tar.gz | sha256sum -c && \
+    tar xzf golangci-lint.tar.gz golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint && \
+    mv golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint /usr/local/bin
+
+ARG GH_VERSION="2.51.0"
+ARG GH_SHA256SUM="d7725fb2a643ca024edf5b4e2f2cca0431a404bbc2e251086ffca2b25e37be11"
+ARG GH_LOCATION=https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
+
+RUN curl -L -o gh.tar.gz $GH_LOCATION && \
+    echo ${GH_SHA256SUM} gh.tar.gz | sha256sum -c && \
+    tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
+    mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
+
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-release-golang-1.22-openshift-4.17
+ENV GOFLAGS=-mod=mod
+
+ARG KUSTOMIZE_VERSION="v5.4.1" \
+    CONTROLLER_GEN_VERSION="v0.15.0" \
+    OPENAPI_GEN_VERSION="v0.29.1" \
+    ENVTEST_VERSION="release-0.18" \
+    GOVULNCHECK_VERSION="v1.1.3" \
+    MOCKGEN_VERSION="v0.4.0" \
+    YQ_VERSION="v4.44.2"
+
+RUN go install sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION} && \
+    go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION} && \
+    go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION} && \
+    go install sigs.k8s.io/controller-runtime/tools/setup-envtest@${ENVTEST_VERSION} && \
+    go install golang.org/x/vuln/cmd/govulncheck@${GOVULNCHECK_VERSION} && \
+    go install go.uber.org/mock/mockgen@${MOCKGEN_VERSION} && \
+    go install github.com/mikefarah/yq/v4@${YQ_VERSION}
+
+COPY --from=builder /usr/local/bin/golangci-lint /usr/local/bin
+COPY --from=builder /usr/local/bin/gh /usr/local/bin
+
+RUN dnf -y install openssh-clients jq skopeo python3-pyyaml && \
+    dnf clean all && \
+    dnf -y autoremove && \
+    rm -rf /var/cach/dnf
