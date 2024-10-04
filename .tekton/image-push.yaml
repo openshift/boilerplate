@@ -32,6 +32,11 @@ spec:
     value: config/Dockerfile.konflux
   - name: build-source-image
     value: 'true'
+  taskRunSpecs:
+    - pipelineTaskName: build-container
+      computeResources:
+        limits:
+          memory: 4Gi
   pipelineSpec:
     finally:
     - name: show-sbom
