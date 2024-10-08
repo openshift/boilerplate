@@ -11,7 +11,7 @@ RUN curl -L -o golangci-lint.tar.gz ${GOCILINT_LOCATION} && \
 
 
 ARG GH_VERSION="2.58.0"
-ARG GH_SHA256SUM="84feae3d143bc360ea1004b474f124c8cfd75363a5e197d3ce63fe23d9f3a2ea "
+ARG GH_SHA256SUM="84feae3d143bc360ea1004b474f124c8cfd75363a5e197d3ce63fe23d9f3a2ea"
 ARG GH_LOCATION=https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
 
 RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
