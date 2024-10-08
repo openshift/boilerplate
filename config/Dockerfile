@@ -1,5 +1,5 @@
 # When updating this default BASE_IMAGE, remember to also update it in app-sre-build-push.sh
-ARG BASE_IMAGE="registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17"
+ARG BASE_IMAGE="registry.ci.openshift.org/openshift/release:rhel-9-release-golang-1.22-openshift-4.17"
 FROM ${BASE_IMAGE} AS builder
 
 ARG GOCILINT_VERSION="1.59.1"
@@ -11,8 +11,8 @@ RUN curl -L -o golangci-lint.tar.gz ${GOCILINT_LOCATION} && \
     tar xzf golangci-lint.tar.gz golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint && \
     mv golangci-lint-${GOCILINT_VERSION}-linux-amd64/golangci-lint /usr/local/bin
 
-ARG GH_VERSION="2.51.0"
-ARG GH_SHA256SUM="d7725fb2a643ca024edf5b4e2f2cca0431a404bbc2e251086ffca2b25e37be11"
+ARG GH_VERSION="2.58.0"
+ARG GH_SHA256SUM="84feae3d143bc360ea1004b474f124c8cfd75363a5e197d3ce63fe23d9f3a2ea"
 ARG GH_LOCATION=https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
 
 RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
