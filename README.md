@@ -375,12 +375,28 @@ principles when deciding what `{X}.{Y}.{Z}` should be. See https://github.com/op
 for an example.
 
     ```shell
+    # Make code changes and create tag
     git tag image-v1.2.3
-    git push origin --tags
-    # Create PR here
-    # Typically only team leads can push tags to upstream, so they will need to continue by
-    # checking out your fork and then running
-    git push upstream --tags
+
+    # Push tag to origin
+    git push origin image-v1.2.3
+
+    # Create PR and notify Team Lead (or member with write permissions). They will need to do the following:
+
+    # create remote from user's fork
+    git remote add someuser git@github.com:someuser/boilerplate.git
+
+    # git fetch
+    git fetch --all --prune
+
+    # create branch from user's fork and branch
+    git checkout -b someuser-branch-name someuser/branch-name
+
+    # create tag
+    git tag -f image-v1.2.3
+
+    # push tag to upstream
+    git push upstream -f image-v1.2.3
     ```
 
     >**NOTE**: You must do the `upstream` push *after* creating your PR. Otherwise, the tagged commit will not exist
