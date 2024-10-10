@@ -69,7 +69,7 @@ fi
 
 # E.g. quay.io/app-sre/boilerplate:image-v1.0.0
 IMAGE="quay.io/app-sre/boilerplate:${latest_tag}"
-BASE_IMAGE="registry.ci.openshift.org/ocp/builder:rhel-8-release-golang-1.22-openshift-4.17"
+BASE_IMAGE="registry.ci.openshift.org/openshift/release:rhel-9-release-golang-1.22-openshift-4.17"
 HERE=$(realpath ${0%/*})
 
 # Copy the node container auth file so that we get access to the registries the
