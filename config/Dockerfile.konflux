@@ -50,9 +50,10 @@ RUN for bit in r x w; do find $(go env GOPATH) -perm -u+${bit} -a ! -perm -g+${b
 COPY --from=builder /usr/local/bin/golangci-lint /usr/local/bin
 COPY --from=builder /usr/local/bin/gh /usr/local/bin
 
-RUN dnf -y install openssh-clients jq skopeo python3-pyyaml && \
+RUN dnf update && \
+    -y install openssh-clients jq skopeo python3-pyyaml && \
     dnf clean all && \
     dnf -y autoremove && \
     rm -rf /var/cach/dnf
 
-#COPY LICENSE /licenses/.
+COPY LICENSE /licenses/.
