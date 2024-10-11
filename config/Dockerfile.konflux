@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="registry.ci.openshift.org/openshift/release:rhel-9-release-golang-1.22-openshift-4.17"
+ARG BASE_IMAGE="brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22"
 FROM ${BASE_IMAGE} AS builder
 
 ARG GOCILINT_VERSION="1.59.1"
@@ -51,8 +51,7 @@ RUN for bit in r x w; do find $(go env GOPATH) -perm -u+${bit} -a ! -perm -g+${b
 COPY --from=builder /usr/local/bin/golangci-lint /usr/local/bin
 COPY --from=builder /usr/local/bin/gh /usr/local/bin
 
-RUN dnf update && \
-    dnf -y install openssh-clients jq skopeo python3-pyyaml && \
+RUN dnf -y install openssh-clients jq skopeo python3-pyyaml && \
     dnf clean all && \
     dnf -y autoremove && \
     rm -rf /var/cach/dnf
