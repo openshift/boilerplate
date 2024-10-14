@@ -421,7 +421,7 @@ it's not available in boilerplate:image-v2.Y.Z
 
 1. Update config/Dockerfile
     ```
-    FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.19-openshift-4.12
+    FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17
     ```
 2. Then, update the rest of boilerplate accordingly, push a new tag, and mirror the image into openshift/release
 to create boilerplate:image-v3.0.0
