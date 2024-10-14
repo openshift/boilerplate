@@ -1,5 +1,4 @@
-ARG BASE_IMAGE='brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22'
-FROM ${BASE_IMAGE} AS builder
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22 AS builder
 
 ARG GOCILINT_VERSION="1.59.1"
 ARG GOCILINT_SHA256SUM="c30696f1292cff8778a495400745f0f9c0406a3f38d8bb12cef48d599f6c7791"
@@ -20,7 +19,7 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
     tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
     mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
 
-FROM ${BASE_IMAGE}
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22
 ENV GOFLAGS=-mod=mod
 
 ARG KUSTOMIZE_VERSION="v5.4.1" \
