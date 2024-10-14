@@ -69,7 +69,6 @@ fi
 
 # E.g. quay.io/app-sre/boilerplate:image-v1.0.0
 IMAGE="quay.io/app-sre/boilerplate:${latest_tag}"
-BASE_IMAGE="registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17"
 HERE=$(realpath ${0%/*})
 
 # Copy the node container auth file so that we get access to the registries the
@@ -89,7 +88,7 @@ fi
 
 echo "Image: ${IMAGE} does not exist. Starting image build/push"
 git checkout ${latest_tag}
-podman build "${HERE}" -f "${HERE}/Dockerfile" --build-arg BASE_IMAGE="${BASE_IMAGE}" -t "${IMAGE}"
+podman build "${HERE}" -f "${HERE}/Dockerfile" -t "${IMAGE}"
 podman push "${IMAGE}"
 
 exit 0

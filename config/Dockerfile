@@ -1,4 +1,3 @@
-# When updating this default BASE_IMAGE, remember to also update it in app-sre-build-push.sh
 ARG BASE_IMAGE="registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17"
 FROM ${BASE_IMAGE} AS builder
 
