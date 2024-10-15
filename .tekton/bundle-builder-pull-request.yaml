@@ -183,7 +183,7 @@ spec:
         - name: name
           value: build-image-index
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-build-image-index:0.1@sha256:c422f0c86876cb2191c04e2319bfc9a2750c2f30bd2c0e74cd4094a189b8d819
+          value: quay.io/redhat-appstudio-tekton-catalog/task-build-image-index:0.1@sha256:bd17b2052ebe12cb01635e8c98af59eb4f5d587a395224e0dd2cda50b2ed1de9
         - name: kind
           value: task
         resolver: bundles
