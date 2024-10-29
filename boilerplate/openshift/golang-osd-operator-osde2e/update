@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -e
+
+source ${CONVENTION_ROOT}/_lib/common.sh
+
+# No PRE
+[[ "$1" == "PRE" ]] && exit 0
+
+# Expect POST
+[[ "$1" == "POST" ]] || err "Got a parameter I don't understand: '$1'. Did the infrastructure change?"
+
+[[ ! -d osde2e ]] && exit 0
+[[ -d test/osde2e ]] && exit 0
+
+mkdir -p test/osde2e/
+mv osde2e/* test/osde2e/
+rm -rf osde2e/

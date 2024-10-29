@@ -15,7 +15,7 @@ EOF
 OPERATOR_NAME=$1
 OSDE2E_CONVENTION_DIR=$2
 REPO_ROOT=$(git rev-parse --show-toplevel)
-HARNESS_DIR=$REPO_ROOT/osde2e
+HARNESS_DIR=$REPO_ROOT/test/osde2e
 
 # Update operator name in templates
 export OPERATOR_UNDERSCORE_NAME=$(echo "$OPERATOR_NAME"| sed 's/-/_/g')
