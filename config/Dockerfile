@@ -1,5 +1,5 @@
-ARG BASE_IMAGE="registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17"
-FROM ${BASE_IMAGE} AS builder
+FROM quay.io/konflux-ci/yq:latest as yq
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22 AS builder
 
 ARG GOCILINT_VERSION="1.59.1"
 ARG GOCILINT_SHA256SUM="c30696f1292cff8778a495400745f0f9c0406a3f38d8bb12cef48d599f6c7791"
@@ -19,7 +19,7 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
     tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
     mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
 
-FROM ${BASE_IMAGE}
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22
 ENV GOFLAGS=-mod=mod
 
 ARG KUSTOMIZE_VERSION="v5.4.1" \
@@ -27,16 +27,14 @@ ARG KUSTOMIZE_VERSION="v5.4.1" \
     OPENAPI_GEN_VERSION="v0.29.1" \
     ENVTEST_VERSION="release-0.18" \
     GOVULNCHECK_VERSION="v1.1.3" \
-    MOCKGEN_VERSION="v0.4.0" \
-    YQ_VERSION="v4.44.2"
+    MOCKGEN_VERSION="v0.4.0"
 
 RUN go install sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION} && \
     go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION} && \
     go install k8s.io/code-generator/cmd/openapi-gen@${OPENAPI_GEN_VERSION} && \
     go install sigs.k8s.io/controller-runtime/tools/setup-envtest@${ENVTEST_VERSION} && \
     go install golang.org/x/vuln/cmd/govulncheck@${GOVULNCHECK_VERSION} && \
-    go install go.uber.org/mock/mockgen@${MOCKGEN_VERSION} && \
-    go install github.com/mikefarah/yq/v4@${YQ_VERSION}
+    go install go.uber.org/mock/mockgen@${MOCKGEN_VERSION}
 
 # HACK: `go install` creates lots of things under GOPATH that are not group
 # accessible, even if umask is set properly. This causes failures of
@@ -49,8 +47,11 @@ RUN for bit in r x w; do find $(go env GOPATH) -perm -u+${bit} -a ! -perm -g+${b
 
 COPY --from=builder /usr/local/bin/golangci-lint /usr/local/bin
 COPY --from=builder /usr/local/bin/gh /usr/local/bin
+COPY --from=yq /usr/bin/yq /usr/bin/yq
 
 RUN dnf -y install openssh-clients jq skopeo python3-pyyaml && \
     dnf clean all && \
     dnf -y autoremove && \
     rm -rf /var/cach/dnf
+
+COPY LICENSE /licenses/.
