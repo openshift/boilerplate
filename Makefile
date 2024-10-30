@@ -41,10 +41,6 @@ build-image-deep: ## Builds the image from scratch, like appsre does. May requir
 build-image-shallow: ## Builds the image starting from a recent release, like prow does. May require ALLOW_DIRTY_CHECKOUT=true if testing
 	cd config; $(CONTAINER_ENGINE) build -t $(IMG):latest .
 
-.PHONY: build-push
-build-push: ## Conditionally (only for a new tag) builds and pushes the backing image. Used in appsre. (Don't try this locally -- it's hardcoded to push to app-sre's quay. FIXME)
-	config/app-sre-build-push.sh
-
 .DEFAULT_GOAL := help
 .PHONY: help
 help: ## Show this help screen.

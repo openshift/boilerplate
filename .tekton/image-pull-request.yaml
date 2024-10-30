@@ -32,7 +32,7 @@ spec:
   - name: image-expires-after
     value: 5d
   - name: dockerfile
-    value: config/Dockerfile.konflux
+    value: config/Dockerfile
   - name: build-source-image
     value: 'true'
   taskRunSpecs:
