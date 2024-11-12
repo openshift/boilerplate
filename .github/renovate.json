@@ -11,7 +11,8 @@
   ],
   "tekton": {
     "includePaths": [
-      "pipelines/**"
+      "pipelines/**",
+      ".tekton/**"
     ]
   },
   "dependencyDashboard": true,
