@@ -55,3 +55,4 @@ RUN dnf -y install openssh-clients jq skopeo python3-pyyaml && \
     rm -rf /var/cach/dnf
 
 COPY LICENSE /licenses/.
+ENV PATH $PATH:/go/bin
