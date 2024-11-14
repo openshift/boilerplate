@@ -177,7 +177,7 @@ spec:
     - name: package-name
       value: $(params.package-name)
     - name: version
-      value: $(params.major-version).$(params.minor-version).$(tasks.clone-repository.results.commit-timestamp)+g$(tasks.clone-repository.results.short-commit)
+      value: $(params.major-version).$(params.minor-version).$(tasks.clone-repository.results.commit-timestamp)-g$(tasks.clone-repository.results.short-commit)
     - name: kustomize-dir
       value: $(params.kustomize-dir)
     - name: extra-service-accounts
