@@ -108,7 +108,7 @@ spec:
     description: Names of service accounts, outside of the operator's Deployment account, that have bindings to {Cluster}Roles that should be added to the CSV
     name: extra-service-accounts
     type: string
-  - default: ""
+  - default: "config/metadata/additional-labels.txt"
     description: A file containing additonal Dockerfile labels to append to the bundle Dockerfile
     name: additional-labels-file
     type: string
