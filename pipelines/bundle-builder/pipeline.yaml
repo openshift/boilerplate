@@ -84,11 +84,11 @@ spec:
     description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
     name: build-args-file
     type: string
-  - default: "4"
+  - default: "0"
     description: Major version of the operator
     name: major-version
     type: string
-  - default: "16"
+  - default: "2"
     description: Minor version of the operator
     name: minor-version
     type: string
@@ -108,7 +108,7 @@ spec:
     description: Names of service accounts, outside of the operator's Deployment account, that have bindings to {Cluster}Roles that should be added to the CSV
     name: extra-service-accounts
     type: string
-  - default: ""
+  - default: "config/metadata/additional-labels.txt"
     description: A file containing additonal Dockerfile labels to append to the bundle Dockerfile
     name: additional-labels-file
     type: string
@@ -177,7 +177,7 @@ spec:
     - name: package-name
       value: $(params.package-name)
     - name: version
-      value: $(params.major-version).$(params.minor-version).$(tasks.clone-repository.results.commit-timestamp)-$(tasks.clone-repository.results.short-commit)
+      value: $(params.major-version).$(params.minor-version).$(tasks.clone-repository.results.commit-timestamp)+g$(tasks.clone-repository.results.short-commit)
     - name: kustomize-dir
       value: $(params.kustomize-dir)
     - name: extra-service-accounts
