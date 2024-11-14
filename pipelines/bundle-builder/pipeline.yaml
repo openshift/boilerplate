@@ -84,11 +84,11 @@ spec:
     description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
     name: build-args-file
     type: string
-  - default: "4"
+  - default: "0"
     description: Major version of the operator
     name: major-version
     type: string
-  - default: "16"
+  - default: "2"
     description: Minor version of the operator
     name: minor-version
     type: string
