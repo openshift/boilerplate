@@ -89,6 +89,11 @@ image_exists_in_repo() {
 
     local skopeo_stderr=$(mktemp)
 
+    if ! command -v skopeo &>/dev/null; then
+      echo "Failed to find the skopeo binary. If you are on Mac: brew install skopeo." >&2
+      exit 1
+    fi
+
     output=$(skopeo inspect docker://${image_uri} 2>$skopeo_stderr)
     rc=$?
     # So we can delete the temp file right away...
