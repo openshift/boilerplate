@@ -183,6 +183,8 @@ if [ -z "$BOILERPLATE_GIT_REPO" ]; then
   export BOILERPLATE_GIT_REPO=https://github.com/openshift/boilerplate.git
 fi
 
+# Base image repo url
+IMAGE_REPO=quay.io/redhat-services-prod/openshift
 # The namespace of the ImageStream by which prow will import the image.
 IMAGE_NAMESPACE=openshift
 IMAGE_NAME=boilerplate
@@ -199,4 +201,4 @@ if [[ -z "$LATEST_IMAGE_TAG" ]]; then
     fi
 fi
 # The public image location
-IMAGE_PULL_PATH=${IMAGE_PULL_PATH:-quay.io/app-sre/$IMAGE_NAME:$LATEST_IMAGE_TAG}
+IMAGE_PULL_PATH=${IMAGE_PULL_PATH:-$IMAGE_REPO/$IMAGE_NAME:$LATEST_IMAGE_TAG}
