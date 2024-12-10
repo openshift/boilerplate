@@ -188,7 +188,7 @@ spec:
       - name: name
         value: opm-render-bundles
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-opm-render-bundles:0.1@sha256:e5c369fcd276c118cead3c7d96a3ec0332f8c123d0559da975e2ae2ed9898807
+        value: quay.io/konflux-ci/tekton-catalog/task-opm-render-bundles:0.1@sha256:ef5128dc066b486fc22a84e2d9c115db3836e2eaf534a91f6b5653829ad30ed4
       - name: kind
         value: task
       resolver: bundles
