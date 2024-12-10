@@ -182,7 +182,7 @@ spec:
     - name: operator-name
       value: $(params.operator-name)
     - name: operator-version
-      value: v$(tasks.opm-get-bundle-version.results.bundle-version)
+      value: $(tasks.opm-get-bundle-version.results.bundle-version)
     taskRef:
       params:
       - name: name
