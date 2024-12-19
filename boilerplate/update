@@ -200,7 +200,7 @@ for convention in $(scrubbed_conventions $CONFIG_FILE); do
   fi
   rm -rf "${CONVENTION_ROOT}/${convention}"
   mkdir -p $(dirname "${CONVENTION_ROOT}/${convention}")
-  rsync -a -r --delete "$dir_path" $(dirname "${CONVENTION_ROOT}/${convention}")
+  rsync -a -r -L --delete "$dir_path" $(dirname "${CONVENTION_ROOT}/${convention}")
   if [ -f "${CONVENTION_ROOT}/${convention}/update" ]; then
     echo "executing ${CONVENTION_ROOT}/${convention}/update POST"
     "${CONVENTION_ROOT}/${convention}/update" POST
