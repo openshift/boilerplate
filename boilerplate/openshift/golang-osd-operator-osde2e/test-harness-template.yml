@@ -9,6 +9,10 @@ parameters:
     required: true
   - name: TEST_HARNESS_IMAGE
     required: true
+  - name: OCM_CLIENT_ID
+    required: true
+  - name: OCM_CLIENT_SECRET
+    required: true
   - name: OCM_TOKEN
     required: true
   - name: OCM_CCS
@@ -58,6 +62,10 @@ objects:
               env:
                 - name: TEST_HARNESSES
                   value: ${TEST_HARNESS_IMAGE}:${IMAGE_TAG}
+                - name: OCM_CLIENT_ID
+                  value: ${OCM_CLIENT_ID}
+                - name: OCM_CLIENT_SECRET
+                  value: ${OCM_CLIENT_SECRET}
                 - name: OCM_TOKEN
                   value: ${OCM_TOKEN}
                 - name: OCM_CCS
