@@ -15,6 +15,7 @@
 package config
 
 const (
-	OperatorName      string = "file-generate"
-	OperatorNamespace string = "file-generate"
+	OperatorName       string = "file-generate"
+	OperatorNamespace  string = "file-generate"
+	EnableOLMSkipRange        = "true"
 )
