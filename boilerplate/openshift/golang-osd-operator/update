@@ -18,6 +18,17 @@ cp ${HERE}/.codecov.yml $REPO_ROOT
 echo "Copying OWNERS_ALIASES to your repository root."
 cp ${HERE}/OWNERS_ALIASES $REPO_ROOT
 
+# Add CICD owners to .tekton if exists
+if [[ -d "${REPO_ROOT}/.tekton/" ]]; then
+	echo "Adding Konflux subdirectory OWNERS file to .tekton/"
+	cat >"${REPO_ROOT}/.tekton/OWNERS" <<EOF
+reviewers:
+- srep-infra-cicd
+approvers:
+- srep-infra-cicd
+EOF
+fi
+
 # Add dependabot configuration
 mkdir -p $REPO_ROOT/.github
 echo "Copying dependabot.yml to .github/dependabot.yml"
