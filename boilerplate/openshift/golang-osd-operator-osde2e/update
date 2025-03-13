@@ -21,9 +21,9 @@ OPERATOR_NAME_CAMEL_CASE=${OPERATOR_PROPER_NAME// /}
 
 mkdir -p "${E2E_SUITE_DIRECTORY}"
 
-E2E_SUITE_BUILDER_IMAGE=registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17
+E2E_SUITE_BUILDER_IMAGE=registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.23-openshift-4.19
 if [[ -n ${KONFLUX_BUILDS} ]]; then
-	E2E_SUITE_BUILDER_IMAGE="brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22"
+	E2E_SUITE_BUILDER_IMAGE="brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.23"
 fi
 
 echo "syncing ${E2E_SUITE_DIRECTORY}/Dockerfile"
@@ -88,11 +88,3 @@ func Test${OPERATOR_NAME_CAMEL_CASE}(t *testing.T) {
 EOF
 
 sed -e "s/\${OPERATOR_NAME}/${OPERATOR_NAME}/" $(dirname $0)/test-harness-template.yml >"${E2E_SUITE_DIRECTORY}/test-harness-template.yml"
-
-# Updates for SDCICD-1414
-[[ ! -d osde2e ]] && exit 0
-[[ -d test/e2e ]] && exit 0
-
-mkdir -p test/e2e/
-mv osde2e/* test/e2e/
-rm -rf osde2e/
