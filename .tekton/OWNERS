@@ -1,4 +1,6 @@
 reviewers:
-- jbpratt
+- joshbranham
+- srep-infra-cicd
 approvers:
-- jbpratt
+- joshbranham
+- srep-infra-cicd
