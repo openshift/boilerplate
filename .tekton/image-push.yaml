@@ -37,6 +37,10 @@ spec:
       computeResources:
         limits:
           memory: 4Gi
+    - pipelineTaskName: ecosystem-cert-preflight-checks
+      computeResources:
+        limits:
+          memory: 4Gi
   pipelineSpec:
     finally:
     - name: show-sbom
