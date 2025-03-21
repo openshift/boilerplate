@@ -1,8 +1,8 @@
-FROM quay.io/konflux-ci/yq:latest as yq
-FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22 AS builder
+FROM quay.io/konflux-ci/yq:latest AS yq
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.23 AS builder
 
-ARG GOCILINT_VERSION="1.59.1"
-ARG GOCILINT_SHA256SUM="c30696f1292cff8778a495400745f0f9c0406a3f38d8bb12cef48d599f6c7791"
+ARG GOCILINT_VERSION="1.64.7"
+ARG GOCILINT_SHA256SUM="dada4095eab53f868f931840f04b99cb4be654e45f50d4d3b2832dc9ad3bede8"
 ARG GOCILINT_LOCATION=https://github.com/golangci/golangci-lint/releases/download/v${GOCILINT_VERSION}/golangci-lint-${GOCILINT_VERSION}-linux-amd64.tar.gz
 
 RUN curl -L -o golangci-lint.tar.gz ${GOCILINT_LOCATION} && \
@@ -19,14 +19,14 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
     tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
     mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
 
-FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.22
-ENV GOFLAGS=-mod=mod
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.23
+ENV GOFLAGS="-mod=mod"
 
-ARG KUSTOMIZE_VERSION="v5.4.1" \
+ARG KUSTOMIZE_VERSION="v5.6.0" \
     CONTROLLER_GEN_VERSION="v0.15.0" \
-    OPENAPI_GEN_VERSION="v0.29.1" \
+    OPENAPI_GEN_VERSION="v0.29.15" \
     ENVTEST_VERSION="release-0.18" \
-    GOVULNCHECK_VERSION="v1.1.3" \
+    GOVULNCHECK_VERSION="v1.1.4" \
     MOCKGEN_VERSION="v0.4.0"
 
 RUN go install sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION} && \
@@ -55,4 +55,4 @@ RUN dnf -y install openssh-clients jq skopeo python3-pyyaml && \
     rm -rf /var/cach/dnf
 
 COPY LICENSE /licenses/.
-ENV PATH $PATH:/go/bin
+ENV PATH=$PATH:/go/bin
