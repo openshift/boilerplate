@@ -10,8 +10,8 @@ source $CONVENTION_ROOT/_lib/common.sh
 # Expect POST
 [[ "$1" == "POST" ]] || err "Got a parameter I don't understand: '$1'. Did the infrastructure change?"
 
-OPERATOR_NAME=$(sed -n 's/.*OperatorName .*"\([^"]*\)".*/\1/p' "${REPO_ROOT}/config/config.go")
 REPO_ROOT=$(git rev-parse --show-toplevel)
+OPERATOR_NAME=$(sed -n 's/.*OperatorName .*=.*"\([^"]*\)".*/\1/p' "${REPO_ROOT}/config/config.go")
 E2E_SUITE_DIRECTORY=$REPO_ROOT/test/e2e
 
 # Update operator name in templates
