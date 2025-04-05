@@ -9,6 +9,14 @@ ifndef HARNESS_IMAGE_REPOSITORY
 $(error HARNESS_IMAGE_REPOSITORY is not set; check project.mk file)
 endif
 
+# In openshift ci (Prow), we need to set $HOME to a writable directory else tests will fail
+# because they don't have permissions to create /.local or /.cache directories
+# as $HOME is set to "/" by default.
+ifeq ($(HOME),/)
+export HOME=/tmp/home
+endif
+PWD=$(shell pwd)
+
 # Use current commit as harness image tag
 CURRENT_COMMIT=$(shell git rev-parse --short=7 HEAD)
 HARNESS_IMAGE_TAG=$(CURRENT_COMMIT)
