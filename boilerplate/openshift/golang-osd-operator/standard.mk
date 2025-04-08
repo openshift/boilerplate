@@ -125,6 +125,12 @@ GOLANGCI_OPTIONAL_CONFIG ?=
 ifeq ($(origin TESTTARGETS), undefined)
 TESTTARGETS := $(shell ${GOENV} go list -e ./... | grep -E -v "/(vendor)/" | grep -E -v "/(test/e2e)/")
 endif
+
+# If for any reason we've made it this far and TESTTARGETS is still empty, fail early.
+ifeq ($(TESTTARGETS),)
+$(error TESTTARGETS is empty)
+endif
+
 # ex, -v
 TESTOPTS :=
 
