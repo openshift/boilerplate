@@ -4,6 +4,14 @@ GOARCH?=$(shell go env GOARCH)
 unexport GOFLAGS
 GOFLAGS_MOD ?=
 
+# In openshift ci (Prow), we need to set $HOME to a writable directory else tests will fail
+# because they don't have permissions to create /.local or /.cache directories
+# as $HOME is set to "/" by default.
+ifeq ($(HOME),/)
+export HOME=/tmp/home
+endif
+PWD=$(shell pwd)
+
 GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=${GOFLAGS_MOD}
 
 CODECOV_CONVENTION_DIR := boilerplate/openshift/golang-codecov
