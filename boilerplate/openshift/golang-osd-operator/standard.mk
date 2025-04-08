@@ -111,8 +111,8 @@ GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPAT
 ifeq (${FIPS_ENABLED}, true)
 GOFLAGS_MOD+=-tags=fips_enabled
 GOFLAGS_MOD:=$(strip ${GOFLAGS_MOD})
-$(warning Setting GOEXPERIMENT=strictfipsruntime,boringcrypto - this generally causes builds to fail unless building inside the provided Dockerfile. If building locally consider calling 'go build .')
-GOENV+=GOEXPERIMENT=strictfipsruntime,boringcrypto
+$(warning Setting GOEXPERIMENT=boringcrypto - this generally causes builds to fail unless building inside the provided Dockerfile. If building locally consider calling 'go build .')
+GOENV+=GOEXPERIMENT=boringcrypto
 GOENV:=$(strip ${GOENV})
 endif
 
@@ -125,6 +125,12 @@ GOLANGCI_OPTIONAL_CONFIG ?=
 ifeq ($(origin TESTTARGETS), undefined)
 TESTTARGETS := $(shell ${GOENV} go list -e ./... | grep -E -v "/(vendor)/" | grep -E -v "/(test/e2e)/")
 endif
+
+# If for any reason we've made it this far and TESTTARGETS is still empty, fail early.
+ifeq ($(TESTTARGETS),)
+$(error TESTTARGETS is empty)
+endif
+
 # ex, -v
 TESTOPTS :=
 
