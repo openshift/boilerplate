@@ -12,7 +12,7 @@ export HOME=/tmp/home
 endif
 PWD=$(shell pwd)
 
-GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=${GOFLAGS_MOD}
+GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=${GOFLAGS_MOD} GOCACHE="${PWD}/.cache"
 
 CODECOV_CONVENTION_DIR := boilerplate/openshift/golang-codecov
 

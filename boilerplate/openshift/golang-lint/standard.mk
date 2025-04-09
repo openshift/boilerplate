@@ -9,6 +9,8 @@ export HOME=/tmp/home
 endif
 PWD=$(shell pwd)
 
+export GOCACHE="${PWD}/.cache"
+
 # GOLANGCI_LINT_CACHE needs to be set to a directory which is writeable
 # Relevant issue - https://github.com/golangci/golangci-lint/issues/734
 GOLANGCI_LINT_CACHE ?= /tmp/golangci-cache
