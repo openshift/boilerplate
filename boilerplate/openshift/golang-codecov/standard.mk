@@ -9,10 +9,11 @@ GOFLAGS_MOD ?=
 # as $HOME is set to "/" by default.
 ifeq ($(HOME),/)
 export HOME=/tmp/home
+GOENV+=GOCACHE="${HOME}/.cache"
 endif
 PWD=$(shell pwd)
 
-GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=${GOFLAGS_MOD} GOCACHE="${PWD}/.cache"
+GOENV+=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=${GOFLAGS_MOD}
 
 CODECOV_CONVENTION_DIR := boilerplate/openshift/golang-codecov
 

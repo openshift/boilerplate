@@ -6,10 +6,9 @@ unexport GOFLAGS
 # as $HOME is set to "/" by default.
 ifeq ($(HOME),/)
 export HOME=/tmp/home
+export GOCACHE="${HOME}/.cache"
 endif
 PWD=$(shell pwd)
-
-export GOCACHE="${PWD}/.cache"
 
 # GOLANGCI_LINT_CACHE needs to be set to a directory which is writeable
 # Relevant issue - https://github.com/golangci/golangci-lint/issues/734
