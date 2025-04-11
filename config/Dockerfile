@@ -1,8 +1,8 @@
 FROM quay.io/konflux-ci/yq:latest AS yq
 FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.23 AS builder
 
-ARG GOCILINT_VERSION="1.64.7"
-ARG GOCILINT_SHA256SUM="dada4095eab53f868f931840f04b99cb4be654e45f50d4d3b2832dc9ad3bede8"
+ARG GOCILINT_VERSION="2.0.2"
+ARG GOCILINT_SHA256SUM="89cc8a7810dc63b9a37900da03e37c3601caf46d42265d774e0f1a5d883d53e2"
 ARG GOCILINT_LOCATION=https://github.com/golangci/golangci-lint/releases/download/v${GOCILINT_VERSION}/golangci-lint-${GOCILINT_VERSION}-linux-amd64.tar.gz
 
 RUN curl -L -o golangci-lint.tar.gz ${GOCILINT_LOCATION} && \
