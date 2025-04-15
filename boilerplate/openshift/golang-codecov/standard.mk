@@ -4,14 +4,13 @@ GOARCH?=$(shell go env GOARCH)
 unexport GOFLAGS
 GOFLAGS_MOD ?=
 
-# In openshift ci (Prow), we need to set $HOME to a writable directory else tests will fail
-# because they don't have permissions to create /.local or /.cache directories
-# as $HOME is set to "/" by default.
-ifeq ($(HOME),/)
-export HOME=/tmp/home
-GOENV+=GOCACHE="${HOME}/.cache"
+# Optionally use alternate GOCACHE location if default is not writeable
+CACHE_WRITEABLE := $(shell test -w "${HOME}/.cache" && echo yes || echo no)
+ifeq ($(CACHE_WRITEABLE),no)
+tmpDir := $(shell mktemp -d)
+GOENV+=GOCACHE=${tmpDir}
+$(info Using custom GOCACHE of ${tmpDir})
 endif
-PWD=$(shell pwd)
 
 GOENV+=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS=${GOFLAGS_MOD}
 

@@ -1,14 +1,13 @@
 # Defaults to -mod=vendor in the boilerplate image
 unexport GOFLAGS
 
-# In openshift ci (Prow), we need to set $HOME to a writable directory else tests will fail
-# because they don't have permissions to create /.local or /.cache directories
-# as $HOME is set to "/" by default.
-ifeq ($(HOME),/)
-export HOME=/tmp/home
-export GOCACHE="${HOME}/.cache"
+# Optionally use alternate GOCACHE location if default is not writeable
+CACHE_WRITEABLE := $(shell test -w "${HOME}/.cache" && echo yes || echo no)
+ifeq ($(CACHE_WRITEABLE),no)
+tmpDir := $(shell mktemp -d)
+GOENV+=GOCACHE=${tmpDir}
+$(info Using custom GOCACHE of ${tmpDir})
 endif
-PWD=$(shell pwd)
 
 # GOLANGCI_LINT_CACHE needs to be set to a directory which is writeable
 # Relevant issue - https://github.com/golangci/golangci-lint/issues/734
@@ -21,6 +20,6 @@ LINT_CONVENTION_DIR := boilerplate/openshift/golang-lint
 .PHONY: lint
 lint: 
 	${LINT_CONVENTION_DIR}/ensure.sh golangci-lint
-	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${LINT_CONVENTION_DIR}/golangci.yml ./...
-	test "${GOLANGCI_OPTIONAL_CONFIG}" = "" || test ! -e "${GOLANGCI_OPTIONAL_CONFIG}" || GOLANGCI_LINT_CACHE="${GOLANGCI_LINT_CACHE}" golangci-lint run -c "${GOLANGCI_OPTIONAL_CONFIG}" ./...
+	${GOENV} GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${LINT_CONVENTION_DIR}/golangci.yml ./...
+	test "${GOLANGCI_OPTIONAL_CONFIG}" = "" || test ! -e "${GOLANGCI_OPTIONAL_CONFIG}" || ${GOENV} GOLANGCI_LINT_CACHE="${GOLANGCI_LINT_CACHE}" golangci-lint run -c "${GOLANGCI_OPTIONAL_CONFIG}" ./...
 
