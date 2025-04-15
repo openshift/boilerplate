@@ -9,6 +9,14 @@ ifndef HARNESS_IMAGE_REPOSITORY
 $(error HARNESS_IMAGE_REPOSITORY is not set; check project.mk file)
 endif
 
+# Optionally use alternate GOCACHE location if default is not writeable
+CACHE_WRITEABLE := $(shell test -w "${HOME}/.cache" && echo yes || echo no)
+ifeq ($(CACHE_WRITEABLE),no)
+tmpDir := $(shell mktemp -d)
+GOENV+=GOCACHE=${tmpDir}
+$(info Using custom GOCACHE of ${tmpDir})
+endif
+
 # Use current commit as harness image tag
 CURRENT_COMMIT=$(shell git rev-parse --short=7 HEAD)
 HARNESS_IMAGE_TAG=$(CURRENT_COMMIT)

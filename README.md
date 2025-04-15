@@ -20,7 +20,7 @@ This work was inspired by, and partially cribbed from,
     - [Update](#update)
     - [Multiple Updates](#multiple-updates)
   - [Contributing](#contributing)
-    - [Environment setup](#environment-setup)
+    - [Testing Boilerplate Locally](#testing-boilerplate-locally)
     - [Tests](#tests)
     - [Build Images](#build-images)
       - [Making CI Efficient](#making-ci-efficient)
@@ -339,11 +339,10 @@ In your fork of this repository (not a consuming repository):
     - `LATEST_IMAGE_TAG`: The tag for the most recent build image
       produced by boilerplate.
 
-### Environment setup
+### Testing Boilerplate Locally
 To test your changes, you can use the `BOILERPLATE_GIT_REPO` environment
 variable and set it to your local clone in order to override the version of
 boilerplate used (Example: `export BOILERPLATE_GIT_REPO=~/git/boilerplate`).
-
 
 Default `update` behaviour consists of cloning the git repo, so ensure you have
 your changes locally committed for your testing.
@@ -352,6 +351,9 @@ command used for cloning the project. Example of usecases :
 - Add some flags to the git clone command
 - Replace `git clone` by a copy command such as `rsync` or `cp` in order to
 avoid having to regularly commit changes
+
+>**Note** The above process will result in `boilerplate/_data/last-boilerplate-commit` and `boilerplate/_data/backing-image-tag`
+> changing, and you may need to `git reset` them to continue testing.
 
 ### Tests
 Test cases are executed by running `make test`. This must be done on a

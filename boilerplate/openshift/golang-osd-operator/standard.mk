@@ -97,14 +97,13 @@ GOBIN?=$(shell go env GOBIN)
 unexport GOFLAGS
 GOFLAGS_MOD ?=
 
-# In openshift ci (Prow), we need to set $HOME to a writable directory else tests will fail
-# because they don't have permissions to create /.local or /.cache directories
-# as $HOME is set to "/" by default.
-ifeq ($(HOME),/)
-export HOME=/tmp/home
-GOENV+=GOCACHE="${HOME}/.cache"
+# Optionally use alternate GOCACHE location if default is not writeable
+CACHE_WRITEABLE := $(shell test -w "${HOME}/.cache" && echo yes || echo no)
+ifeq ($(CACHE_WRITEABLE),no)
+tmpDir := $(shell mktemp -d)
+GOENV+=GOCACHE=${tmpDir}
+$(info Using custom GOCACHE of ${tmpDir})
 endif
-PWD=$(shell pwd)
 
 GOENV+=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=1 GOFLAGS="${GOFLAGS_MOD}"
 GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPATH}"
@@ -185,8 +184,8 @@ docker-login:
 .PHONY: go-check
 go-check: ## Golang linting and other static analysis
 	${CONVENTION_DIR}/ensure.sh golangci-lint
-	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${CONVENTION_DIR}/golangci.yml ./...
-	test "${GOLANGCI_OPTIONAL_CONFIG}" = "" || test ! -e "${GOLANGCI_OPTIONAL_CONFIG}" || GOLANGCI_LINT_CACHE="${GOLANGCI_LINT_CACHE}" golangci-lint run -c "${GOLANGCI_OPTIONAL_CONFIG}" ./...
+	${GOENV} GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${CONVENTION_DIR}/golangci.yml ./...
+	test "${GOLANGCI_OPTIONAL_CONFIG}" = "" || test ! -e "${GOLANGCI_OPTIONAL_CONFIG}" || ${GOENV} GOLANGCI_LINT_CACHE="${GOLANGCI_LINT_CACHE}" golangci-lint run -c "${GOLANGCI_OPTIONAL_CONFIG}" ./...
 
 .PHONY: go-generate
 go-generate:
