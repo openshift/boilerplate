@@ -8,7 +8,7 @@ LATEST_IMAGE_TAG=image-v4.0.1
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
 export BOILERPLATE_GIT_REPO=$REPO_ROOT
-export LOG_DIR=$(mktemp -d -t boilerplate-logs-XXXXXXXX)
+export LOG_DIR=$(mktemp -d -t boilerplate-logs)
 
 # Location of the convention config, relative to the repo root
 export UPDATE_CFG=boilerplate/update.cfg
@@ -37,7 +37,7 @@ fi
 colorprint() {
   color=$1
   shift
-  /bin/echo -e "${color}$@${RESET}"
+  printf "%b%b%b\n" "${color}" "$*" "${RESET}"
 }
 
 err() {
