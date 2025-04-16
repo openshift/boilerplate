@@ -11,14 +11,6 @@ ifndef IMAGE_NAME
 $(error IMAGE_NAME is not set)
 endif
 
-# Optionally use alternate GOCACHE location if default is not writeable
-CACHE_WRITEABLE := $(shell test -w "${HOME}/.cache" && echo yes || echo no)
-ifeq ($(CACHE_WRITEABLE),no)
-tmpDir := $(shell mktemp -d)
-GOENV+=GOCACHE=${tmpDir}
-$(info Using custom GOCACHE of ${tmpDir})
-endif
-
 ### Accommodate docker or podman
 #
 # The docker/podman creds cache needs to be in a location unique to this

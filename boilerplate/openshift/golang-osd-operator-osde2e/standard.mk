@@ -9,14 +9,6 @@ ifndef HARNESS_IMAGE_REPOSITORY
 $(error HARNESS_IMAGE_REPOSITORY is not set; check project.mk file)
 endif
 
-# Optionally use alternate GOCACHE location if default is not writeable
-CACHE_WRITEABLE := $(shell test -w "${HOME}/.cache" && echo yes || echo no)
-ifeq ($(CACHE_WRITEABLE),no)
-tmpDir := $(shell mktemp -d)
-GOENV+=GOCACHE=${tmpDir}
-$(info Using custom GOCACHE of ${tmpDir})
-endif
-
 # Use current commit as harness image tag
 CURRENT_COMMIT=$(shell git rev-parse --short=7 HEAD)
 HARNESS_IMAGE_TAG=$(CURRENT_COMMIT)
@@ -77,7 +69,7 @@ e2e-harness-build: GOFLAGS_MOD=-mod=mod
 e2e-harness-build: GOENV=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS="${GOFLAGS_MOD}"
 e2e-harness-build:
 	go mod tidy
-	${GOENV} go test ./test/e2e -v -c --tags=osde2e -o harness.test
+	go test ./test/e2e -v -c --tags=osde2e -o harness.test
 
 # TODO: Push to a known image tag and commit id
 # push harness image
