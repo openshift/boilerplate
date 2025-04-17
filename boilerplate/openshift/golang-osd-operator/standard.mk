@@ -112,8 +112,6 @@ endif
 # Relevant issue - https://github.com/golangci/golangci-lint/issues/734
 GOLANGCI_LINT_CACHE ?= /tmp/golangci-cache
 
-GOLANGCI_OPTIONAL_CONFIG ?=
-
 ifeq ($(origin TESTTARGETS), undefined)
 TESTTARGETS := $(shell ${GOENV} go list -e ./... | grep -E -v "/(vendor)/" | grep -E -v "/(test/e2e)/")
 endif
@@ -177,7 +175,6 @@ docker-login:
 go-check: ## Golang linting and other static analysis
 	${CONVENTION_DIR}/ensure.sh golangci-lint
 	${GOENV} GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${CONVENTION_DIR}/golangci.yml ./...
-	test "${GOLANGCI_OPTIONAL_CONFIG}" = "" || test ! -e "${GOLANGCI_OPTIONAL_CONFIG}" || ${GOENV} GOLANGCI_LINT_CACHE="${GOLANGCI_LINT_CACHE}" golangci-lint run -c "${GOLANGCI_OPTIONAL_CONFIG}" ./...
 
 .PHONY: go-generate
 go-generate:
