@@ -209,7 +209,7 @@ YQ = yq
 .PHONY: op-generate
 ## CRD v1beta1 is no longer supported.
 op-generate:
-	cd ./api; ${GOENV} $(CONTROLLER_GEN) crd:crdVersions=v1,generateEmbeddedObjectMeta=true paths=./... output:dir=$(PWD)/deploy/crds
+	cd ./api; ${GOENV} $(CONTROLLER_GEN) crd:crdVersions=v1,generateEmbeddedObjectMeta=true paths=./... output:dir=$(shell pwd)/deploy/crds
 	cd ./api; ${GOENV} $(CONTROLLER_GEN) object paths=./...
 
 .PHONY: openapi-generate
