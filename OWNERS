@@ -1,22 +1,19 @@
 reviewers:
-- jharrington22
-- dustman9000
-- 2uasimojo
-- bdematte
+- srep-functional-team-aurora
+- srep-functional-leads
+- srep-team-leads
 - xiaoyu74
 - mmazur
 - jbpratt
 - joshbranham
 approvers:
-- jharrington22
-- dustman9000
-- 2uasimojo
+- srep-functional-team-aurora
+- srep-functional-leads
+- srep-team-leads
 - bdematte
 - mmazur
 - joshbranham
-- srep-team-leads
 maintainers:
-- jharrington22
-- dustman9000
-- 2uasimojo
-- bdematte
+- srep-functional-leads
+- srep-team-leads
+- joshbranham
