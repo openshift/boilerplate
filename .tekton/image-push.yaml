@@ -31,16 +31,7 @@ spec:
   - name: dockerfile
     value: config/Dockerfile
   - name: build-source-image
-    value: 'true'
-  taskRunSpecs:
-    - pipelineTaskName: build-container
-      computeResources:
-        limits:
-          memory: 4Gi
-    - pipelineTaskName: ecosystem-cert-preflight-checks
-      computeResources:
-        limits:
-          memory: 4Gi
+    value: "true"
   pipelineSpec:
     finally:
     - name: show-sbom
@@ -487,33 +478,43 @@ spec:
         workspace: workspace
     - name: rpms-signature-scan
       params:
-        - name: image-url
-          value: $(tasks.build-container.results.IMAGE_URL)
-        - name: image-digest
-          value: $(tasks.build-container.results.IMAGE_DIGEST)
+      - name: image-url
+        value: $(tasks.build-container.results.IMAGE_URL)
+      - name: image-digest
+        value: $(tasks.build-container.results.IMAGE_DIGEST)
       runAfter:
-        - build-container
+      - build-container
       taskRef:
         params:
-          - name: name
-            value: rpms-signature-scan
-          - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:eeaee239eabec8ba9cfd0f80382ad34114c93393c35d1eae77c5d73d57aa824d
-          - name: kind
-            value: task
+        - name: name
+          value: rpms-signature-scan
+        - name: bundle
+          value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:eeaee239eabec8ba9cfd0f80382ad34114c93393c35d1eae77c5d73d57aa824d
+        - name: kind
+          value: task
         resolver: bundles
       when:
-        - input: $(params.skip-checks)
-          operator: in
-          values:
-            - "false"
+      - input: $(params.skip-checks)
+        operator: in
+        values:
+        - "false"
     workspaces:
     - name: workspace
     - name: git-auth
       optional: true
     - name: netrc
       optional: true
-  taskRunTemplate: {}
+  taskRunSpecs:
+  - computeResources:
+      limits:
+        memory: 4Gi
+    pipelineTaskName: build-container
+  - computeResources:
+      limits:
+        memory: 4Gi
+    pipelineTaskName: ecosystem-cert-preflight-checks
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-image
   workspaces:
   - name: workspace
     volumeClaimTemplate:
