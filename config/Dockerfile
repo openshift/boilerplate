@@ -23,7 +23,7 @@ FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.23
 ENV GOFLAGS="-mod=mod"
 
 ARG KUSTOMIZE_VERSION="v5.6.0" \
-    CONTROLLER_GEN_VERSION="v0.15.0" \
+    CONTROLLER_GEN_VERSION="v0.16.4" \
     OPENAPI_GEN_VERSION="v0.29.15" \
     ENVTEST_VERSION="release-0.18" \
     GOVULNCHECK_VERSION="v1.1.4" \
