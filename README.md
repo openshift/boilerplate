@@ -376,28 +376,11 @@ principles when deciding what `{X}.{Y}.{Z}` should be. See https://github.com/op
 for an example.
 
     ```shell
-    # Make code changes and create tag
-    git tag image-v1.2.3
-
-    # Push tag to origin
-    git push origin image-v1.2.3
-
-    # Create PR and notify Team Lead (or member with write permissions). They will need to do the following:
-
-    # create remote from user's fork
-    git remote add someuser git@github.com:someuser/boilerplate.git
-
-    # git fetch
-    git fetch --all --prune
-
-    # create branch from user's fork and branch
-    git checkout -b someuser-branch-name someuser/branch-name
-
     # create tag
-    git tag -f image-v1.2.3
+    git tag -a image-v1.2.3 -m "Release v1.2.3"
 
     # push tag to upstream
-    git push upstream -f image-v1.2.3
+    git push upstream image-v1.2.3
     ```
 
     >**NOTE**: You must do the `upstream` push *after* creating your PR. Otherwise, the tagged commit will not exist
@@ -438,30 +421,28 @@ To pick up such changes right away, simply produce a new version (identical to t
 Of course, consumers will need to update to/past the tagged commit in order to use the new image.
 
 #### Creating a Konflux release
-Konflux auto-releasing is disabled requiring manual releasing of each git tag
-specifically. Once a new git tag is pushed, find the resulting snapshot that
-contains the newly built artifact:
+Konflux auto-releasing is disabled requiring manual releasing of each git tag specifically. The below process can be run by a select few people from Cicada and Aurora.
 
-```
-oc get snapshots --sort-by=.metadata.creationTimestamp
-```
-
-The `ReleasePlanAdmission` resource in `konflux-release-data` should be updated
-with the new image tag. A `Release` CR can then be created based on the
-snapshot and existing `ReleasePlan` which will trigger a managed release
-pipeline, publishing the new image:
-
-```yaml
-apiVersion: appstudio.redhat.com/v1alpha1
-kind: Release
-metadata:
- name: <git tag version>
-spec:
- releasePlan: boilerplate-releaseplan
- snapshot: <snapshot name>
-```
-
-**NOTE**: Once a new release is created, ensure to update the `ImageStream`
-references in `openshift/release`.
-
-For any issues, reach out to the #hcm-cicd channel on Slack.
+1. Once a new Git tag is pushed (see [above](#build-images)), find the resulting snapshot that contains the newly built artifact:
+    ```shell
+    oc get snapshots -n boilerplate-cicada-tenant --sort-by=.metadata.creationTimestamp
+    ```
+2. Update the `ReleasePlanAdmission` resource [here](https://gitlab.cee.redhat.com/releng/konflux-release-data/-/blob/main/config/stone-prd-rh01.pg1f.p1/service/ReleasePlanAdmission/boilerplate-cicada/boilerplate.yaml?ref_type=heads#L18-23) with your new tag. See this [MR](https://gitlab.cee.redhat.com/releng/konflux-release-data/-/merge_requests/6282) for an example.
+3. Once the above MR merges, wait a bit, then validate the changes have synced to Konflux. You should see your updates in the tags output below:
+    ```shell
+   oc get releaseplanadmissions -n rhtap-releng-tenant boilerplate -o json | jq .spec.data.mapping.defaults.tags
+    ```
+4. Once the `ReleasePlanAdmission` changes are live in the Konflux cluster, create your `Release`:
+    ```shell
+    apiVersion: appstudio.redhat.com/v1alpha1
+    kind: Release
+    metadata:
+     name: image-v${version}
+    spec:
+     releasePlan: boilerplate-releaseplan
+     snapshot: <snapshot name> | oc apply -f -
+    ```
+5. You can watch the release pipeline in the Konflux UI [here](https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/rhtap-releng-tenant/applications/boilerplate-master).
+6. Once the release is complete, open a PR adding the new image tag to Prow mirroring.
+   - See this [PR](https://github.com/openshift/release/pull/64991) for an example.
+   - Reach out in #forum-ocp-testplatform and ask for them to review it.
