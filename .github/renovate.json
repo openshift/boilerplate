@@ -13,6 +13,19 @@
     "includePaths": [
       "pipelines/**",
       ".tekton/**"
+    ],
+    "enabled": true,
+    "packageRules": [
+      {
+        "matchUpdateTypes": [
+          "minor",
+          "patch",
+          "pin",
+          "digest"
+        ],
+        "automerge": true,
+        "addLabels": ["lgtm", "approved"]
+      }
     ]
   },
   "dependencyDashboard": true,
