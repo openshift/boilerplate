@@ -10,11 +10,11 @@ parameters:
   - name: TEST_HARNESS_IMAGE
     required: true
   - name: OCM_CLIENT_ID
-    required: true
+    required: false
   - name: OCM_CLIENT_SECRET
-    required: true
+    required: false
   - name: OCM_TOKEN
-    required: true
+    required: false
   - name: OCM_CCS
     required: false
   - name: AWS_ACCESS_KEY_ID
