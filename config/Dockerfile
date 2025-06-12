@@ -1,5 +1,5 @@
 FROM quay.io/konflux-ci/yq:latest AS yq
-FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.23 AS builder
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.24 AS builder
 
 ARG GOCILINT_VERSION="2.0.2"
 ARG GOCILINT_SHA256SUM="89cc8a7810dc63b9a37900da03e37c3601caf46d42265d774e0f1a5d883d53e2"
@@ -19,7 +19,7 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
     tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
     mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
 
-FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_1.23
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.24
 ENV GOFLAGS="-mod=mod"
 
 ARG KUSTOMIZE_VERSION="v5.6.0" \
