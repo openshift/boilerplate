@@ -79,9 +79,3 @@ tags
 .idea
 .project
 .pydevproject
-
-# Generated boilerplate files to ignore
-.gitattributes
-boilerplate/_data/
-boilerplate/generated-includes.mk
-boilerplate/update.cfg
