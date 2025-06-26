@@ -184,7 +184,7 @@ if [ -z "$BOILERPLATE_GIT_REPO" ]; then
 fi
 
 # Base image repo url
-IMAGE_REPO=quay.io/redhat-services-prod/openshift
+IMAGE_REPO=localhost/boilerplate
 # The namespace of the ImageStream by which prow will import the image.
 IMAGE_NAMESPACE=openshift
 IMAGE_NAME=boilerplate
