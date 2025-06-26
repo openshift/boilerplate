@@ -201,4 +201,4 @@ if [[ -z "$LATEST_IMAGE_TAG" ]]; then
     fi
 fi
 # The public image location
-IMAGE_PULL_PATH="localhost/boilerplate:latest"
+IMAGE_PULL_PATH=${IMAGE_PULL_PATH:-$IMAGE_REPO/$IMAGE_NAME:$LATEST_IMAGE_TAG}
