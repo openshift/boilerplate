@@ -11,8 +11,8 @@ dockerfile_path image_uri
 
     For example:
 
-# This is the test harness image
-./build/Dockerfile quay.io/app-sre/my-wizbang-operator-test-harness:latest
+# This is the e2e test image
+./build/Dockerfile quay.io/app-sre/my-wizbang-operator-e2e:latest
 
 
     The parameter is mandatory; if only building the catalog image,
