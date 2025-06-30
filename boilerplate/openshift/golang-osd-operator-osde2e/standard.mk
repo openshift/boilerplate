@@ -9,7 +9,7 @@ ifndef E2E_IMAGE_REPOSITORY
 $(error E2E_IMAGE_REPOSITORY is not set; check project.mk file)
 endif
 
-# Use current commit as harness image tag
+# Use current commit as e2e image tag
 CURRENT_COMMIT=$(shell git rev-parse --short=7 HEAD)
 E2E_IMAGE_TAG=$(CURRENT_COMMIT)
 
@@ -61,7 +61,7 @@ container-engine-login:
 	@${CONTAINER_ENGINE} login -u="${REGISTRY_USER}" -p="${REGISTRY_TOKEN}" quay.io
 
 ######################
-# Targets used by e2e test harness
+# Targets used by e2e test suite
 ######################
 
 # create binary
@@ -73,7 +73,7 @@ e2e-binary-build:
 	go test ./test/e2e -v -c --tags=osde2e -o e2e.test
 
 # TODO: Push to a known image tag and commit id
-# push harness image
+# push e2e image
 .PHONY: e2e-image-build-push
 e2e-image-build-push:
 	${OSDE2E_CONVENTION_DIR}/e2e-image-build-push.sh "./test/e2e/Dockerfile $(IMAGE_REGISTRY)/$(E2E_IMAGE_REPOSITORY)/$(E2E_IMAGE_NAME):$(E2E_IMAGE_TAG)"
