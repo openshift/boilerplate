@@ -45,14 +45,6 @@ REGISTRY_TOKEN ?=
 # TODO: Figure out how to discover this dynamically
 OSDE2E_CONVENTION_DIR := boilerplate/openshift/golang-osd-operator-osde2e
 
-# TODO: figure out how to container-engine-login only once across multiple `make` calls
-.PHONY: container-build-push-one
-container-build-push-one: container-engine-login
-	@(if [[ -z "${IMAGE_URI}" ]]; then echo "Must specify IMAGE_URI"; exit 1; fi)
-	@(if [[ -z "${DOCKERFILE_PATH}" ]]; then echo "Must specify DOCKERFILE_PATH"; exit 1; fi)
-	${CONTAINER_ENGINE} build --pull -f $(DOCKERFILE_PATH) -t $(IMAGE_URI) .
-	${CONTAINER_ENGINE} push ${IMAGE_URI}
-
 # log into quay.io
 .PHONY: container-engine-login
 container-engine-login:
@@ -72,9 +64,10 @@ e2e-binary-build:
 	go mod tidy
 	go test ./test/e2e -v -c --tags=osde2e -o e2e.test
 
-# TODO: Push to a known image tag and commit id
-# push e2e image
+# push e2e image tagged as latest and as repo commit hash
 .PHONY: e2e-image-build-push
 e2e-image-build-push:
-	${OSDE2E_CONVENTION_DIR}/e2e-image-build-push.sh "./test/e2e/Dockerfile $(IMAGE_REGISTRY)/$(E2E_IMAGE_REPOSITORY)/$(E2E_IMAGE_NAME):$(E2E_IMAGE_TAG)"
-	${OSDE2E_CONVENTION_DIR}/e2e-image-build-push.sh "./test/e2e/Dockerfile $(IMAGE_REGISTRY)/$(E2E_IMAGE_REPOSITORY)/$(E2E_IMAGE_NAME):latest"
+	${CONTAINER_ENGINE} build --pull -f test/e2e/Dockerfile -t $(E2E_IMAGE_REGISTRY)/$(E2E_IMAGE_REPOSITORY)/$(E2E_IMAGE_NAME):$(E2E_IMAGE_TAG) .
+	${CONTAINER_ENGINE} tag $(E2E_IMAGE_REGISTRY)/$(E2E_IMAGE_REPOSITORY)/$(E2E_IMAGE_NAME):$(E2E_IMAGE_TAG) $(E2E_IMAGE_REGISTRY)/$(E2E_IMAGE_REPOSITORY)/$(E2E_IMAGE_NAME):latest
+	${CONTAINER_ENGINE} push $(E2E_IMAGE_REGISTRY)/$(E2E_IMAGE_REPOSITORY)/$(E2E_IMAGE_NAME):$(E2E_IMAGE_TAG)
+	${CONTAINER_ENGINE} push $(E2E_IMAGE_REGISTRY)/$(E2E_IMAGE_REPOSITORY)/$(E2E_IMAGE_NAME):latest

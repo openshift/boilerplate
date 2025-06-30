@@ -105,3 +105,8 @@ DISABLE_JUNIT_REPORT=true KUBECONFIG=/(path-to)/kubeconfig  ./(path-to)/bin/gink
 EOF
 
 sed -e "s/\${OPERATOR_NAME}/${OPERATOR_NAME}/" $(dirname $0)/e2e-template.yml >"${E2E_SUITE_DIRECTORY}/e2e-template.yml"
+
+# todo: remove after file is renamed in ALL consumer repos
+if [ -f "${E2E_SUITE_DIRECTORY}/test-harness-template.yml" ]; then
+  rm -f "${E2E_SUITE_DIRECTORY}/test-harness-template.yml"
+fi

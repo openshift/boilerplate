@@ -10,7 +10,7 @@
 Currently, this convention is only intended for OSD operators. To adopt this convention, your `boilerplate/update.cfg` should include:
 
 ```
-openshift/golang-osd-operator-osde2e
+openshift/golang-osd-e2e
 ```
 
 ## `make` targets and functions.
