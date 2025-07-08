@@ -43,7 +43,7 @@ REGISTRY_USER ?=
 REGISTRY_TOKEN ?=
 
 # TODO: Figure out how to discover this dynamically
-OSDE2E_CONVENTION_DIR := boilerplate/openshift/golang-osd-operator-osde2e
+OSDE2E_CONVENTION_DIR := boilerplate/openshift/golang-osd-e2e
 
 # log into quay.io
 .PHONY: container-engine-login
