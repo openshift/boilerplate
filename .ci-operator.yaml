@@ -1,4 +1,4 @@
 build_root_image:
-  namespace: ocp
-  name: builder
-  tag: registry.access.redhat.com/ubi8/ubi-minimal:latest
+  namespace: ubi9
+  name: ubi9-minimal
+  tag: latest
