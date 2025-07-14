@@ -1,4 +1,4 @@
 build_root_image:
-  namespace: ubi9
-  name: ubi9-minimal
-  tag: latest
+  namespace: ocp
+  name: builder
+  tag: rhel-9-golang-1.23-openshift-4.19
