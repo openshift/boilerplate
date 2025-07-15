@@ -21,7 +21,6 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
 
 FROM registry.redhat.io/ubi9:9.6-1751445649
 ENV GOFLAGS="-mod=mod"
-ENV ART_DNF_WRAPPER_POLICY=skip
 
 RUN dnf -y install openssh-clients jq skopeo python3-pyyaml go-toolset git && \
     dnf clean all && \
