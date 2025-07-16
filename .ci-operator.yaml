@@ -1,4 +1,4 @@
 build_root_image:
-  namespace: ocp
-  name: builder
-  tag: rhel-9-golang-1.24-openshift-4.20
+  namespace: ci
+  name: ubi-9-go-toolset
+  tag: 1.24.4

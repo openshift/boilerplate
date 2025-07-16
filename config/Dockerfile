@@ -1,5 +1,5 @@
 FROM quay.io/konflux-ci/yq:latest AS yq
-FROM registry.redhat.io/ubi9:9.6-1751445649 AS builder
+FROM registry.access.redhat.com/ubi9/s2i-base:9.6-1751463639 AS builder
 
 ARG GOCILINT_VERSION="2.0.2"
 ARG GOCILINT_SHA256SUM="89cc8a7810dc63b9a37900da03e37c3601caf46d42265d774e0f1a5d883d53e2"
