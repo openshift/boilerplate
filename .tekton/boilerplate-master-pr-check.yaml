@@ -1,0 +1,83 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: boilerplate-master-pr-check
+  labels:
+    build.appstudio.redhat.com/pipeline: boilerplate-master-pr-check
+spec:
+  params:
+    - description: Snapshot of the application
+      name: SNAPSHOT
+      default: '{"components": [{"name":"image", "containerImage": "quay.io/redhat-services-prod/openshift/boilerplate:latest", "source":{ "git":{"url": "https://github.com/openshift/boilerplate", "revision": "master"}}}]}'
+      type: string
+  workspaces:
+    - name: shared-workspace
+      description: A workspace to share data between tasks
+  tasks:
+    - name: parse-component-image-spec
+      description: Task parses the specific component image spec from the snapshot parameter
+      params:
+        - name: SNAPSHOT
+          value: $(params.SNAPSHOT)
+      taskSpec:
+        params:
+          - name: SNAPSHOT
+        results:
+          - name: COMPONENT_IMAGE
+            description: parsed component image spec
+          - name: COMPONENT_GIT_URL
+            description: parsed component git url
+          - name: COMPONENT_GIT_REVISION
+            description: parsed component git revision
+        steps:
+          - image: "registry.access.redhat.com/ubi8/ubi-minimal:latest@sha256:9746f7ac575b4427fc9635f8f575289870a8b30dabf77ee992ae4c2f1e121cce"
+            env:
+              - name: SNAPSHOT
+                value: $(params.SNAPSHOT)
+            script: |
+              microdnf -y install jq
+              COMPONENT_IMAGE=$(echo ${SNAPSHOT} | jq -r '.components[] | select(.name=="image") | .containerImage')
+              COMPONENT_GIT_URL=$(echo ${SNAPSHOT} | jq -r '.components[] | select(.name=="image") | .source.git.url')
+              COMPONENT_GIT_REVISION=$(echo ${SNAPSHOT} | jq -r '.components[] | select(.name=="image") | .source.git.revision')
+              echo -n "${COMPONENT_IMAGE}" | tee $(results.COMPONENT_IMAGE.path)
+              echo -n "${COMPONENT_GIT_URL}" | tee $(results.COMPONENT_GIT_URL.path)
+              echo -n "${COMPONENT_GIT_REVISION}" | tee $(results.COMPONENT_GIT_REVISION.path)
+    - name: clone-repository
+      description: Clone the repository
+      runAfter:
+        - parse-component-image-spec
+      params:
+        - name: url
+          value: $(tasks.parse-component-image-spec.results.COMPONENT_GIT_URL)
+        - name: revision
+          value: $(tasks.parse-component-image-spec.results.COMPONENT_GIT_REVISION)
+      taskRef:
+        params:
+          - name: name
+            value: git-clone
+          - name: bundle
+            value: quay.io/redhat-appstudio-tekton-catalog/task-git-clone:0.1@sha256:b99d377c3e28fad51009849f6ba3a1bc47d1dc4c46f470ea12ed7b1b444599d7
+          - name: kind
+            value: task
+        resolver: bundles
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+    - name: execute-boilerplate-pr-check
+      description: Run the boilerplate pr-check
+      runAfter:
+        - clone-repository
+      timeout: "1h"
+      params:
+        - name: COMPONENT_IMAGE
+          value: $(tasks.parse-component-image-spec.results.COMPONENT_IMAGE)
+      taskSpec:
+        params:
+          - name: COMPONENT_IMAGE
+        steps:
+          - image: $(params.COMPONENT_IMAGE)
+            command:
+              - make
+            args:
+              - pr-check
+            workingDir: $(workspaces.shared-workspace.path)
