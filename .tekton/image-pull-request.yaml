@@ -12,7 +12,9 @@ metadata:
       target_branch == "master" &&
       (
         "config/***".pathChanged() ||
-        ".tekton/image-pull-request.yaml".pathChanged()
+        ".tekton/image-pull-request.yaml".pathChanged() ||
+        "boilerplate/***".pathChanged() ||
+        "test/***".pathChanged()
       )
   creationTimestamp:
   labels:
