@@ -80,4 +80,4 @@ spec:
               - make
             args:
               - pr-check
-            workingDir: $(workspaces.shared-workspace.path)
+            workingDir: "$(workspaces.shared-workspace.path)/source"
