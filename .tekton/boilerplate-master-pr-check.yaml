@@ -51,6 +51,10 @@ spec:
           value: $(tasks.parse-component-image-spec.results.COMPONENT_GIT_URL)
         - name: revision
           value: $(tasks.parse-component-image-spec.results.COMPONENT_GIT_REVISION)
+        - name: fetchTags
+          value: "true"
+        - name: depth
+          value: "50"
       taskRef:
         params:
           - name: name
