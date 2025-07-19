@@ -50,10 +50,10 @@ main() {
 
     hr
     colorprint ${GREEN} "PASS: ${#_PASS[@]}"
-    /bin/echo -n "  "
+    printf "  "
     colorprint ${GREEN} ${_PASS[@]} | ${SED?} 's/ /\n  /g'
     colorprint ${RED} "FAIL: ${#_FAIL[@]}"
-    /bin/echo -n "  "
+    printf "  "
     colorprint ${RED} ${_FAIL[@]} | ${SED?} 's/ /\n  /g'
     hr
     if [[ ${#_FAIL[@]} -ne 0 ]]; then
