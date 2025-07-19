@@ -189,7 +189,7 @@ function test_add_current_version_to_bundle_versions_file() {
 }
 
 function main() {
-    TEMP_DIR=$(mktemp -d --suffix "-$(basename "$0")")
+    TEMP_DIR=$(mktemp -d -t "$(basename "$0").XXXXXX")
     [[ -z "${PRESERVE_TEMP_DIRS:-}" ]] && trap 'rm -rf $TEMP_DIR' EXIT
 
     local failed=0
