@@ -19,7 +19,7 @@ main() {
     cd "$HERE/case"
     local name_glob='*'
     [[ -n "$1" ]] && name_glob="$1"
-    cases=$(find . -type f -perm +111 -name "$name_glob" | sort)
+    cases=$(find . -type f -perm -111 -name "$name_glob" | sort)
     if [[ -z "$cases" ]]; then
         echo "No test cases found! Something is wrong!"
         exit 1
