@@ -37,7 +37,7 @@ fi
 colorprint() {
   color=$1
   shift
-  /bin/echo -e "${color}$@${RESET}"
+  printf "${color}%s${RESET}\n" "$*"
 }
 
 err() {

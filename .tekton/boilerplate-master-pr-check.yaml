@@ -54,7 +54,9 @@ spec:
         - name: fetchTags
           value: "true"
         - name: depth
-          value: "50"
+          value: "0"
+        - name: verbose
+          value: "true"
       taskRef:
         params:
           - name: name

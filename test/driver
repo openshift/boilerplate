@@ -19,7 +19,7 @@ main() {
     cd "$HERE/case"
     local name_glob='*'
     [[ -n "$1" ]] && name_glob="$1"
-    cases=$(find . -type f -perm /111 -name "$name_glob" | sort)
+    cases=$(find . -type f -perm -111 -name "$name_glob" | sort)
     if [[ -z "$cases" ]]; then
         echo "No test cases found! Something is wrong!"
         exit 1
@@ -50,10 +50,10 @@ main() {
 
     hr
     colorprint ${GREEN} "PASS: ${#_PASS[@]}"
-    /bin/echo -n "  "
+    printf "  "
     colorprint ${GREEN} ${_PASS[@]} | ${SED?} 's/ /\n  /g'
     colorprint ${RED} "FAIL: ${#_FAIL[@]}"
-    /bin/echo -n "  "
+    printf "  "
     colorprint ${RED} ${_FAIL[@]} | ${SED?} 's/ /\n  /g'
     hr
     if [[ ${#_FAIL[@]} -ne 0 ]]; then

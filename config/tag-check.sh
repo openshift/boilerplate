@@ -27,7 +27,28 @@ fi
 # Don't compare the config/tag-check.sh file, as it's not impacted by
 # build image changes.
 default_branch="master"
+
+# Ensure master branch reference is available in CI environments
+if ! git rev-parse --verify $default_branch >/dev/null 2>&1; then
+    echo "Master branch not found locally, attempting to fetch..."
+    # Try to fetch master from origin
+    if git ls-remote --heads origin $default_branch >/dev/null 2>&1; then
+        git fetch origin $default_branch:$default_branch 2>/dev/null || true
+    fi
+    # If still not available, try using origin/master as fallback
+    if ! git rev-parse --verify $default_branch >/dev/null 2>&1; then
+        if git rev-parse --verify origin/$default_branch >/dev/null 2>&1; then
+            echo "Using origin/$default_branch as reference..."
+            default_branch="origin/$default_branch"
+        else
+            echo "Warning: Could not find master branch reference, using HEAD~1 as fallback"
+            default_branch="HEAD~1"
+        fi
+    fi
+fi
+
 fork_point=$(git merge-base --fork-point $default_branch)
+
 diff=$(git diff $fork_point --name-only -- config/ ':!config/tag-check.sh')
 if [[ -n "${diff}" ]]; then
     echo "Image build configuration has changed!"
