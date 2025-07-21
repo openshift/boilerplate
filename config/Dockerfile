@@ -41,6 +41,15 @@ RUN go install sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION} && \
     go install golang.org/x/vuln/cmd/govulncheck@${GOVULNCHECK_VERSION} && \
     go install go.uber.org/mock/mockgen@${MOCKGEN_VERSION}
 
+# HACK: `go install` creates lots of things under GOPATH that are not group
+# accessible, even if umask is set properly. This causes failures of
+# subsequent go tool usage (e.g. resolving packages) by a non-root user,
+# which is what consumes this image in CI.
+# Here we make group permissions match user permissions, since the CI
+# non-root user's gid is 0.
+SHELL ["/bin/bash", "-c"]
+RUN for bit in r x w; do find $(go env GOPATH) -perm -u+${bit} -a ! -perm -g+${bit} -exec chmod g+${bit} '{}' +; done
+
 COPY --from=builder /usr/local/bin/golangci-lint /usr/local/bin
 COPY --from=builder /usr/local/bin/gh /usr/local/bin
 COPY --from=yq /usr/bin/yq /usr/bin/yq
