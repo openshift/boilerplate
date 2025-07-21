@@ -22,7 +22,7 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
 FROM registry.redhat.io/ubi9:9.6-1751445649
 ENV GOFLAGS="-mod=mod"
 
-RUN dnf -y install openssh-clients jq skopeo python3-pyyaml go-toolset git && \
+RUN dnf -y install openssh-clients jq skopeo python3-pyyaml go-toolset git rsync && \
     dnf clean all && \
     dnf -y autoremove && \
     rm -rf /var/cache/dnf
