@@ -414,12 +414,6 @@ to create boilerplate:image-v3.0.0
     FROM registry.ci.openshift.org/openshift/boilerplate:image-v3.0.0
     ```
 
-#### Picking Up (Security) Fixes
-We only build and publish a new build image on commits tagged with `image-v*`, which we [force](config/tag-check.sh) you to do whenever something about *boilerplate's* image configuration changes.
-If the base image (`golang-*`) is updated for any reason, including security fixes, the boilerplate build image will only pick up those changes the next time we produce a new version.
-To pick up such changes right away, simply produce a new version (identical to the previous in terms of what boilerplate configures) according to the instructions [above](#build-images).
-Of course, consumers will need to update to/past the tagged commit in order to use the new image.
-
 #### Creating a Konflux release
 Konflux auto-releasing is disabled requiring manual releasing of each git tag specifically. The below process can be run by a select few people from Cicada and Aurora.
 
