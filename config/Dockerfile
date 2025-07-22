@@ -22,10 +22,12 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
 FROM registry.redhat.io/ubi9:9.6-1751445649
 ENV GOFLAGS="-mod=mod"
 
-RUN dnf -y install openssh-clients jq skopeo python3-pyyaml go-toolset git rsync && \
-    dnf clean all && \
-    dnf -y autoremove && \
+# --- REVISED DNF INSTALLATION (Applying --disableplugin to each dnf command) ---
+RUN dnf -y install --disableplugin=subscription-manager --setopt=tsflags=nodocs openssh-clients jq skopeo python3-pyyaml go-toolset git rsync && \
+    dnf -y clean all --disableplugin=subscription-manager && \
+    dnf -y autoremove --disableplugin=subscription-manager && \
     rm -rf /var/cache/dnf
+# --- END REVISED DNF INSTALLATION ---
 
 ARG KUSTOMIZE_VERSION="v5.6.0" \
     CONTROLLER_GEN_VERSION="v0.16.4" \
