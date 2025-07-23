@@ -21,7 +21,6 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
 
 FROM registry.redhat.io/ubi9:9.6-1751445649
 
-
 RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync && \
     dnf clean all && \
     dnf -y autoremove && \
