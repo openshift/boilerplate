@@ -2,6 +2,7 @@ ALLOW_DIRTY_CHECKOUT?=false
 SKIP_IMAGE_TAG_CHECK?=false
 IMG?=boilerplate
 CONTAINER_ENGINE?=$(shell command -v podman 2>/dev/null || echo "docker")
+CHECKOUT=$(shell pwd)
 
 # Tests rely on this starting off unset. (And if it is set, it's usually
 # not for the reasons we care about.)
@@ -18,6 +19,10 @@ test: isclean ## Runs tests under the /case directory
 
 .PHONY: pr-check
 pr-check: test
+
+.PHONY: container-pr-check
+container-pr-check: build-image-deep
+	$(CONTAINER_ENGINE) run --rm -it -v ${CHECKOUT}:/boilerplate:Z localhost/boilerplate:latest cd boilerplate && make pr-check
 
 .PHONY: subscriber-report
 subscriber-report: ## Discover onboarding and prow status of subscribed consumers
