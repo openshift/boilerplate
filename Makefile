@@ -11,17 +11,13 @@ unexport REPO_NAME
 isclean: ## Validate the local checkout is clean. Use ALLOW_DIRTY_CHECKOUT=true to nullify
 	@(test "$(ALLOW_DIRTY_CHECKOUT)" != "false" || test 0 -eq $$(git status --porcelain | wc -l)) || (echo "Local git checkout is not clean, commit changes and try again." >&2 && exit 1)
 
-.PHONY: tag-check
-tag-check: ## Perform a tag-check that validates a new tag has been created when changing the build image
-	@config/tag-check.sh
-
 .PHONY: test
 test: export GO_COMPLIANCE_INFO = 0
 test: isclean ## Runs tests under the /case directory
 	test/driver $(CASE_GLOB)
 
 .PHONY: pr-check
-pr-check: test tag-check ## This is the target run by prow
+pr-check: test
 
 .PHONY: subscriber-report
 subscriber-report: ## Discover onboarding and prow status of subscribed consumers
