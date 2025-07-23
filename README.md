@@ -360,6 +360,10 @@ Test cases are executed by running `make test`. This must be done on a
 clean git repository; otherwise the tests will not be using your
 uncommitted changes.
 
+You can also run the tests within the context of the docker image this project creates.
+To do this, run `make container-pr-check`, which will build the `config/Dockerfile` image, then
+run `make pr-check` in that context.
+
 Add new test cases by creating executable files in the [test/case](test/case)
 subdirectory. These are discovered and executed in lexicographic order by
 `make test`. Your test case should exit zero to indicate success; nonzero to

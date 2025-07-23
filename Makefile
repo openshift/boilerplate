@@ -1,5 +1,4 @@
 ALLOW_DIRTY_CHECKOUT?=false
-SKIP_IMAGE_TAG_CHECK?=false
 IMG?=boilerplate
 CONTAINER_ENGINE?=$(shell command -v podman 2>/dev/null || echo "docker")
 CHECKOUT=$(shell pwd)
@@ -14,14 +13,14 @@ isclean: ## Validate the local checkout is clean. Use ALLOW_DIRTY_CHECKOUT=true 
 
 .PHONY: test
 test: export GO_COMPLIANCE_INFO = 0
-test: isclean ## Runs tests under the /case directory
+test: ## Runs tests under the /case directory
 	test/driver $(CASE_GLOB)
 
 .PHONY: pr-check
 pr-check: test
 
 .PHONY: container-pr-check
-container-pr-check: build-image-deep
+container-pr-check: build-image-deep # Builds the boilerplate image from your local checkout, mounts boilerplate, then runs 'make pr-check' as it would run in Konflux.
 	$(CONTAINER_ENGINE) run --rm -it -v ${CHECKOUT}:/boilerplate:Z localhost/boilerplate:latest cd boilerplate && make pr-check
 
 .PHONY: subscriber-report
