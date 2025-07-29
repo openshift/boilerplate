@@ -152,26 +152,6 @@ spec:
       workspace: workspace
     - name: basic-auth
       workspace: git-auth
-  - name: prefetch-dependencies
-    params:
-    - name: input
-      value: 'true'
-    runAfter:
-    - clone-repository
-    taskRef:
-      params:
-      - name: name
-        value: prefetch-dependencies
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies:0.2@sha256:848f4d5e592d6c145ba3575f52b88d65be95ad6fbba108b24ff79d766cf5d45d
-      - name: kind
-        value: task
-      resolver: bundles
-    workspaces:
-    - name: source
-      workspace: workspace
-    - name: git-basic-auth
-      workspace: git-auth
   - name: opm-get-bundle-version
     runAfter:
     - prefetch-dependencies
