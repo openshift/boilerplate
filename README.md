@@ -22,9 +22,7 @@ This work was inspired by, and partially cribbed from,
   - [Contributing](#contributing)
     - [Testing Boilerplate Locally](#testing-boilerplate-locally)
     - [Tests](#tests)
-    - [Build Images](#build-images)
-      - [Making CI Efficient](#making-ci-efficient)
-      - [Picking Up (Security) Fixes](#picking-up-security-fixes)
+    - [Creating a Konflux release](#creating-a-konflux-release)
 
 ## Quick Start
 
@@ -371,9 +369,9 @@ indicate failure. The [test/lib.sh](test/lib.sh) library defines convenient
 variables and functions you can use if your test case is written in `bash`.
 See existing test cases for examples.
 
-### Build Images
-If you make a change to the build image produced by boilerplate -- i.e.
-by changing anything in [config/](config/) -- you must:
+### Creating a Konflux release
+If you make a change to the build image produced by boilerplate in `config/Dockerfile`, you must build a new image
+from a tag through Konflux. To build a new image from a tag:
 
 1. Publish a new tag. The tag must be named `image-v{X}.{Y}.{Z}`, using [semver](https://semver.org/)
 principles when deciding what `{X}.{Y}.{Z}` should be. See https://github.com/openshift/boilerplate/pull/180
@@ -387,50 +385,17 @@ for an example.
     git push upstream image-v1.2.3
     ```
 
-    >**NOTE**: You must do the `upstream` push *after* creating your PR. Otherwise, the tagged commit will not exist
-upstream.
-
-2. Import that tag via boilerplate's ImageStream in `openshift/release` by adding an element to the `supplementalCIImages` list in
-[this configuration file](https://github.com/openshift/release/blob/master/core-services/image-mirroring/_config.yaml).
-
-#### Making CI Efficient
-The backing image is built in prow with every commit, even when nothing about it has changed.
-To make this faster, we periodically ratchet the base image (the `FROM` in the [Dockerfile](config/Dockerfile))
-to point to the previously-released image, and clear out the [build script](config/build.sh) to start from that point.
-However, in Konflux we build from scratch (exactly once per `image-v*` tag!).
-
-When the underlying base image changes significantly, the `FROM` directive in [config/Dockerfile](config/Dockerfile)
-may be temporarily changed to the new upstream image. However, as soon as it is stable, a new commit should be made
-to increment the version so that the `FROM` directive is the base image created in step 2. This speeds up CI for
-ourselves and consumers.
-
-For example, let's say that the current base image has Go 1.18, but we need Go 1.19, and
-it's not available in boilerplate:image-v2.Y.Z
-
-1. Update config/Dockerfile
-    ```
-    FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17
-    ```
-2. Then, update the rest of boilerplate accordingly, push a new tag, and mirror the image into openshift/release
-to create boilerplate:image-v3.0.0
-3. Finally, update config/Dockerfile's FROM directive to speed up CI and tag a new version for image-v3.0.1
-    ```
-    FROM registry.ci.openshift.org/openshift/boilerplate:image-v3.0.0
-    ```
-
-#### Creating a Konflux release
-Konflux auto-releasing is disabled requiring manual releasing of each git tag specifically. The below process can be run by a select few people from Cicada and Aurora.
-
-1. Once a new Git tag is pushed (see [above](#build-images)), find the resulting snapshot that contains the newly built artifact:
-    ```shell
-    oc get snapshots -n boilerplate-cicada-tenant --sort-by=.metadata.creationTimestamp
-    ```
 2. Update the `ReleasePlanAdmission` resource [here](https://gitlab.cee.redhat.com/releng/konflux-release-data/-/blob/main/config/stone-prd-rh01.pg1f.p1/service/ReleasePlanAdmission/boilerplate-cicada/boilerplate.yaml?ref_type=heads#L18-23) with your new tag. See this [MR](https://gitlab.cee.redhat.com/releng/konflux-release-data/-/merge_requests/6282) for an example.
 3. Once the above MR merges, wait a bit, then validate the changes have synced to Konflux. You should see your updates in the tags output below:
     ```shell
    oc get releaseplanadmissions -n rhtap-releng-tenant boilerplate -o json | jq .spec.data.mapping.defaults.tags
     ```
-4. Once the `ReleasePlanAdmission` changes are live in the Konflux cluster, create your `Release`:
+    > **⚠️ IMPORTANT:** Do not move on until the above releaseplanadmission matches your changes!
+4. Find the resulting snapshot that contains the newly built artifact. Grab the commit that corresponds to the tag you pushed to filter by.
+    ```shell
+    oc get snapshots -n boilerplate-cicada-tenant -l pac.test.appstudio.openshift.io/sha=$COMMIT
+    ```
+5. Once the `ReleasePlanAdmission` changes are live in the Konflux cluster, create your `Release`:
     ```shell
     apiVersion: appstudio.redhat.com/v1alpha1
     kind: Release
@@ -440,7 +405,7 @@ Konflux auto-releasing is disabled requiring manual releasing of each git tag sp
      releasePlan: boilerplate-releaseplan
      snapshot: <snapshot name> | oc apply -f -
     ```
-5. You can watch the release pipeline in the Konflux UI [here](https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/rhtap-releng-tenant/applications/boilerplate-master).
-6. Once the release is complete, open a PR adding the new image tag to Prow mirroring.
+6. You can watch the release pipeline in the Konflux UI [here](https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/boilerplate-cicada-tenant/applications/boilerplate-master/releases).
+7. Once the release is complete, open a PR adding the new image tag to Prow mirroring.
    - See this [PR](https://github.com/openshift/release/pull/64991) for an example.
    - Reach out in #forum-ocp-testplatform and ask for them to review it.
