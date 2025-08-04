@@ -154,7 +154,7 @@ spec:
       workspace: git-auth
   - name: opm-get-bundle-version
     runAfter:
-    - prefetch-dependencies
+    - clone-repository
     params:
     - name: bundle-image
       value: $(params.operator-bundle-image)
