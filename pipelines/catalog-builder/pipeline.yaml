@@ -332,6 +332,9 @@ spec:
       operator: in
       values:
       - 'false'
+    workspaces:
+    - name: workspace
+      workspace: workspace
   workspaces:
   - name: workspace
   - name: git-auth
