@@ -1,5 +1,5 @@
 FROM quay.io/konflux-ci/yq:latest AS yq
-FROM registry.redhat.io/ubi9:9.6-1751445649 AS builder
+FROM registry.redhat.io/ubi9:9.6 AS builder
 
 ARG GOCILINT_VERSION="2.0.2"
 ARG GOCILINT_SHA256SUM="89cc8a7810dc63b9a37900da03e37c3601caf46d42265d774e0f1a5d883d53e2"
@@ -19,7 +19,7 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
     tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
     mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
 
-FROM registry.redhat.io/ubi9:9.6-1751445649
+FROM registry.redhat.io/ubi9:9.6
 
 RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync && \
     dnf clean all && \
@@ -64,3 +64,6 @@ COPY LICENSE .
 # By setting a XDG_CACHE_HOME value we ensure GOCACHE works without having to customize/set it at
 # runtime. See https://pkg.go.dev/os#UserCacheDir
 ENV XDG_CACHE_HOME=/tmp
+
+# Allow consumers to set a 'toolchain' Go version in their go.mod
+ENV GOTOOLCHAIN=auto

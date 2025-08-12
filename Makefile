@@ -35,7 +35,7 @@ subscriber-report: ## Discover onboarding and prow status of subscribed consumer
 
 .PHONY: build-image-deep
 build-image-deep: ## Builds the image from scratch, like appsre does. May require ALLOW_DIRTY_CHECKOUT=true if testing
-	$(CONTAINER_ENGINE) build -t $(IMG):latest -f config/Dockerfile .
+	$(CONTAINER_ENGINE) build --no-cache -t $(IMG):latest -f config/Dockerfile .
 
 .DEFAULT_GOAL := help
 .PHONY: help
