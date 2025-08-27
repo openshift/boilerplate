@@ -3,7 +3,6 @@ reviewers:
 - srep-functional-leads
 - srep-team-leads
 - xiaoyu74
-- mmazur
 - jbpratt
 - joshbranham
 approvers:
@@ -11,7 +10,6 @@ approvers:
 - srep-functional-leads
 - srep-team-leads
 - bdematte
-- mmazur
 - joshbranham
 maintainers:
 - srep-functional-leads
