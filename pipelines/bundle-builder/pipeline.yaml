@@ -221,7 +221,7 @@ spec:
       - name: name
         value: buildah
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.4@sha256:1cb48a2fcd1b06a60b5a79e9157122f21903dec89782c702014f76717a0bbbb5
+        value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.4@sha256:21d842604d5fda0b0f131c6d84395091f15bc79cca55132ab03b87b0e40842a6
       - name: kind
         value: task
       resolver: bundles
@@ -290,7 +290,7 @@ spec:
       - name: name
         value: sast-snyk-check
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-sast-snyk-check:0.4@sha256:351f2dce893159b703e9b6d430a2450b3df9967cb9bd3adb46852df8ccfe4c0d
+        value: quay.io/konflux-ci/tekton-catalog/task-sast-snyk-check:0.4@sha256:0fcf74b45da5cb04b0aacf7bc2a2a43d08f846ffda3beabe6caa627450ce0257
       - name: kind
         value: task
       resolver: bundles
