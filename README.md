@@ -391,21 +391,32 @@ for an example.
    oc get releaseplanadmissions -n rhtap-releng-tenant boilerplate -o json | jq .spec.data.mapping.defaults.tags
     ```
     > **⚠️ IMPORTANT:** Do not move on until the above releaseplanadmission matches your changes!
-4. Find the resulting snapshot that contains the newly built artifact. Grab the commit that corresponds to the tag you pushed to filter by.
+
+4. If needed, login to the Konflux cluster for Boilerplate
+    ```shell
+    oc login --web https://api.stone-prd-rh01.pg1f.p1.openshiftapps.com:6443/
+    ```
+5. Find the resulting snapshot that contains the newly built artifact. Grab the commit that corresponds to the tag you pushed to filter by.
     ```shell
     oc get snapshots -n boilerplate-cicada-tenant -l pac.test.appstudio.openshift.io/sha=$COMMIT
     ```
-5. Once the `ReleasePlanAdmission` changes are live in the Konflux cluster, create your `Release`:
+6. Once the `ReleasePlanAdmission` changes are live in the Konflux cluster, create your `Release`:
+    - Setup variables needed for the `Release` (not the `v` is prefixing the version):
+     ```shell
+    export BOILERPLATE_VERSION=vX.Y.Z
+    export BOILERPLATE_SNAPSHOT=$snapshotname
+     ```
+    - Create the `Release`:
     ```shell
-    apiVersion: appstudio.redhat.com/v1alpha1
+    echo "apiVersion: appstudio.redhat.com/v1alpha1
     kind: Release
     metadata:
-     name: image-v${version}
+     name: image-${BOILERPLATE_VERSION}
     spec:
      releasePlan: boilerplate-releaseplan
-     snapshot: <snapshot name> | oc apply -f -
+     snapshot: ${BOILERPLATE_SNAPSHOT}" | oc apply -f -
     ```
-6. You can watch the release pipeline in the Konflux UI [here](https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/boilerplate-cicada-tenant/applications/boilerplate-master/releases).
-7. Once the release is complete, open a PR adding the new image tag to Prow mirroring.
+7. You can watch the release pipeline in the Konflux UI [here](https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/boilerplate-cicada-tenant/applications/boilerplate-master/releases).
+8. Once the release is complete, open a PR adding the new image tag to Prow mirroring.
    - See this [PR](https://github.com/openshift/release/pull/64991) for an example.
    - Reach out in #forum-ocp-testplatform and ask for them to review it.
