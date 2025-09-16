@@ -29,5 +29,6 @@
     ]
   },
   "dependencyDashboard": true,
-  "semanticCommits": "enabled"
+  "semanticCommits": "enabled",
+  "rebaseLabel": "needs-rebase"
 }
