@@ -117,7 +117,7 @@ if [ -d "$TEKTON_DIR" ]; then
 		if [ -f "$pipeline_file" ] && grep -q buildah "${pipeline_file}" && ! grep -q "pipelineRef:" "$pipeline_file"; then
 			echo "Centralizing pipeline: $(basename "$pipeline_file")"
 			# Remove everything from pipelineSpec: to the end of spec section
-			sed -i '/pipelineSpec:/,$d' "$pipeline_file"
+			${SED?} -i '/pipelineSpec:/,$d' "$pipeline_file"
 			cat >>"$pipeline_file" <<EOF
   pipelineRef:
     resolver: git
