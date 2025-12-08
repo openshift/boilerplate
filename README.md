@@ -386,22 +386,21 @@ for an example.
     ```
 
 2. Update the `ReleasePlanAdmission` resource [here](https://gitlab.cee.redhat.com/releng/konflux-release-data/-/blob/main/config/stone-prd-rh01.pg1f.p1/service/ReleasePlanAdmission/boilerplate-cicada/boilerplate.yaml?ref_type=heads#L18-23) with your new tag. See this [MR](https://gitlab.cee.redhat.com/releng/konflux-release-data/-/merge_requests/6282) for an example.
-3. Once the above MR merges, wait a bit, then validate the changes have synced to Konflux. You should see your updates in the tags output below:
+3. If needed, login to the Konflux cluster for Boilerplate
+```shell
+oc login --web https://api.stone-prd-rh01.pg1f.p1.openshiftapps.com:6443/
+```
+4. Once the above MR merges, wait a bit, then validate the changes have synced to Konflux. You should see your updates in the tags output below:
     ```shell
    oc get releaseplanadmissions -n rhtap-releng-tenant boilerplate -o json | jq .spec.data.mapping.defaults.tags
     ```
     > **⚠️ IMPORTANT:** Do not move on until the above releaseplanadmission matches your changes!
-
-4. If needed, login to the Konflux cluster for Boilerplate
-    ```shell
-    oc login --web https://api.stone-prd-rh01.pg1f.p1.openshiftapps.com:6443/
-    ```
 5. Find the resulting snapshot that contains the newly built artifact. Grab the commit that corresponds to the tag you pushed to filter by.
     ```shell
     oc get snapshots -n boilerplate-cicada-tenant -l pac.test.appstudio.openshift.io/sha=$COMMIT
     ```
 6. Once the `ReleasePlanAdmission` changes are live in the Konflux cluster, create your `Release`:
-    - Setup variables needed for the `Release` (not the `v` is prefixing the version):
+    - Setup variables needed for the `Release` (note the `v` is prefixing the version):
      ```shell
     export BOILERPLATE_VERSION=vX.Y.Z
     export BOILERPLATE_SNAPSHOT=$snapshotname
@@ -412,6 +411,7 @@ for an example.
     kind: Release
     metadata:
      name: image-${BOILERPLATE_VERSION}
+     namespace: boilerplate-cicada-tenant
     spec:
      releasePlan: boilerplate-releaseplan
      snapshot: ${BOILERPLATE_SNAPSHOT}" | oc apply -f -
