@@ -8,7 +8,7 @@ fi
 REPO_ROOT=$(git rev-parse --show-toplevel)
 source $REPO_ROOT/boilerplate/_lib/common.sh
 
-GOLANGCI_LINT_VERSION="2.0.2"
+GOLANGCI_LINT_VERSION="2.7.2"
 DEPENDENCY=${1:-}
 GOOS=$(go env GOOS)
 
