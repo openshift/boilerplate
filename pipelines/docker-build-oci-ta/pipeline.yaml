@@ -85,6 +85,10 @@ spec:
       default: docker
       type: string
       description: The format for the resulting image's mediaType. Valid values are oci or docker.
+    - name: skip-preflight-cert-check
+      default: "false"
+      type: string
+      description: Skip the preflight cert-check. This can required for scratch images. Valid values are false and true.
   results:
     - description: ""
       name: IMAGE_URL
@@ -338,6 +342,10 @@ spec:
         resolver: bundles
       when:
         - input: $(params.skip-checks)
+          operator: in
+          values:
+            - "false"
+        - input: $(params.skip-preflight-cert-check)
           operator: in
           values:
             - "false"
