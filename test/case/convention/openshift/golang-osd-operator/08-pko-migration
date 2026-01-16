@@ -1,0 +1,264 @@
+#!/usr/bin/env bash
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+source "${REPO_ROOT}/test/lib.sh"
+
+echo "Testing PKO migration script"
+
+# Create a test repository
+repo="$(empty_repo)"
+add_cleanup "${repo}"
+
+# Bootstrap with a minimal operator project
+cd "${repo}"
+
+# Create a minimal operator structure
+mkdir -p deploy build .tekton
+
+# Create sample OLM manifests
+cat > deploy/crd.yaml <<'EOF'
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tests.example.com
+spec:
+  group: example.com
+  names:
+    kind: Test
+    plural: tests
+EOF
+
+cat > deploy/serviceaccount.yaml <<'EOF'
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-operator
+  namespace: openshift-test-operator
+EOF
+
+cat > deploy/clusterrole.yaml <<'EOF'
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: test-operator
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+EOF
+
+cat > deploy/deployment.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-operator
+  namespace: openshift-test-operator
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: operator
+        image: quay.io/openshift/test-operator:v1.0.0
+EOF
+
+cat > deploy/service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-operator
+  namespace: openshift-test-operator
+spec:
+  ports:
+  - port: 8443
+EOF
+
+# Commit the manifests
+git add -A
+git commit -m "Add OLM manifests"
+
+echo "Running PKO migration script"
+
+# Run the migration script with -y flag to skip prompts
+python3 "${REPO_ROOT}/boilerplate/openshift/golang-osd-operator/olm_pko_migration.py" \
+    -f deploy \
+    -o deploy_pko \
+    --no-tekton \
+    --no-dockerfile \
+    -y
+
+# Verify output directory was created
+if [[ ! -d deploy_pko ]]; then
+    err "PKO output directory 'deploy_pko' was not created"
+fi
+
+echo "Checking generated PKO manifests"
+
+# Check for PackageManifest
+if [[ ! -f deploy_pko/manifest.yaml ]]; then
+    err "PackageManifest was not created"
+fi
+
+# Verify PackageManifest structure
+if ! grep -q "kind: PackageManifest" deploy_pko/manifest.yaml; then
+    err "PackageManifest does not have correct kind"
+fi
+
+if ! grep -q "apiVersion: manifests.package-operator.run/v1alpha1" deploy_pko/manifest.yaml; then
+    err "PackageManifest does not have correct apiVersion"
+fi
+
+# Check that phases are defined
+for phase in crds namespace rbac deploy cleanup-rbac cleanup-deploy; do
+    if ! grep -q "name: ${phase}" deploy_pko/manifest.yaml; then
+        err "PackageManifest missing phase: ${phase}"
+    fi
+done
+
+echo "Checking CRD annotation"
+# CRD should have crds phase
+if [[ ! -f deploy_pko/CustomResourceDefinition-tests.example.com.yaml ]]; then
+    err "CRD was not converted"
+fi
+
+if ! grep -q "package-operator.run/phase: crds" deploy_pko/CustomResourceDefinition-tests.example.com.yaml; then
+    err "CRD does not have correct phase annotation"
+fi
+
+if ! grep -q "package-operator.run/collision-protection: IfNoController" deploy_pko/CustomResourceDefinition-tests.example.com.yaml; then
+    err "CRD does not have collision protection annotation"
+fi
+
+echo "Checking RBAC annotations"
+# ServiceAccount and ClusterRole should have rbac phase
+if [[ ! -f deploy_pko/ServiceAccount-test-operator.yaml ]]; then
+    err "ServiceAccount was not converted"
+fi
+
+if ! grep -q "package-operator.run/phase: rbac" deploy_pko/ServiceAccount-test-operator.yaml; then
+    err "ServiceAccount does not have correct phase annotation"
+fi
+
+if [[ ! -f deploy_pko/ClusterRole-test-operator.yaml ]]; then
+    err "ClusterRole was not converted"
+fi
+
+if ! grep -q "package-operator.run/phase: rbac" deploy_pko/ClusterRole-test-operator.yaml; then
+    err "ClusterRole does not have correct phase annotation"
+fi
+
+echo "Checking Deployment conversion"
+# Deployment should have deploy phase and .gotmpl extension
+deployment_file=$(find deploy_pko -name "Deployment-*.yaml.gotmpl" | head -n1)
+if [[ -z "$deployment_file" ]]; then
+    err "Deployment was not converted or does not have .gotmpl extension"
+fi
+
+if ! grep -q "package-operator.run/phase: deploy" "$deployment_file"; then
+    err "Deployment does not have correct phase annotation"
+fi
+
+# Check that image was templated
+if ! grep -q "image: '{{ .config.image }}'" "$deployment_file"; then
+    err "Deployment image was not templated"
+fi
+
+# Original image should not be present
+if grep -q "quay.io/openshift/test-operator:v1.0.0" "$deployment_file"; then
+    err "Deployment still contains hardcoded image"
+fi
+
+echo "Checking Service annotation"
+if [[ ! -f deploy_pko/Service-test-operator.yaml ]]; then
+    err "Service was not converted"
+fi
+
+if ! grep -q "package-operator.run/phase: deploy" deploy_pko/Service-test-operator.yaml; then
+    err "Service does not have correct phase annotation"
+fi
+
+echo "Checking cleanup Job template"
+if [[ ! -f deploy_pko/Cleanup-OLM-Job.yaml ]]; then
+    err "Cleanup Job template was not created"
+fi
+
+# Verify cleanup job has correct phases
+if ! grep -q "package-operator.run/phase: cleanup-rbac" deploy_pko/Cleanup-OLM-Job.yaml; then
+    err "Cleanup resources missing cleanup-rbac phase"
+fi
+
+if ! grep -q "package-operator.run/phase: cleanup-deploy" deploy_pko/Cleanup-OLM-Job.yaml; then
+    err "Cleanup Job missing cleanup-deploy phase"
+fi
+
+# Verify cleanup job structure (ServiceAccount, Role, RoleBinding, Job)
+for kind in ServiceAccount Role RoleBinding Job; do
+    if ! grep -q "kind: ${kind}" deploy_pko/Cleanup-OLM-Job.yaml; then
+        err "Cleanup template missing ${kind}"
+    fi
+done
+
+echo "Testing recursive vs non-recursive mode"
+
+# Create subdirectory with additional manifest
+mkdir -p deploy/crds
+cat > deploy/crds/another-crd.yaml <<'EOF'
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: others.example.com
+spec:
+  group: example.com
+EOF
+
+# Test non-recursive (should not pick up subdirectory)
+python3 "${REPO_ROOT}/boilerplate/openshift/golang-osd-operator/olm_pko_migration.py" \
+    -f deploy \
+    -o deploy_pko_nonrecursive \
+    --no-recursive \
+    --no-tekton \
+    --no-dockerfile \
+    -y
+
+# Should not have the CRD from subdirectory
+if [[ -f deploy_pko_nonrecursive/CustomResourceDefinition-others.example.com.yaml ]]; then
+    err "Non-recursive mode included files from subdirectory"
+fi
+
+# Test recursive (should pick up subdirectory)
+python3 "${REPO_ROOT}/boilerplate/openshift/golang-osd-operator/olm_pko_migration.py" \
+    -f deploy \
+    -o deploy_pko_recursive \
+    --no-tekton \
+    --no-dockerfile \
+    -y
+
+# Should have the CRD from subdirectory
+if [[ ! -f deploy_pko_recursive/CustomResourceDefinition-others.example.com.yaml ]]; then
+    err "Recursive mode did not include files from subdirectory"
+fi
+
+echo "Testing ClusterPackage template generation"
+
+# Check for ClusterPackage template
+if [[ ! -f hack/pko/clusterpackage.yaml ]]; then
+    err "ClusterPackage template was not created"
+fi
+
+# Verify ClusterPackage template content
+if ! grep -q "kind: Template" hack/pko/clusterpackage.yaml; then
+    err "ClusterPackage file is not a Template"
+fi
+
+if ! grep -q "kind: SelectorSyncSet" hack/pko/clusterpackage.yaml; then
+    err "ClusterPackage template missing SelectorSyncSet"
+fi
+
+if ! grep -q "kind: ClusterPackage" hack/pko/clusterpackage.yaml; then
+    err "ClusterPackage template missing ClusterPackage resource"
+fi
+
+colorprint ${GREEN} "All PKO migration tests passed!"
