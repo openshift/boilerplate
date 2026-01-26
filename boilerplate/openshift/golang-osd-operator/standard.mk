@@ -98,14 +98,11 @@ GOBIN?=$(shell go env GOBIN)
 unexport GOFLAGS
 GOFLAGS_MOD ?=
 
-GOENV+=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=1 GOFLAGS="${GOFLAGS_MOD}"
+GOENV+=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 GOFLAGS="${GOFLAGS_MOD}"
 GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPATH}"
 
 ifeq (${FIPS_ENABLED}, true)
-GOFLAGS_MOD+=-tags=fips_enabled
-GOFLAGS_MOD:=$(strip ${GOFLAGS_MOD})
-$(warning Setting GOEXPERIMENT=boringcrypto - this generally causes builds to fail unless building inside the provided Dockerfile. If building locally consider calling 'go build .')
-GOENV+=GOEXPERIMENT=boringcrypto
+GOENV+=GODEBUG=fips140=on
 GOENV:=$(strip ${GOENV})
 endif
 
@@ -237,10 +234,6 @@ endif
 .PHONY: generate
 generate: op-generate go-generate openapi-generate manifests
 
-ifeq (${FIPS_ENABLED}, true)
-go-build: ensure-fips
-endif
-
 .PHONY: go-build
 go-build: ## Build binary
 	${GOENV} go build ${GOBUILDFLAGS} -o build/_output/bin/$(OPERATOR_NAME) .
@@ -341,10 +334,6 @@ opm-build-push: python-venv docker-push
 	OPERATOR_IMAGE_TAG="${OPERATOR_IMAGE_TAG}" \
 	OLM_CHANNEL="${OLM_CHANNEL}" \
 	${CONVENTION_DIR}/build-opm-catalog.sh
-
-.PHONY: ensure-fips
-ensure-fips:
-	${CONVENTION_DIR}/configure-fips.sh
 
 # You will need to export the forked/cloned operator repository directory as OLD_SDK_REPO_DIR to make this work.
 # Example: export OLD_SDK_REPO_DIR=~/Projects/My-Operator-Fork
