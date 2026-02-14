@@ -203,7 +203,7 @@ spec:
       - name: name
         value: buildah
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.8@sha256:8b004faed787981488e3e72c88f063eb5ab2e2565c8b590e2e02348999a91d97
+        value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.8@sha256:28bfa1ee5f516eb37a93e3f7c5c28dc3106e8e018533ffa2ca1d2290c8be82c1
       - name: kind
         value: task
       resolver: bundles
@@ -244,7 +244,7 @@ spec:
       - name: name
         value: push-dockerfile
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-push-dockerfile:0.1@sha256:60f10711f78fa5262d2c44ae17fc2968d3aa813a3526e427f272da5c9f984de5
+        value: quay.io/konflux-ci/tekton-catalog/task-push-dockerfile:0.1@sha256:6ac48e8f499553eec5f201848aa275dead47b8f3493dc68eeb74fc8c43c7871f
       - name: kind
         value: task
       resolver: bundles
