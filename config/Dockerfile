@@ -1,5 +1,5 @@
 FROM quay.io/konflux-ci/yq:latest AS yq
-FROM registry.access.redhat.com/ubi9:9.7-1770627119 AS builder
+FROM registry.access.redhat.com/ubi9:9.7-1771346757 AS builder
 
 ARG GOCILINT_VERSION="2.7.2"
 ARG GOCILINT_SHA256SUM="ce46a1f1d890e7b667259f70bb236297f5cf8791a9b6b98b41b283d93b5b6e88"
@@ -19,7 +19,7 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
     tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
     mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
 
-FROM registry.access.redhat.com/ubi9:9.7-1770627119
+FROM registry.access.redhat.com/ubi9:9.7-1771346757
 
 RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync && \
     dnf clean all && \
