@@ -203,7 +203,7 @@ spec:
       - name: name
         value: buildah
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.8@sha256:28bfa1ee5f516eb37a93e3f7c5c28dc3106e8e018533ffa2ca1d2290c8be82c1
+        value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.8@sha256:4d0ccdc2d600876efd281f28a19f36361cc34a179595b70675a020431f1105b4
       - name: kind
         value: task
       resolver: bundles
@@ -286,7 +286,7 @@ spec:
       - name: name
         value: validate-fbc
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-validate-fbc:0.1@sha256:9d3357bdbe3ff76fdc115f3218a1a35ee257712ea2c1a03af62706ff296465dd
+        value: quay.io/konflux-ci/tekton-catalog/task-validate-fbc:0.1@sha256:3a9162ef0b026bfc63384376e0eb5a0ee452c3be73942601b0f2c69e39def58f
       - name: kind
         value: task
       resolver: bundles
