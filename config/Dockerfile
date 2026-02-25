@@ -29,7 +29,7 @@ RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync
 ARG KUSTOMIZE_VERSION="v5.6.0" \
     CONTROLLER_GEN_VERSION="v0.16.4" \
     OPENAPI_GEN_VERSION="v0.29.15" \
-    ENVTEST_VERSION="release-0.18" \
+    ENVTEST_VERSION="release-0.23" \
     GOVULNCHECK_VERSION="v1.1.4" \
     MOCKGEN_VERSION="v0.4.0"
 
