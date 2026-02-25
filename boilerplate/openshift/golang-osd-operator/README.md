@@ -121,9 +121,7 @@ Checks consist of:
 
 ## FIPS (Federal Information Processing Standards)
 
-To enable FIPS in your build there is a `make ensure-fips` target.
-
-Add `FIPS_ENABLED=true` to your repos Makefile. Please ensure that this variable is added **before** including boilerplate Makefiles.
+To enable FIPS in your build, add `FIPS_ENABLED=true` to your repo's Makefile. Please ensure that this variable is added **before** including boilerplate Makefiles.
 
 e.g.
 
@@ -133,11 +131,7 @@ FIPS_ENABLED=true
 include boilerplate/generated-includes.mk
 ```
 
-`ensure-fips` will add a [fips.go](./fips.go) file in the same directory as the `main.go` file. (Please commit this file as normal)
-
-`fips.go` will import the necessary packages to restrict all TLS configuration to FIPS-approved settings.
-
-With `FIPS_ENABLED=true`, `ensure-fips` is always run before `make go-build`
+FIPS is enabled via the `fips140=on` GODEBUG option. See https://go.dev/blog/fips140 for more details.
 
 ## Additional deployment support
 
@@ -145,7 +139,7 @@ With `FIPS_ENABLED=true`, `ensure-fips` is always run before `make go-build`
 - If an additional deployment image has to be built and appended to the CSV as part of the build process, then the consumer needs to:
   - Specify `SupplementaryImage` which is the deployment name in the consuming repository's `config/config.go`.
   - Define the image to be built as `ADDITIONAL_IMAGE_SPECS` in the consuming repository's Makefile, Boilerplate later parses this image as part of the build process; [ref](https://github.com/openshift/boilerplate/blob/master/boilerplate/openshift/golang-osd-operator/standard.mk#L56).
-  
+
   e.g.
 
     ```.mk
