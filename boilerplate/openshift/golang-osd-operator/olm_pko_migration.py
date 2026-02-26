@@ -162,7 +162,6 @@ metadata:
     package-operator.run/phase: cleanup-deploy
     package-operator.run/collision-protection: IfNoController
 spec:
-  ttlSecondsAfterFinished: 100
   template:
     metadata:
       annotations:
