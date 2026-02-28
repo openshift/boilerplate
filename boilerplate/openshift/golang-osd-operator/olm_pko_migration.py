@@ -45,7 +45,7 @@ metadata:
     appstudio.openshift.io/application: {operator_name}
     appstudio.openshift.io/component: {operator_name}-pko
     pipelines.appstudio.openshift.io/type: build
-  name: {operator_name}-pko-on-{event}
+  name: {operator_name}-pko-on-{event_name}
   namespace: {operator_name}-tenant
 spec:
   params:
@@ -659,6 +659,7 @@ def write_tekton_pipelines():
                 github_url = operator_upstream,
                 cancel_in_progress = "false",
                 event = "push",
+                event_name = "push",
                 image_tag = "{{revision}}",
                 additional_params = "",
                 default_branch = default_branch,
@@ -678,6 +679,7 @@ def write_tekton_pipelines():
                 github_url = operator_upstream,
                 cancel_in_progress = "true",
                 event = "pull_request",
+                event_name = "pull-request",
                 image_tag = "on-pr-{{revision}}",
                 additional_params = pr_additional_params,
                 default_branch = default_branch,
