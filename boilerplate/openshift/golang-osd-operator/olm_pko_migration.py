@@ -201,6 +201,8 @@ kind: Template
 parameters:
   - name: CHANNEL
     required: false
+  - name: OPERATOR_IMAGE
+    required: true
   - name: PKO_IMAGE
     required: true
   - name: IMAGE_TAG
