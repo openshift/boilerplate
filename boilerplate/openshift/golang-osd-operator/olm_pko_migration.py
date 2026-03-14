@@ -627,12 +627,12 @@ def write_pko_dockerfile():
             )
         )
 
-def extract_deployment_selector() -> str | None:
+def extract_deployment_selector() -> dict[str, Any] | None:
     """
     Extract the clusterDeploymentSelector from hack/olm-registry/olm-artifacts-template.yaml.
 
     Returns:
-        A YAML string containing the clusterDeploymentSelector, or None if file doesn't exist
+        A dictionary containing the clusterDeploymentSelector, or None if file doesn't exist
         or selector cannot be extracted.
     """
     olm_template_path = Path("./hack/olm-registry/olm-artifacts-template.yaml")
@@ -659,13 +659,7 @@ def extract_deployment_selector() -> str | None:
                 continue
             spec = obj.get("spec", {})
             if "clusterDeploymentSelector" in spec:
-                # Convert the selector back to YAML format with proper indentation
-                selector = spec["clusterDeploymentSelector"]
-                # Dump with proper indentation for inserting into template
-                selector_yaml = yaml.dump(selector, default_flow_style=False, sort_keys=False)
-                # Indent each line by 6 spaces (to match template indentation)
-                indented_lines = ["      " + line for line in selector_yaml.splitlines()]
-                return "\n".join(indented_lines)
+                return spec["clusterDeploymentSelector"]
 
         return None
 
@@ -680,27 +674,35 @@ def write_clusterpackage_template():
     pko_hack_folder = Path("./hack/pko")
     pko_hack_folder.mkdir(parents=True, exist_ok=True)
 
-    # Try to extract deployment selector from existing OLM template
-    deployment_selector = extract_deployment_selector()
-
     clusterpackage_file = pko_hack_folder / "clusterpackage.yaml"
     print(f"Writing ClusterPackage template to {clusterpackage_file}")
 
+    # Parse the template as YAML
+    template_content = CLUSTERPACKAGE_TEMPLATE.format(operator_name=operator_name)
+    template_dict = yaml.safe_load(template_content)
+
+    # Try to extract deployment selector from existing OLM template
+    deployment_selector = extract_deployment_selector()
+
     if deployment_selector:
         print("✓ Using clusterDeploymentSelector from hack/olm-registry/olm-artifacts-template.yaml")
-        # Create template with extracted selector
-        template_with_selector = CLUSTERPACKAGE_TEMPLATE.replace(
-            "      clusterDeploymentSelector:\n        matchLabels:\n          api.openshift.com/managed: \"true\"",
-            f"      clusterDeploymentSelector:\n{deployment_selector}"
-        )
-        with open(clusterpackage_file, "w") as f:
-            f.write(template_with_selector.format(operator_name=operator_name))
-        print(f"Please review this file and ensure the deployment targets match your expectation")
+        # Navigate to the SelectorSyncSet spec and update the clusterDeploymentSelector
+        if (isinstance(template_dict, dict) and
+            "objects" in template_dict and
+            isinstance(template_dict["objects"], list) and
+            len(template_dict["objects"]) > 0):
+
+            selector_sync_set = template_dict["objects"][0]
+            if "spec" in selector_sync_set:
+                selector_sync_set["spec"]["clusterDeploymentSelector"] = deployment_selector
     else:
         print("⚠ Using default clusterDeploymentSelector (hack/olm-registry/olm-artifacts-template.yaml not found)")
-        print(f"Please review this file and ensure the deployment targets match your expectation")
-        with open(clusterpackage_file, "w") as f:
-            f.write(CLUSTERPACKAGE_TEMPLATE.format(operator_name=operator_name))
+
+    print(f"Please review this file and ensure the deployment targets match your expectation")
+
+    # Write the complete template as YAML
+    with open(clusterpackage_file, "w") as f:
+        yaml.dump(template_dict, f, default_flow_style=False, sort_keys=False)
 
 
 def write_tekton_pipelines():
