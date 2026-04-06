@@ -119,6 +119,16 @@ Checks consist of:
 - `go generate`. This is a no-op if you have no `//go:generate`
   directives in your code.
 
+## PKO (Package Operator) fixture validation
+
+Operators deployed via [Package Operator](https://package-operator.run/) can define snapshot test fixtures that validate `.gotmpl` template rendering. If `deploy_pko/manifest.yaml` exists and contains a `test:` section, the following targets are available:
+
+- `make validate-pko-fixtures` validates that committed fixtures in `deploy_pko/.test-fixtures/` match the current template output. This runs automatically as part of `make validate` (and therefore `make container-validate`). Repos without PKO test fixtures are silently skipped.
+- `make generate-pko-fixtures` regenerates fixtures after intentional changes to `.gotmpl` files or `manifest.yaml` config. Review the diff and commit the updated fixtures alongside the template changes.
+- `make container-generate-pko-fixtures` runs fixture generation inside the boilerplate backing container, which has `kubectl-package` pre-installed. Useful if you don't have `kubectl-package` installed locally.
+
+Both targets require `kubectl-package`. If it is not found, the target fails with installation instructions. The backing container image includes `kubectl-package`, so `make container-validate` and `make container-generate-pko-fixtures` always work.
+
 ## FIPS (Federal Information Processing Standards)
 
 To enable FIPS in your build there is a `make ensure-fips` target.

@@ -309,10 +309,53 @@ prow-config:
 # Targets used by prow
 ######################
 
+# validate-pko-fixtures: Validate PKO package templates against committed snapshot fixtures.
+# Silently skips if deploy_pko/ has no manifest.yaml with a test section.
+# Requires kubectl-package; see https://github.com/package-operator/package-operator/releases
+.PHONY: validate-pko-fixtures
+validate-pko-fixtures:
+	@if [ -d deploy_pko ] && grep -q '^test:' deploy_pko/manifest.yaml 2>/dev/null; then \
+		if ! command -v kubectl-package >/dev/null 2>&1; then \
+			echo "ERROR: kubectl-package is not installed." >&2; \
+			echo "Install it from: https://github.com/package-operator/package-operator/releases" >&2; \
+			echo "Example: curl -L -o /usr/local/bin/kubectl-package https://github.com/package-operator/package-operator/releases/download/v1.18.6/kubectl-package_linux_amd64 && chmod +x /usr/local/bin/kubectl-package" >&2; \
+			exit 1; \
+		fi; \
+		echo "Validating PKO package fixtures..."; \
+		kubectl-package validate deploy_pko/ || \
+			(echo "ERROR: PKO fixture validation failed. Rendered templates do not match committed fixtures." >&2; \
+			 echo "If you intentionally changed a deploy_pko/ .gotmpl or manifest.yaml config, regenerate fixtures:" >&2; \
+			 echo "  make generate-pko-fixtures" >&2; \
+			 echo "  git diff deploy_pko/.test-fixtures/" >&2; \
+			 echo "Review the diff to confirm only your intended changes are reflected, then commit the updated fixtures." >&2; \
+			 echo "If you did NOT intend to change template output, your modifications may have introduced an unintended" >&2; \
+			 echo "regression in the rendered deployment manifests. Review your changes to deploy_pko/ carefully." >&2; \
+			 exit 1); \
+	fi
+
+# generate-pko-fixtures: Regenerate PKO snapshot fixtures after template changes.
+# Requires kubectl-package; see https://github.com/package-operator/package-operator/releases
+.PHONY: generate-pko-fixtures
+generate-pko-fixtures:
+	@if [ -d deploy_pko ] && grep -q '^test:' deploy_pko/manifest.yaml 2>/dev/null; then \
+		if ! command -v kubectl-package >/dev/null 2>&1; then \
+			echo "ERROR: kubectl-package is not installed." >&2; \
+			echo "Install it from: https://github.com/package-operator/package-operator/releases" >&2; \
+			echo "Example: curl -L -o /usr/local/bin/kubectl-package https://github.com/package-operator/package-operator/releases/download/v1.18.6/kubectl-package_linux_amd64 && chmod +x /usr/local/bin/kubectl-package" >&2; \
+			exit 1; \
+		fi; \
+		echo "Regenerating PKO test fixtures..."; \
+		rm -rf deploy_pko/.test-fixtures; \
+		kubectl-package validate deploy_pko/; \
+		echo "Fixtures regenerated. Review with 'git diff deploy_pko/.test-fixtures/' and commit."; \
+	else \
+		echo "No PKO test configuration found in deploy_pko/manifest.yaml, nothing to generate."; \
+	fi
+
 # validate: Ensure code generation has not been forgotten; and ensure
 # generated and boilerplate code has not been modified.
 .PHONY: validate
-validate: boilerplate-freeze-check generate-check
+validate: boilerplate-freeze-check generate-check validate-pko-fixtures
 
 # lint: Perform static analysis.
 .PHONY: lint
@@ -395,6 +438,10 @@ container-validate:
 .PHONY: container-coverage
 container-coverage:
 	${BOILERPLATE_CONTAINER_MAKE} coverage
+
+.PHONY: container-generate-pko-fixtures
+container-generate-pko-fixtures:
+	${BOILERPLATE_CONTAINER_MAKE} generate-pko-fixtures
 
 # Run all container-* validation targets in sequence.
 # Set NONINTERACTIVE=true to skip debug shells and fail fast for CI/automation.
