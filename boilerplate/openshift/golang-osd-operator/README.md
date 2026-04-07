@@ -129,6 +129,8 @@ Operators deployed via [Package Operator](https://package-operator.run/) can def
 
 Both targets require `kubectl-package`. If it is not found, the target fails with installation instructions. The backing container image includes `kubectl-package`, so `make container-validate` and `make container-generate-pko-fixtures` always work.
 
+**Important:** Buildah's `COPY *` includes dotfiles and dotdirs (contrary to standard glob behavior), so `deploy_pko/.test-fixtures/` will be included in the PKO OCI image unless excluded. `make generate-pko-fixtures` automatically creates a `deploy_pko/.dockerignore` with `.test-fixtures` to prevent this. `make validate-pko-fixtures` verifies the exclusion exists. Without it, PKO will see duplicate objects and fail to deploy the ClusterPackage.
+
 ## FIPS (Federal Information Processing Standards)
 
 To enable FIPS in your build there is a `make ensure-fips` target.

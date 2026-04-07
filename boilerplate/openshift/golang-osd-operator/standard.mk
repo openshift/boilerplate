@@ -331,6 +331,25 @@ validate-pko-fixtures:
 			 echo "If you did NOT intend to change template output, your modifications may have introduced an unintended" >&2; \
 			 echo "regression in the rendered deployment manifests. Review your changes to deploy_pko/ carefully." >&2; \
 			 exit 1); \
+		if [ -d deploy_pko/.test-fixtures ]; then \
+			ignore_file=""; \
+			if [ -f deploy_pko/.containerignore ]; then \
+				ignore_file="deploy_pko/.containerignore"; \
+			elif [ -f deploy_pko/.dockerignore ]; then \
+				ignore_file="deploy_pko/.dockerignore"; \
+			fi; \
+			if [ -z "$$ignore_file" ]; then \
+				echo "ERROR: deploy_pko/.test-fixtures/ exists but no .dockerignore or .containerignore found in deploy_pko/." >&2; \
+				echo "Without it, test fixtures will be included in the PKO OCI image, causing Duplicate Object errors." >&2; \
+				echo "Fix: run 'make generate-pko-fixtures' to auto-create deploy_pko/.dockerignore" >&2; \
+				exit 1; \
+			elif ! grep -q '\.test-fixtures' "$$ignore_file"; then \
+				echo "ERROR: $$ignore_file exists but does not exclude .test-fixtures." >&2; \
+				echo "Without this exclusion, test fixtures will be included in the PKO OCI image." >&2; \
+				echo "Fix: add '.test-fixtures' to $$ignore_file" >&2; \
+				exit 1; \
+			fi; \
+		fi; \
 	fi
 
 # generate-pko-fixtures: Regenerate PKO snapshot fixtures after template changes.
@@ -347,6 +366,16 @@ generate-pko-fixtures:
 		echo "Regenerating PKO test fixtures..."; \
 		rm -rf deploy_pko/.test-fixtures; \
 		kubectl-package validate deploy_pko/; \
+		if [ ! -f deploy_pko/.dockerignore ] && [ ! -f deploy_pko/.containerignore ]; then \
+			echo ".test-fixtures" > deploy_pko/.dockerignore; \
+			echo "Created deploy_pko/.dockerignore to exclude .test-fixtures from PKO image."; \
+		elif [ -f deploy_pko/.dockerignore ] && ! grep -q '\.test-fixtures' deploy_pko/.dockerignore; then \
+			echo ".test-fixtures" >> deploy_pko/.dockerignore; \
+			echo "Added .test-fixtures to deploy_pko/.dockerignore."; \
+		elif [ -f deploy_pko/.containerignore ] && ! grep -q '\.test-fixtures' deploy_pko/.containerignore; then \
+			echo ".test-fixtures" >> deploy_pko/.containerignore; \
+			echo "Added .test-fixtures to deploy_pko/.containerignore."; \
+		fi; \
 		echo "Fixtures regenerated. Review with 'git diff deploy_pko/.test-fixtures/' and commit."; \
 	else \
 		echo "No PKO test configuration found in deploy_pko/manifest.yaml, nothing to generate."; \
