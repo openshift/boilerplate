@@ -19,6 +19,15 @@ RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
     tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
     mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
 
+ARG KUBECTL_PACKAGE_VERSION="1.18.6"
+ARG KUBECTL_PACKAGE_SHA256SUM="d0efbc20d5965a76768850f6d787353499a7a42484e2a3673587430499a04667"
+ARG KUBECTL_PACKAGE_LOCATION=https://github.com/package-operator/package-operator/releases/download/v${KUBECTL_PACKAGE_VERSION}/kubectl-package_linux_amd64
+
+RUN curl -L -o kubectl-package ${KUBECTL_PACKAGE_LOCATION} && \
+    echo ${KUBECTL_PACKAGE_SHA256SUM} kubectl-package | sha256sum -c && \
+    chmod +x kubectl-package && \
+    mv kubectl-package /usr/local/bin
+
 FROM registry.access.redhat.com/ubi9:9.7-1771346757
 
 RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync && \
@@ -55,6 +64,7 @@ RUN for bit in r x w; do find $(go env GOPATH) -perm -u+${bit} -a ! -perm -g+${b
 
 COPY --from=builder /usr/local/bin/golangci-lint /usr/local/bin
 COPY --from=builder /usr/local/bin/gh /usr/local/bin
+COPY --from=builder /usr/local/bin/kubectl-package /usr/local/bin
 COPY --from=yq /usr/bin/yq /usr/bin/yq
 
 COPY LICENSE .
