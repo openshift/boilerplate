@@ -365,7 +365,7 @@ generate-pko-fixtures:
 		fi; \
 		echo "Regenerating PKO test fixtures..."; \
 		rm -rf deploy_pko/.test-fixtures; \
-		kubectl-package validate deploy_pko/; \
+		kubectl-package validate deploy_pko/ && \
 		if [ ! -f deploy_pko/.dockerignore ] && [ ! -f deploy_pko/.containerignore ]; then \
 			echo ".test-fixtures" > deploy_pko/.dockerignore; \
 			echo "Created deploy_pko/.dockerignore to exclude .test-fixtures from PKO image."; \
