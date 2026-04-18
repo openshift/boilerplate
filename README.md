@@ -420,3 +420,4 @@ oc login --web https://api.stone-prd-rh01.pg1f.p1.openshiftapps.com:6443/
 8. Once the release is complete, open a PR adding the new image tag to Prow mirroring.
    - See this [PR](https://github.com/openshift/release/pull/64991) for an example.
    - Reach out in #forum-ocp-testplatform and ask for them to review it.
+
