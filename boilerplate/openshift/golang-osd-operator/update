@@ -114,11 +114,6 @@ ${SED?} "s/__NAMESPACE__/$IMAGE_NAMESPACE/; s/__NAME__/$IMAGE_NAME/; s/__TAG__/$
 echo "Copying pre-commit-config.yaml to .pre-commit-config.yaml"
 cp ${HERE}/pre-commit-config.yaml $REPO_ROOT/.pre-commit-config.yaml
 
-# Add /pre-commit Claude Code command (SREP-4485)
-mkdir -p $REPO_ROOT/.claude/commands
-echo "Copying pre-commit.md to .claude/commands/pre-commit.md"
-cp ${HERE}/commands/pre-commit.md $REPO_ROOT/.claude/commands/pre-commit.md
-
 # Check for pipeline files in .tekton directory and centralize them
 TEKTON_DIR="${REPO_ROOT}/.tekton"
 if [ -d "$TEKTON_DIR" ]; then
