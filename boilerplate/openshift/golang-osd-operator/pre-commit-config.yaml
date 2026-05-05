@@ -115,7 +115,8 @@ repos:
         name: go mod tidy
         language: system
         entry: bash -c 'T=$(command -v timeout || command -v gtimeout || echo); ${T:+$T 60s} go mod tidy && git diff --exit-code go.mod go.sum'
-        files: go\.(mod|sum)$
+        files: '(\.go$|go\.(mod|sum)$)'
+        exclude: '^vendor/'
         pass_filenames: false
 
       # -----------------------------------------------------------------------

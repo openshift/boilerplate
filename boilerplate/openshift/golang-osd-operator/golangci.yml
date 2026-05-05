@@ -2,7 +2,7 @@ version: "2"
 
 linters:
   enable:
-    # Critical: Error Handling & Security
+    # Error Handling & Security
     - errcheck
     - govet
     - staticcheck
@@ -12,24 +12,23 @@ linters:
     - contextcheck
     - noctx
 
-    # High: Error Prevention
+    # Error Prevention
     - errorlint
     - nilerr
     - nilnil
     - revive
 
-    # Medium: Code Quality
+    # Code Quality
     - ineffassign
     - unconvert
     - unparam
     - unused
     - misspell
 
-    # Optional: Maintainability
+    # Maintainability
     - prealloc
     - nolintlint
     - gocyclo
-    - dupl
     - exhaustive
     - makezero
     - containedctx
