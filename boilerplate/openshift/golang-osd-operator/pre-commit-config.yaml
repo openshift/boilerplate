@@ -40,23 +40,20 @@
 repos:
 
   # ---------------------------------------------------------------------------
-  # 1. FILE HYGIENE  |  target < 1s  |  auto-fix  |  golden rules 3, 8, 9
+  # 1. FILE HYGIENE + YAML SYNTAX  |  target < 2s  |  auto-fix + error
+  #    - check-merge-conflict: detects unresolved merge markers
+  #    - trailing-whitespace:  removes trailing spaces (auto-fix)
+  #    - end-of-file-fixer:    ensures single EOF newline (auto-fix)
+  #    - check-yaml:           validates YAML syntax in deploy/ manifests;
+  #                            mirrors ci/prow/lint: olm-deploy-yaml-validate
   # ---------------------------------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0                          # pinned immutable tag (golden rule 15)
+    rev: v5.0.0                          # pinned immutable tag
     hooks:
-      - id: check-merge-conflict         # error: merge markers must never exist
-      - id: trailing-whitespace          # auto-fix: removes trailing spaces
+      - id: check-merge-conflict
+      - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
-      - id: end-of-file-fixer            # auto-fix: ensures single EOF newline
-
-  # ---------------------------------------------------------------------------
-  # 2. YAML SYNTAX  |  target < 2s  |  error  |  golden rules 3, 10
-  #    Mirrors ci/prow/lint: olm-deploy-yaml-validate (yaml.safe_load_all)
-  # ---------------------------------------------------------------------------
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
+      - id: end-of-file-fixer
       - id: check-yaml
         name: YAML syntax (deploy/)
         files: ^deploy/.*\.ya?ml$
@@ -123,14 +120,15 @@ repos:
         pass_filenames: false
 
       # -----------------------------------------------------------------------
-      # 7. RBAC WILDCARD CHECK  |  target < 5s  |  always blocking  |  golden rules 3, 12
-      #    Rejects verbs: ["*"] or resources: ["*"] in deploy/ YAML manifests.
-      #    Critical for AI-generated RBAC — agents over-provision by default.
-      #    Fix: replace wildcard with explicit verbs and resource names.
+      # 7. RBAC WILDCARD CHECK  |  target < 5s  |  always blocking
+      #    Rejects wildcard RBAC in deploy/ manifests (verbs/resources: ["*"]
+      #    or multi-line - '*' format). Logic lives in standard.mk target
+      #    'rbac-wildcard-check' for readability and reuse.
+      #    Fix: replace wildcards with explicit verbs and resource names.
       # -----------------------------------------------------------------------
       - id: rbac-wildcard-check
         name: RBAC wildcard permissions
         language: system
-        entry: "python3 -c \"import sys,glob;violations=[(f,n,l.rstrip()) for f in glob.glob('deploy/*.yaml')+glob.glob('deploy/*.yml') for lines in [list(enumerate(open(f),1))] for i,(n,l) in enumerate(lines) if l.strip().lstrip('- ').strip(chr(39)+chr(34))=='*' and any(lines[j][1].strip() in ('verbs:','resources:') for j in range(max(0,i-5),i))];[print(v[0]+'|'+str(v[1])+'|'+v[2]) for v in violations];sys.exit(int(bool(violations)))\""
+        entry: bash -c 'make rbac-wildcard-check'
         files: ^deploy/.*\.ya?ml$
         pass_filenames: false
