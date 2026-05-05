@@ -60,7 +60,7 @@ repos:
         args: [--allow-multiple-documents]
 
   # ---------------------------------------------------------------------------
-  # 3. SECRETS DETECTION  |  target < 5s  |  always blocking  |  golden rules 3, 12
+  # 2. SECRETS DETECTION  |  target < 5s  |  always blocking
   #    Scans all file types (YAML, shell, config) — gosec covers Go only.
   #    High-confidence findings block; configure .gitleaks.toml for allowlist.
   # ---------------------------------------------------------------------------
@@ -70,9 +70,9 @@ repos:
       - id: gitleaks
 
   # ---------------------------------------------------------------------------
-  # 4. STATIC ANALYSIS  |  target < 15s cached  |  error  |  golden rules 3, 5, 10
+  # 3. STATIC ANALYSIS  |  target < 15s cached  |  error
   #    Mirrors ci/prow/lint: go-check exactly (same version + config as CI).
-  #    Linter config detail: boilerplate/openshift/golang-osd-operator/golangci.yml
+  #    Linter config: boilerplate/openshift/golang-osd-operator/golangci.yml
   # ---------------------------------------------------------------------------
   - repo: https://github.com/golangci/golangci-lint
     rev: v2.0.2                          # pinned immutable tag — must match CI (golden rule 15)
@@ -94,10 +94,10 @@ repos:
     hooks:
 
       # -----------------------------------------------------------------------
-      # 5. COMPILE CHECK  |  target < 10s cached  |  error  |  golden rules 3, 4
+      # 4. COMPILE CHECK  |  target < 10s cached  |  error
       #    Catches import cycles and type errors before golangci-lint runs.
+      #    Note: go build ./... writes no binary to the repo (compile check only).
       #    Fix: resolve compilation errors reported by go build.
-      #    Timeout: 30s (2x per-hook limit for macOS/slow cache warm-up)
       # -----------------------------------------------------------------------
       - id: go-build
         name: go build
@@ -107,10 +107,9 @@ repos:
         pass_filenames: false
 
       # -----------------------------------------------------------------------
-      # 6. DEPENDENCY DRIFT  |  target < 10s  |  error  |  golden rules 3, 5, 8
+      # 5. DEPENDENCY DRIFT  |  target < 10s  |  error
       #    Detects uncommitted go.mod/go.sum changes after go mod tidy.
       #    Fix: run 'go mod tidy' and stage go.mod and go.sum.
-      #    Timeout: 60s (2x per-hook limit; first run may download modules)
       # -----------------------------------------------------------------------
       - id: go-mod-tidy
         name: go mod tidy
@@ -120,7 +119,7 @@ repos:
         pass_filenames: false
 
       # -----------------------------------------------------------------------
-      # 7. RBAC WILDCARD CHECK  |  target < 5s  |  always blocking
+      # 6. RBAC WILDCARD CHECK  |  target < 5s  |  warn-only (blocking after cleanup)
       #    Rejects wildcard RBAC in deploy/ manifests (verbs/resources: ["*"]
       #    or multi-line - '*' format). Logic lives in standard.mk target
       #    'rbac-wildcard-check' for readability and reuse.
