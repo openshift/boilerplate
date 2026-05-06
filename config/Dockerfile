@@ -1,5 +1,5 @@
 FROM quay.io/konflux-ci/yq:latest AS yq
-FROM registry.access.redhat.com/ubi9:9.7-1776834047 AS builder
+FROM registry.access.redhat.com/ubi9:9.7-1778044007 AS builder
 
 ARG GOCILINT_VERSION="2.7.2"
 ARG GOCILINT_SHA256SUM="ce46a1f1d890e7b667259f70bb236297f5cf8791a9b6b98b41b283d93b5b6e88"
@@ -28,7 +28,7 @@ RUN curl -L -o kubectl-package ${KUBECTL_PACKAGE_LOCATION} && \
     chmod +x kubectl-package && \
     mv kubectl-package /usr/local/bin
 
-FROM registry.access.redhat.com/ubi9:9.7-1776834047
+FROM registry.access.redhat.com/ubi9:9.7-1778044007
 
 RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync && \
     dnf clean all && \
