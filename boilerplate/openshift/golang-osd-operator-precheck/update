@@ -23,9 +23,10 @@ mkdir -p "${E2E_SUITE_DIRECTORY}"
 if grep -rq 'BeforeSuite\|SynchronizedBeforeSuite' "${E2E_SUITE_DIRECTORY}"/*.go 2>/dev/null; then
   existing=$(grep -rl 'BeforeSuite\|SynchronizedBeforeSuite' "${E2E_SUITE_DIRECTORY}"/*.go | grep -v '_precheck_test.go' | grep -v 'operator_precheck.go' || true)
   if [[ -n "$existing" ]]; then
-    echo "WARNING: Existing BeforeSuite found in: ${existing}"
-    echo "         The precheck convention generates a BeforeSuite. Only one is allowed per package."
-    echo "         Move existing setup logic into BeforeEach or BeforeAll inside a Describe block."
+    echo "ERROR: Existing BeforeSuite found in: ${existing}"
+    echo "       The precheck convention generates a BeforeSuite. Only one is allowed per package."
+    echo "       Move existing setup logic into BeforeEach or BeforeAll inside a Describe block."
+    exit 1
   fi
 fi
 

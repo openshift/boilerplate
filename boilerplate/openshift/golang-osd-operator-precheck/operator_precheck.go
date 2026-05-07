@@ -181,9 +181,13 @@ func checkDeploymentsReady(ctx context.Context, kubeClient kubernetes.Interface,
 	}
 
 	for _, d := range deployments.Items {
-		if d.Status.AvailableReplicas < *d.Spec.Replicas {
+		desired := int32(1)
+		if d.Spec.Replicas != nil {
+			desired = *d.Spec.Replicas
+		}
+		if d.Status.AvailableReplicas < desired {
 			return false, fmt.Sprintf("deployment %s/%s: %d/%d replicas available",
-				namespace, d.Name, d.Status.AvailableReplicas, *d.Spec.Replicas)
+				namespace, d.Name, d.Status.AvailableReplicas, desired)
 		}
 	}
 
@@ -236,7 +240,7 @@ func csvMatchesVersion(csvName, expectedTag string) bool {
 		return false
 	}
 
-	if strings.Contains(csvName, expectedTag) {
+	if containsVersionBoundary(csvName, expectedTag) {
 		return true
 	}
 
@@ -246,6 +250,21 @@ func csvMatchesVersion(csvName, expectedTag string) bool {
 	}
 
 	return false
+}
+
+// containsVersionBoundary checks that s contains version as a whole token,
+// not as a substring of a longer version (e.g. v0.1 must not match v0.10.0).
+func containsVersionBoundary(s, version string) bool {
+	idx := strings.Index(s, version)
+	if idx == -1 {
+		return false
+	}
+	end := idx + len(version)
+	if end == len(s) {
+		return true
+	}
+	next := s[end]
+	return next == '.' || next == '-' || next == '_'
 }
 
 func versionMatches(actual, expected string) bool {
@@ -260,5 +279,5 @@ func versionMatches(actual, expected string) bool {
 	if actualCommit != actual && expectedCommit != expected {
 		return actualCommit == expectedCommit
 	}
-	return strings.Contains(actual, expected) || strings.Contains(expected, actual)
+	return false
 }
