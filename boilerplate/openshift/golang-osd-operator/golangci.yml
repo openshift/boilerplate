@@ -42,7 +42,10 @@ linters:
     errcheck:
       check-type-assertions: true
       check-blank: false
-      disable-default-exclusions: true
+
+  exclusions:
+    presets:
+      - std-error-handling
 
     gocyclo:
       min-complexity: 15
