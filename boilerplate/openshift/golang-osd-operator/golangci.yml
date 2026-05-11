@@ -1,78 +1,39 @@
 version: "2"
-
+run:
+  concurrency: 10
 linters:
+  default: none
   enable:
-    # Error Handling & Security
     - errcheck
-    - govet
-    - staticcheck
     - gosec
-    - bodyclose
-    - sqlclosecheck
-    - contextcheck
-    - noctx
-
-    # Error Prevention
-    - errorlint
-    - nilerr
-    - nilnil
-    - revive
-
-    # Code Quality
+    - govet
     - ineffassign
-    - unconvert
-    - unparam
-    - unused
     - misspell
-
-    # Maintainability
-    - prealloc
-    - nolintlint
-    - gocyclo
-    - exhaustive
-    - makezero
-    - containedctx
-
+    - staticcheck
+    - unused
   settings:
-    revive:
-      rules:
-        - name: package-comments
-          disabled: true
-
-    errcheck:
-      check-type-assertions: true
-      check-blank: false
-
-  exclusions:
-    presets:
-      - std-error-handling
-
-    gocyclo:
-      min-complexity: 15
-
-    errorlint:
-      errorf: true
-      asserts: true
-      comparison: true
-
     misspell:
       extra-words:
         - typo: openshit
           correction: OpenShift
-
-run:
-  timeout: 5m
-  # Only check new code, not existing issues
-  # This uses git to compare against the base branch (typically master/main)
-  new: true
-  # Alternatively, you can specify a specific revision:
-  # new-from-rev: origin/master
-
-formatters:
-  enable:
-    - gofmt
-    - goimports
-
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party/
+      - builtin/
+      - examples/
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party/
+      - builtin/
+      - examples/

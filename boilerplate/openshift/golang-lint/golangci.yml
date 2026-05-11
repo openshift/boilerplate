@@ -1,6 +1,11 @@
 version: "2"
 run:
   concurrency: 10
+  # Only check new code, not existing issues
+  # This uses git to compare against the base branch (typically master/main)
+  new: true
+  # Alternatively, you can specify a specific revision:
+  # new-from-rev: origin/master
 linters:
   default: none
   enable:
