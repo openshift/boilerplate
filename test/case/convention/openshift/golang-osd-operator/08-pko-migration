@@ -261,4 +261,90 @@ if ! grep -q "kind: ClusterPackage" hack/pko/clusterpackage.yaml; then
     err "ClusterPackage template missing ClusterPackage resource"
 fi
 
+echo "Testing CRD sync to deploy_pko"
+
+# At this point we have:
+# - deploy_pko/ from the migration
+# - deploy/crds/another-crd.yaml from the recursive test
+
+# Simulate op-generate updating a CRD in deploy/crds/
+cat > deploy/crds/another-crd.yaml <<'EOF'
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: others.example.com
+spec:
+  group: example.com
+  names:
+    kind: Other
+    plural: others
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+EOF
+
+# Create a minimal Makefile that tests sync-pko-crds from standard.mk.
+# We provide dummy project variables to satisfy standard.mk guards, then
+# invoke only the sync-pko-crds target.
+cat > Makefile <<'MKEOF'
+IMAGE_REGISTRY := example.com
+IMAGE_REPOSITORY := example
+IMAGE_NAME := test
+VERSION_MAJOR := 0
+VERSION_MINOR := 1
+MKEOF
+/bin/echo "include ${REPO_ROOT}/boilerplate/openshift/golang-osd-operator/standard.mk" >> Makefile
+
+make sync-pko-crds
+
+# Verify the CRD was synced to deploy_pko/
+if [[ ! -f deploy_pko/CustomResourceDefinition-others.example.com.yaml ]]; then
+    err "sync-pko-crds did not create CRD in deploy_pko/"
+fi
+
+# Verify CRD content was updated (should have the new spec with versions)
+if ! grep -q "kind: Other" deploy_pko/CustomResourceDefinition-others.example.com.yaml; then
+    err "Synced CRD does not have updated content"
+fi
+
+# Verify PKO annotations were added
+if ! grep -q "package-operator.run/phase: crds" deploy_pko/CustomResourceDefinition-others.example.com.yaml; then
+    err "Synced CRD missing phase annotation"
+fi
+
+if ! grep -q "package-operator.run/collision-protection: IfNoController" deploy_pko/CustomResourceDefinition-others.example.com.yaml; then
+    err "Synced CRD missing collision-protection annotation"
+fi
+
+# Test that existing CRDs in deploy_pko/ are NOT deleted
+# The migration-created tests.example.com CRD should still exist
+if [[ ! -f deploy_pko/CustomResourceDefinition-tests.example.com.yaml ]]; then
+    err "sync-pko-crds deleted existing CRD from deploy_pko/"
+fi
+
+echo "Testing sync-pko-crds skips when deploy_pko/ does not exist"
+
+# Test in a directory without deploy_pko/ (should be a no-op)
+tmpdir=$(mktemp -d -t sync-pko-crds-noop-XXXXXXXX)
+add_cleanup "${tmpdir}"
+git -C "${tmpdir}" init -b main >/dev/null 2>&1
+git -C "${tmpdir}" config user.name "Test" && git -C "${tmpdir}" config user.email "test@test.com"
+git -C "${tmpdir}" remote add origin git@example.com:example-org/test-repo.git
+mkdir -p "${tmpdir}/deploy/crds"
+cp deploy/crds/another-crd.yaml "${tmpdir}/deploy/crds/"
+cp Makefile "${tmpdir}/Makefile"
+( cd "${tmpdir}" && git add -A && git commit -m "init" >/dev/null 2>&1 )
+sync_output="$(make -C "${tmpdir}" sync-pko-crds 2>&1)" || \
+    err "sync-pko-crds should succeed when deploy_pko/ does not exist"
+if ! grep -q "skipping PKO CRD sync" <<< "${sync_output}"; then
+    err "sync-pko-crds should log skip when deploy_pko/ does not exist"
+fi
+
 colorprint ${GREEN} "All PKO migration tests passed!"
