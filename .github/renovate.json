@@ -18,6 +18,7 @@
     "enabled": true,
     "packageRules": [
       {
+        "description": "Tekton patch/minor with lgtm/approved for tide automerge after required checks pass",
         "matchUpdateTypes": [
           "minor",
           "patch",
@@ -32,17 +33,23 @@
   "gomod": {
     "packageRules": [
       {
+        "description": "One gomod PR per repo, UTC 02:00-04:59 Mon-Fri; lgtm/approved for tide after required checks pass",
         "matchUpdateTypes": [
           "minor",
           "patch",
           "pin",
           "digest"
         ],
+        "groupName": "gomod dependencies",
+        "schedule": ["* 2-4 * * 1-5"],
+        "automergeSchedule": ["* 2-4 * * 1-5"],
         "automerge": true,
         "addLabels": ["lgtm", "approved"]
       }
     ]
   },
+  "timezone": "UTC",
+  "updateNotScheduled": false,
   "dependencyDashboard": true,
   "semanticCommits": "enabled",
   "rebaseLabel": "needs-rebase"
