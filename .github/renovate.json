@@ -33,7 +33,7 @@
   "gomod": {
     "packageRules": [
       {
-        "description": "TEST: Thu UTC 06:00-07:59 (~11:30-13:29 IST). Follow-up restores 02:00-04:59 Mon-Fri.",
+        "description": "Pilot: Thu 06:00-06:59 UTC (~11:30 AM-12:29 PM IST). Follow-up restores 02:00-04:59 UTC Mon-Fri.",
         "matchUpdateTypes": [
           "minor",
           "patch",
@@ -41,8 +41,8 @@
           "digest"
         ],
         "groupName": "gomod dependencies",
-        "schedule": ["* 6-7 * * 4"],
-        "automergeSchedule": ["* 6-7 * * 4"],
+        "schedule": ["* 6-6 * * 4"],
+        "automergeSchedule": ["* 6-6 * * 4"],
         "automerge": true,
         "addLabels": ["lgtm", "approved"]
       }
