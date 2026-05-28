@@ -33,7 +33,7 @@
   "gomod": {
     "packageRules": [
       {
-        "description": "One gomod PR per repo, UTC 02:00-04:59 Mon-Fri; lgtm/approved for tide after required checks pass",
+        "description": "TEST: Thu UTC 06:00-07:59 (~11:30-13:29 IST). Follow-up restores 02:00-04:59 Mon-Fri.",
         "matchUpdateTypes": [
           "minor",
           "patch",
@@ -41,8 +41,8 @@
           "digest"
         ],
         "groupName": "gomod dependencies",
-        "schedule": ["* 2-4 * * 1-5"],
-        "automergeSchedule": ["* 2-4 * * 1-5"],
+        "schedule": ["* 6-7 * * 4"],
+        "automergeSchedule": ["* 6-7 * * 4"],
         "automerge": true,
         "addLabels": ["lgtm", "approved"]
       }
