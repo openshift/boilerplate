@@ -7,8 +7,7 @@
     "group:allDigest"
   ],
   "enabledManagers": [
-    "tekton",
-    "gomod"
+    "tekton"
   ],
   "tekton": {
     "includePaths": [
@@ -16,20 +15,6 @@
       ".tekton/**"
     ],
     "enabled": true,
-    "packageRules": [
-      {
-        "matchUpdateTypes": [
-          "minor",
-          "patch",
-          "pin",
-          "digest"
-        ],
-        "automerge": true,
-        "addLabels": ["lgtm", "approved"]
-      }
-    ]
-  },
-  "gomod": {
     "packageRules": [
       {
         "matchUpdateTypes": [
