@@ -52,6 +52,24 @@ objects:
               secret:
                 secretName: osde2e-gcp-credentials
                 optional: true
+          initContainers:
+            - name: test-image-gate
+              image: ${TEST_IMAGE}:${IMAGE_TAG}
+              command: ["true"]
+              resources:
+                requests:
+                  cpu: "10m"
+                  memory: "16Mi"
+                limits:
+                  cpu: "10m"
+                  memory: "16Mi"
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ "ALL" ]
+                seccompProfile:
+                  type: RuntimeDefault
           containers:
             - name: osde2e
               image: quay.io/redhat-services-prod/osde2e-cicada-tenant/osde2e:latest
