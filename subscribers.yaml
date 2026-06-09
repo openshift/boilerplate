@@ -31,17 +31,12 @@
 #                       convention and/or boilerplate framework merge.
 
 subscribers:
-  - name: app-sre/deployment-validation-operator
-    conventions:
-      - name: openshift/golang-osd-operator
-        status: manual
+  #- name: app-sre/deployment-validation-operator
+  #  conventions:
+  #    - name: openshift/golang-osd-operator
+  #      status: manual
 
   - name: openshift/aws-account-operator
-    conventions:
-      - name: openshift/golang-osd-operator
-        status: manual
-
-  - name: openshift/aws-efs-operator
     conventions:
       - name: openshift/golang-osd-operator
         status: manual
@@ -54,11 +49,6 @@ subscribers:
   - name: openshift/cloud-ingress-operator
     conventions:
       - name: openshift/golang-osd-operator
-        status: manual
-
-  - name: openshift/compliance-audit-router
-    conventions:
-      - name: openshift/osd-container-image
         status: manual
 
   - name: openshift/configure-alertmanager-operator
