@@ -1,6 +1,12 @@
 reviewers:
+- srep-functional-team-aurora
+- srep-functional-leads
+- srep-team-leads
+- xiaoyu74
 - joshbranham
-- srep-infra-cicd
 approvers:
+- srep-functional-team-aurora
+- srep-functional-leads
+- srep-team-leads
+- bdematte
 - joshbranham
-- srep-infra-cicd
