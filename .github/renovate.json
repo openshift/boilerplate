@@ -7,7 +7,8 @@
     "group:allDigest"
   ],
   "enabledManagers": [
-    "tekton"
+    "tekton",
+    "gomod"
   ],
   "tekton": {
     "includePaths": [
@@ -17,17 +18,68 @@
     "enabled": true,
     "packageRules": [
       {
+        "description": "Tekton patch/minor; batch and automerge Mon-Fri 02:00-04:59 UTC (requires Prow + Konflux via branch protection)",
         "matchUpdateTypes": [
           "minor",
           "patch",
           "pin",
           "digest"
         ],
+        "schedule": ["* 2-4 * * 1-5"],
+        "automergeSchedule": ["* 2-4 * * 1-5"],
         "automerge": true,
         "addLabels": ["lgtm", "approved"]
+      },
+      {
+        "description": "Tekton major — open PR for manual /lgtm; never automerge",
+        "matchUpdateTypes": [
+          "major"
+        ],
+        "automerge": false,
+        "schedule": ["* 2-4 * * 1-5"],
+        "addLabels": [
+          "major-update",
+          "manual-review-required",
+          "area/dependency",
+          "ok-to-test"
+        ]
       }
     ]
   },
+  "gomod": {
+    "packageRules": [
+      {
+        "description": "Grouped gomod minor/patch; batch and automerge Mon-Fri 02:00-04:59 UTC (requires Prow + Konflux via branch protection)",
+        "matchUpdateTypes": [
+          "minor",
+          "patch",
+          "pin",
+          "digest"
+        ],
+        "groupName": "gomod dependencies",
+        "schedule": ["* 2-4 * * 1-5"],
+        "automergeSchedule": ["* 2-4 * * 1-5"],
+        "automerge": true,
+        "addLabels": ["lgtm", "approved"]
+      },
+      {
+        "description": "Gomod major — MintMaker opens PR; manual /lgtm after CI (no lgtm/approved here)",
+        "matchUpdateTypes": [
+          "major"
+        ],
+        "automerge": false,
+        "schedule": ["* 2-4 * * 1-5"],
+        "addLabels": [
+          "major-update",
+          "manual-review-required",
+          "area/dependency",
+          "ok-to-test"
+        ]
+      }
+    ]
+  },
+  "timezone": "UTC",
+  "updateNotScheduled": false,
   "dependencyDashboard": true,
   "semanticCommits": "enabled",
   "rebaseLabel": "needs-rebase"
