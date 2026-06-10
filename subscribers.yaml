@@ -4,10 +4,6 @@
 # Note:
 # - This file is currently maintained by hand (not by tooling). It's
 #   YAML so it can used by tooling in the future.
-# - At the time of this writing, there is only one convention:
-#   openshift/golang-osd-operator.
-# - At the time of this writing, the subscribers[].conventions[].status
-#   "automated" isn't a thing yet.
 #
 # Pseudo-schema:
 #   subscribers: List of dicts, each representing the state of a
