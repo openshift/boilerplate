@@ -31,27 +31,57 @@
 #                       convention and/or boilerplate framework merge.
 
 subscribers:
-  #- name: app-sre/deployment-validation-operator
-  #  conventions:
-  #    - name: openshift/golang-osd-operator
-  #      status: manual
+  - name: openshift/addon-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
 
   - name: openshift/aws-account-operator
     conventions:
       - name: openshift/golang-osd-operator
         status: manual
 
+  - name: openshift/aws-efs-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+
+  - name: openshift/aws-vpce-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
+
   - name: openshift/certman-operator
     conventions:
       - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
         status: manual
 
   - name: openshift/cloud-ingress-operator
     conventions:
       - name: openshift/golang-osd-operator
         status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
+
+  - name: openshift/configuration-anomaly-detection
+    conventions:
+      - name: openshift/osd-container-image
+        status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
 
   - name: openshift/configure-alertmanager-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
+
+  - name: openshift/configure-goalert-operator
     conventions:
       - name: openshift/golang-osd-operator
         status: manual
@@ -59,6 +89,8 @@ subscribers:
   - name: openshift/custom-domains-operator
     conventions:
       - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
         status: manual
 
   - name: openshift/deadmanssnitch-operator
@@ -71,9 +103,23 @@ subscribers:
       - name: openshift/golang-osd-operator
         status: manual
 
+  - name: openshift/managed-cluster-validating-webhooks
+    conventions:
+      - name: openshift/golang-osd-e2e
+        status: manual
+
+  - name: openshift/managed-node-metadata-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
+
   - name: openshift/managed-upgrade-operator
     conventions:
       - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
         status: manual
 
   - name: openshift/managed-velero-operator
@@ -86,9 +132,49 @@ subscribers:
       - name: openshift/golang-osd-operator
         status: manual
 
+  - name: openshift/ocm-agent
+    conventions:
+      - name: openshift/golang-osd-e2e
+        status: manual
+
+  - name: openshift/ocm-agent-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
+
+  - name: openshift/operator-custom-metrics
+    conventions:
+      - name: openshift/golang-lint
+        status: manual
+
+  - name: openshift/osd-cluster-ready
+    conventions:
+      - name: openshift/osd-container-image
+        status: manual
+      - name: openshift/golang-lint
+        status: manual
+
+  - name: openshift/osd-example-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
+
   - name: openshift/osd-metrics-exporter
     conventions:
       - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
+
+  - name: openshift/osd-network-verifier
+    conventions:
+      - name: openshift/golang-lint
+        status: manual
+      - name: openshift/golang-codecov
         status: manual
 
   - name: openshift/pagerduty-operator
@@ -100,13 +186,31 @@ subscribers:
     conventions:
       - name: openshift/golang-osd-operator
         status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
 
   - name: openshift/route-monitor-operator
     conventions:
       - name: openshift/golang-osd-operator
         status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
+
+  - name: openshift/splunk-forwarder-images
+    conventions:
+      - name: openshift/osd-container-image
+        status: manual
 
   - name: openshift/splunk-forwarder-operator
     conventions:
       - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
+        status: manual
+
+  - name: openshift/splunk-token-operator
+    conventions:
+      - name: openshift/golang-osd-operator
+        status: manual
+      - name: openshift/golang-osd-e2e
         status: manual
