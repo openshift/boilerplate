@@ -25,7 +25,7 @@ Quirks and Limitations:
 - Is still slightly interactive, because 'gh pr create' likes to ask
   questions about your origin and upstream.
 EOF
-    exit -1
+    exit 1
 }
 
 source $REPO_ROOT/boilerplate/_lib/subscriber.sh
@@ -35,7 +35,7 @@ source $REPO_ROOT/boilerplate/_lib/subscriber.sh
 
 TMPD=$(mktemp -d)
 echo $TMPD;
-#trap "rm -fr $TMPD" EXIT
+trap "rm -fr $TMPD" EXIT
 
 run_step() {
     local title=$1
