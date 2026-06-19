@@ -26,7 +26,7 @@ RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync
     dnf -y autoremove && \
     rm -rf /var/cache/dnf
 
-ARG GOCILINT_VERSION="v2.7.2" \
+ARG GOCILINT_VERSION="v2.12.2" \
     KUSTOMIZE_VERSION="v5.6.0" \
     CONTROLLER_GEN_VERSION="v0.16.4" \
     OPENAPI_GEN_VERSION="v0.29.15" \
