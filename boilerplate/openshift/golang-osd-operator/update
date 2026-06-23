@@ -30,7 +30,6 @@ if [[ -f "${TEKTON_OWNERS}" ]] && grep -q "srep-infra-cicd" "${TEKTON_OWNERS}"; 
 		rm "${TEKTON_OWNERS}"
 	fi
 fi
-fi
 
 # Add dependabot configuration
 mkdir -p $REPO_ROOT/.github
