@@ -8,7 +8,7 @@ What purpose does the operator serve?
 
 ### Blast Radius (customer-facing or internal)
 
-Classify the blast radius of operational disruption of the operator as customer-facing or internal, and provide specific details about the blast radius.
+Provide details about the blast radius of the operator as it pertains to SREs, and then provide details that pertain to the customer view.
 
 ### Key Metrics and Alerts
 
