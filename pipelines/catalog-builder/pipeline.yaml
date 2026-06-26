@@ -151,7 +151,7 @@ spec:
       - name: name
         value: opm-get-bundle-version
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-opm-get-bundle-version:0.1@sha256:5affe52ff5242c99f7c8d786399ba39b6dbe45758ce94358bfcee8d2b271996b
+        value: quay.io/konflux-ci/tekton-catalog/task-opm-get-bundle-version:0.1@sha256:ab3d9f994edef2e4a647f075b41998163006fa8f9534b0823bd71ad98e38510a
       - name: kind
         value: task
       resolver: bundles
