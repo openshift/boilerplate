@@ -18,6 +18,12 @@
     "enabled": true,
     "packageRules": [
       {
+        "description": "Pin git-clone-oci-ta to 0.1 until trusted_task_rules rollout (2026-07-20). Remove this rule after rollout.",
+        "matchPackageNames": ["quay.io/konflux-ci/tekton-catalog/task-git-clone-oci-ta"],
+        "allowedVersions": "<0.2",
+        "enabled": true
+      },
+      {
         "description": "Tekton patch/minor; batch and automerge Mon-Fri 02:00-04:59 UTC (requires Prow + Konflux via branch protection)",
         "matchUpdateTypes": [
           "minor",
