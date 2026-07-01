@@ -1,15 +1,12 @@
 reviewers:
 - srep-functional-team-aurora
-- srep-functional-leads
-- srep-team-leads
+- rosa-staff-engineers
 - xiaoyu74
 - joshbranham
 approvers:
 - srep-functional-team-aurora
-- srep-functional-leads
-- srep-team-leads
+- rosa-staff-engineers
 - joshbranham
 maintainers:
-- srep-functional-leads
-- srep-team-leads
+- rosa-staff-engineers
 - joshbranham
