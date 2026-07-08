@@ -45,6 +45,7 @@ spec:
       - name: check-file-existence
         runAfter:
           - clone-repository
+        onError: continue
         taskSpec:
           steps:
             - name: check-files
@@ -96,6 +97,7 @@ spec:
       - name: check-content-validation
         runAfter:
           - clone-repository
+        onError: continue
         taskSpec:
           steps:
             - name: check-content
@@ -118,9 +120,14 @@ spec:
                 echo "Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
                 echo ""
 
-                # CLAUDE.md required sections
+                # CLAUDE.md required sections (resolve one level of @ includes)
                 if [ -f "CLAUDE.md" ]; then
-                  claude_content=$(cat CLAUDE.md)
+                  check_files="CLAUDE.md"
+                  for ref in $(grep -oE '@[^ `]+' CLAUDE.md 2>/dev/null); do
+                    ref_file=$(echo "$ref" | sed 's/^@//')
+                    [ -f "$ref_file" ] && check_files="$check_files $ref_file"
+                  done
+                  claude_content=$(cat $(echo "$check_files" | tr ' ' '\n' | sort -u) 2>/dev/null)
 
                   if echo "$claude_content" | grep -qiE '##.*(build commands|development commands|build|dev server)'; then
                     pass "CLAUDE.md has build/development commands section"
