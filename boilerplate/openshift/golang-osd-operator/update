@@ -167,7 +167,11 @@ if [ -d "${REPO_ROOT}/.tekton" ]; then
   echo "Generating agentic SDLC conformance check pipeline: $(basename ${AGENTIC_CHECK})"
   DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/upstream/HEAD 2>/dev/null || git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || echo defaulting/to/master)
   DEFAULT_BRANCH=${DEFAULT_BRANCH##*/}
-  ${SED?} "s/__OPERATOR_NAME__/${OPERATOR_NAME}/g; s/__DEFAULT_BRANCH__/${DEFAULT_BRANCH}/g" ${HERE}/agentic-sdlc-check-pull-request.yaml.tmpl > "${AGENTIC_CHECK}"
+  TENANT_NAMESPACE=$(grep -h 'namespace:' "${REPO_ROOT}"/.tekton/*-pull-request.yaml 2>/dev/null | grep -v agentic | head -1 | awk '{print $2}')
+  TENANT_NAMESPACE=${TENANT_NAMESPACE:-${OPERATOR_NAME}-tenant}
+  SERVICE_ACCOUNT=$(grep -h 'serviceAccountName:' "${REPO_ROOT}"/.tekton/${OPERATOR_NAME}*-pull-request.yaml 2>/dev/null | grep -v agentic | grep -v pko | grep -v e2e | head -1 | awk '{print $2}')
+  SERVICE_ACCOUNT=${SERVICE_ACCOUNT:-build-pipeline-${OPERATOR_NAME}}
+  ${SED?} "s/__OPERATOR_NAME__/${OPERATOR_NAME}/g; s/__DEFAULT_BRANCH__/${DEFAULT_BRANCH}/g; s/__TENANT_NAMESPACE__/${TENANT_NAMESPACE}/g; s/__SERVICE_ACCOUNT__/${SERVICE_ACCOUNT}/g" ${HERE}/agentic-sdlc-check-pull-request.yaml.tmpl > "${AGENTIC_CHECK}"
 fi
 
 # Check for pipeline files in .tekton directory and centralize them

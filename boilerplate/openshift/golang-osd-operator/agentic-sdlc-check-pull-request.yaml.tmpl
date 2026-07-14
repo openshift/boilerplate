@@ -16,10 +16,10 @@ metadata:
     appstudio.openshift.io/component: __OPERATOR_NAME__
     pipelines.appstudio.openshift.io/type: test
   name: __OPERATOR_NAME__-agentic-sdlc-check
-  namespace: __OPERATOR_NAME__-tenant
+  namespace: __TENANT_NAMESPACE__
 spec:
   taskRunTemplate:
-    serviceAccountName: build-pipeline-__OPERATOR_NAME__
+    serviceAccountName: __SERVICE_ACCOUNT__
   pipelineSpec:
     tasks:
       - name: clone-repository
