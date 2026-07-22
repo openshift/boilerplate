@@ -94,6 +94,18 @@ spec:
     default: oci
     type: string
     description: The format for the resulting image's mediaType. Valid values are oci or docker.
+  - name: source-date-epoch
+    type: string
+    default: ''
+    description: Sets the image created time and the SOURCE_DATE_EPOCH build argument. On its own, it does not change file timestamps inside the layers (set rewrite-timestamp to "true" for that). Leave empty to keep the actual build time.
+  - name: rewrite-timestamp
+    type: string
+    default: 'false'
+    description: When "true", clamp file modification times in the image layers to at most source-date-epoch. Does nothing unless source-date-epoch is set.
+  - name: omit-history
+    type: string
+    default: 'false'
+    description: When "true", omit the build history (history timestamps, layer metadata, etc.) from the resulting image.
   results:
   - description: ''
     name: IMAGE_URL
@@ -114,7 +126,7 @@ spec:
       - name: name
         value: init
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-init:0.4.2@sha256:06801175f298f54099c96f7060d3834b78012e10cd5a098437c917cb18f1efd0
+        value: quay.io/konflux-ci/tekton-catalog/task-init:0.4.3@sha256:fb17ececc359d7e330395d6a562eacbf0089776697ffe1b10c08f91273e6b2c0
       - name: kind
         value: task
       resolver: bundles
@@ -131,7 +143,7 @@ spec:
       - name: name
         value: git-clone
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.2.4@sha256:bb787553da840e226ea72147a7ccbe8553f887efef2ca24664c9ba2052018adf
+        value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.2.5@sha256:4a6567757596e348fe2505f7e2cc0286ad98a32d9b510d1a44d0bf6ed6df5469
       - name: kind
         value: task
       resolver: bundles
@@ -196,6 +208,12 @@ spec:
       value: $(tasks.clone-repository.results.commit)
     - name: BUILDAH_FORMAT
       value: $(params.buildah-format)
+    - name: SOURCE_DATE_EPOCH
+      value: $(params.source-date-epoch)
+    - name: REWRITE_TIMESTAMP
+      value: $(params.rewrite-timestamp)
+    - name: OMIT_HISTORY
+      value: $(params.omit-history)
     runAfter:
     - generate-olm-catalog
     taskRef:
@@ -286,7 +304,7 @@ spec:
       - name: name
         value: validate-fbc
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-validate-fbc:0.2@sha256:f430ab31b170583495ce81beef15a54c8a0910b6eec0836ced4736d43c1aa91c
+        value: quay.io/konflux-ci/tekton-catalog/task-validate-fbc:0.2@sha256:8988a61a5680521d583dc3a4c7d378529337ac99cf521e38a2786b99824f64f6
       - name: kind
         value: task
       resolver: bundles
