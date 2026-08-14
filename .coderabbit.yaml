@@ -1,0 +1,9 @@
+# The org-wide config (openshift/coderabbit) excludes "boilerplate/**" so
+# that consuming repos don't get noisy reviews of the vendored copy they
+# pull in via `make boilerplate-update`. That exclusion also matches this
+# repo's own source, since it lives under boilerplate/ too, so re-include
+# it here to keep reviews enabled for the boilerplate repo itself.
+inheritance: true
+reviews:
+  path_filters:
+    - "boilerplate/**"
