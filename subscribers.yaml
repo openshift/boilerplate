@@ -145,13 +145,6 @@ subscribers:
       - name: openshift/golang-lint
         status: manual
 
-  - name: openshift/osd-cluster-ready
-    conventions:
-      - name: openshift/osd-container-image
-        status: manual
-      - name: openshift/golang-lint
-        status: manual
-
   - name: openshift/osd-example-operator
     conventions:
       - name: openshift/golang-osd-operator
