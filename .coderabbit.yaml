@@ -3,7 +3,11 @@
 # pull in via `make boilerplate-update`. That exclusion also matches this
 # repo's own source, since it lives under boilerplate/ too, so re-include
 # it here to keep reviews enabled for the boilerplate repo itself.
+#
+# The **/boilerplate/** pattern (with **/ prefix) is required to override
+# CodeRabbit's internal path block — it removes the pattern from both the
+# exclude and include lists so files are reviewed normally.
 inheritance: true
 reviews:
   path_filters:
-    - "boilerplate/**"
+    - "**/boilerplate/**"
