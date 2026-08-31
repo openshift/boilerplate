@@ -36,6 +36,13 @@ spec:
         value: pipelines/docker-build-oci-ta/pipeline.yaml
 ```
 
+Optional PipelineRun params (in addition to the Konflux catalog defaults):
+
+| Param | Default | When to set `true` |
+|---|---|---|
+| `skip-preflight-cert-check` | `false` | Scratch / PKO images that fail ecosystem cert preflight |
+| `skip-roxctl-scan` | `false` | Scratch / PKO images that fail ACS `roxctl-scan` (no OS). Does **not** skip clamav, SAST, or RPM signature scans. Prefer this over `skip-checks`. |
+
 ### References
 
 - https://konflux.pages.redhat.com/docs/users/patterns/centralize-pipeline-definitions.html
