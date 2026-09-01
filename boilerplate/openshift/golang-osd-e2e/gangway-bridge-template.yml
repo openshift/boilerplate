@@ -19,6 +19,9 @@ parameters:
   - name: ACTIVE_DEADLINE
     value: "50400"
     description: Kubernetes Job deadline in seconds (must exceed all attempts plus backoff delays)
+  - name: INITIAL_DELAY
+    value: "0"
+    description: Seconds to sleep before the first Gangway call; stagger concurrent jobs to avoid shared rate limit saturation
   - name: JOB_ENVS
     value: ""
     description: Comma-separated KEY=VALUE pairs passed to the Prow job
@@ -53,6 +56,12 @@ objects:
                   [[ "${TIMEOUT}" =~ ^[1-9][0-9]*$ ]] || { log "ERROR: TIMEOUT must be a positive integer"; exit 1; }
                   [[ "${POLL_INTERVAL}" =~ ^[1-9][0-9]*$ ]] || { log "ERROR: POLL_INTERVAL must be a positive integer"; exit 1; }
                   [[ "${MAX_RETRIES}" =~ ^[0-9]+$ ]] || { log "ERROR: MAX_RETRIES must be a non-negative integer"; exit 1; }
+                  [[ "${INITIAL_DELAY}" =~ ^[0-9]+$ ]] || { log "ERROR: INITIAL_DELAY must be a non-negative integer"; exit 1; }
+
+                  if [[ "${INITIAL_DELAY}" -gt 0 ]]; then
+                    log "Waiting ${INITIAL_DELAY}s before first Gangway call (INITIAL_DELAY)..."
+                    sleep "${INITIAL_DELAY}"
+                  fi
 
                   # Backoff sum: base 30s doubling each retry = 30*(2^N-1), plus 15s max jitter
                   MAX_BACKOFF_SUM=$(( 30 * ((1 << MAX_RETRIES) - 1) + MAX_RETRIES * 15 ))
@@ -183,6 +192,8 @@ objects:
                   value: ${JOB_ENVS}
                 - name: MAX_RETRIES
                   value: ${MAX_RETRIES}
+                - name: INITIAL_DELAY
+                  value: ${INITIAL_DELAY}
                 - name: ACTIVE_DEADLINE
                   value: ${ACTIVE_DEADLINE}
               resources:
