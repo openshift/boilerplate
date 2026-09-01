@@ -8,7 +8,7 @@ parameters:
     required: true
     description: Prow periodic job name to trigger via Gangway
   - name: POLL_INTERVAL
-    value: "60"
+    value: "120"
     description: Seconds between status polls
   - name: TIMEOUT
     value: "7200"
@@ -63,7 +63,7 @@ objects:
                     sleep "${INITIAL_DELAY}"
                   fi
 
-                  # Backoff sum: base 30s doubling each retry = 30*(2^N-1), plus 15s max jitter
+                  # Backoff sum: base 30s doubling each retry, capped at 900s, plus 15s max jitter
                   MAX_BACKOFF_SUM=$(( 30 * ((1 << MAX_RETRIES) - 1) + MAX_RETRIES * 15 ))
                   # Each attempt may overshoot TIMEOUT by up to POLL_INTERVAL + status-request
                   # max-time (30s) on the last poll cycle
@@ -169,7 +169,7 @@ objects:
                       RATE_LIMITED_WAITED=0
                     else
                       BACKOFF=$(( 30 * (1 << (ATTEMPT - 1)) ))
-                      [[ $BACKOFF -gt 480 ]] && BACKOFF=480
+                      [[ $BACKOFF -gt 900 ]] && BACKOFF=900
                       JITTER=$(( RANDOM % 16 ))
                       DELAY=$(( BACKOFF + JITTER ))
                       log "Retrying in ${DELAY}s (backoff=${BACKOFF}s, jitter=${JITTER}s)..."
