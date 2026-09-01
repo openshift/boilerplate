@@ -8,7 +8,7 @@ parameters:
     required: true
     description: Prow periodic job name to trigger via Gangway
   - name: POLL_INTERVAL
-    value: "60"
+    value: "120"
     description: Seconds between status polls
   - name: TIMEOUT
     value: "7200"
@@ -17,8 +17,11 @@ parameters:
     value: "5"
     description: Number of times to retry the Prow job on failure before reporting failure
   - name: ACTIVE_DEADLINE
-    value: "50400"
+    value: "54000"
     description: Kubernetes Job deadline in seconds (must exceed all attempts plus backoff delays)
+  - name: INITIAL_DELAY
+    value: "0"
+    description: Seconds to sleep before the first Gangway call; stagger concurrent jobs to avoid shared rate limit saturation
   - name: JOB_ENVS
     value: ""
     description: Comma-separated KEY=VALUE pairs passed to the Prow job
@@ -53,15 +56,22 @@ objects:
                   [[ "${TIMEOUT}" =~ ^[1-9][0-9]*$ ]] || { log "ERROR: TIMEOUT must be a positive integer"; exit 1; }
                   [[ "${POLL_INTERVAL}" =~ ^[1-9][0-9]*$ ]] || { log "ERROR: POLL_INTERVAL must be a positive integer"; exit 1; }
                   [[ "${MAX_RETRIES}" =~ ^[0-9]+$ ]] || { log "ERROR: MAX_RETRIES must be a non-negative integer"; exit 1; }
+                  [[ "${INITIAL_DELAY}" =~ ^[0-9]+$ ]] || { log "ERROR: INITIAL_DELAY must be a non-negative integer"; exit 1; }
 
-                  # Backoff sum: base 30s doubling each retry = 30*(2^N-1), plus 15s max jitter
+                  if [[ "${INITIAL_DELAY}" -gt 0 ]]; then
+                    log "Waiting ${INITIAL_DELAY}s before first Gangway call (INITIAL_DELAY)..."
+                    sleep "${INITIAL_DELAY}"
+                  fi
+
+                  # Backoff sum: base 30s doubling each retry, capped at 900s, plus 15s max jitter
                   MAX_BACKOFF_SUM=$(( 30 * ((1 << MAX_RETRIES) - 1) + MAX_RETRIES * 15 ))
-                  # Each attempt may overshoot TIMEOUT by up to POLL_INTERVAL + status-request
-                  # max-time (30s) on the last poll cycle
-                  POLL_OVERSHOOT=$(( POLL_INTERVAL + 30 ))
+                  # Each attempt may overshoot TIMEOUT by up to the max poll_backoff (300s) +
+                  # status-request max-time (30s) + max 429 extra sleep (300s) on the last poll cycle
+                  POLL_OVERSHOOT=$(( 300 + 30 + 300 ))
                   # Trigger POST max-time (60s) + worst-case Retry-After (600s) per attempt
                   TRIGGER_OVERHEAD=$(( 60 + 600 ))
-                  REQUIRED_DEADLINE=$(( (MAX_RETRIES + 1) * (TIMEOUT + POLL_OVERSHOOT + TRIGGER_OVERHEAD) + MAX_BACKOFF_SUM ))
+                  # INITIAL_DELAY is a one-time cost at job startup, not per attempt
+                  REQUIRED_DEADLINE=$(( (MAX_RETRIES + 1) * (TIMEOUT + POLL_OVERSHOOT + TRIGGER_OVERHEAD) + MAX_BACKOFF_SUM + INITIAL_DELAY ))
                   if [[ "${ACTIVE_DEADLINE}" -lt "${REQUIRED_DEADLINE}" ]]; then
                     log "ERROR: ACTIVE_DEADLINE (${ACTIVE_DEADLINE}s) is less than the minimum required for ${MAX_RETRIES} retries with TIMEOUT=${TIMEOUT}s (need at least ${REQUIRED_DEADLINE}s)"
                     exit 1
@@ -160,7 +170,7 @@ objects:
                       RATE_LIMITED_WAITED=0
                     else
                       BACKOFF=$(( 30 * (1 << (ATTEMPT - 1)) ))
-                      [[ $BACKOFF -gt 480 ]] && BACKOFF=480
+                      [[ $BACKOFF -gt 900 ]] && BACKOFF=900
                       JITTER=$(( RANDOM % 16 ))
                       DELAY=$(( BACKOFF + JITTER ))
                       log "Retrying in ${DELAY}s (backoff=${BACKOFF}s, jitter=${JITTER}s)..."
@@ -183,6 +193,8 @@ objects:
                   value: ${JOB_ENVS}
                 - name: MAX_RETRIES
                   value: ${MAX_RETRIES}
+                - name: INITIAL_DELAY
+                  value: ${INITIAL_DELAY}
                 - name: ACTIVE_DEADLINE
                   value: ${ACTIVE_DEADLINE}
               resources:
