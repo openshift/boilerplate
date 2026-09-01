@@ -161,8 +161,64 @@ if [ ! -f "$CONFIG_FILE" ]; then
 fi
 
 # The most recent build image tag. Export this for individual `update` scripts.
+#
+# A git tag alone doesn't mean the image is consumable: publishing the tag only
+# starts the Konflux release that builds and pushes the image. Picking the
+# newest tag unconditionally means that, for as long as that release takes,
+# consumers get a tag with no image behind it -- which breaks their
+# build/Dockerfile FROM, their .ci-operator.yaml build root, and
+# `container-make`. So walk tags newest-first and take the first one that
+# actually exists in the registry.
+#
+# Only tags reachable from the checked-out commit are considered. This keeps
+# `freeze-check` reproducible: it re-runs this driver against the commit
+# recorded in _data/last-boilerplate-commit, and must not resolve a tag that
+# was published after that commit.
+#
+# NOTE: This is deliberately inlined rather than sourced from _lib/common.sh.
+# That library derives LATEST_IMAGE_TAG from the consumer's existing
+# _data/backing-image-tag, which would defeat the resolution below; and this
+# script is intentionally kept auditable in PR diffs via .gitattributes.
 if [[ -z "$LATEST_IMAGE_TAG" ]]; then
-    export LATEST_IMAGE_TAG=$(cd $BP_CLONE; git describe --tags --abbrev=0 --match image-v*)
+    # Bound the walk so a registry outage fails fast instead of trawling
+    # through every historical tag.
+    IMAGE_TAG_SEARCH_DEPTH=${IMAGE_TAG_SEARCH_DEPTH:-10}
+    if ! command -v skopeo &>/dev/null; then
+        echo "Failed to find the skopeo binary, needed to verify the build image tag." >&2
+        echo "If you are on Mac: brew install skopeo." >&2
+        exit 1
+    fi
+    candidates=$(cd $BP_CLONE; git tag --merged HEAD --sort=-v:refname --list 'image-v*' | head -n $IMAGE_TAG_SEARCH_DEPTH)
+    for tag in $candidates; do
+        image_uri="quay.io/redhat-services-prod/openshift/boilerplate:${tag}"
+        skopeo_stderr=$(mktemp)
+        if skopeo inspect --override-os linux --override-arch amd64 "docker://${image_uri}" >/dev/null 2>$skopeo_stderr; then
+            rm -f $skopeo_stderr
+            echo "Using build image tag $tag."
+            export LATEST_IMAGE_TAG=$tag
+            break
+        fi
+        stderr=$(cat $skopeo_stderr)
+        rm -f $skopeo_stderr
+        if [[ "$stderr" == *"manifest unknown"* ]]; then
+            # The tag exists in git but its release hasn't published an image
+            # (yet). Keep looking.
+            echo "Skipping $tag: no image published for it yet."
+            continue
+        fi
+        # Anything else -- auth failure, no such host, network trouble -- means
+        # we can't tell whether the image exists. Bail rather than silently
+        # falling back to an older tag.
+        echo "Error querying the registry for ${image_uri}:" >&2
+        echo "$stderr" >&2
+        exit 1
+    done
+    if [[ -z "$LATEST_IMAGE_TAG" ]]; then
+        echo "Failed to find a published build image among the newest $IMAGE_TAG_SEARCH_DEPTH image-v* tags." >&2
+        echo "If a release is in flight, wait for it to finish. You can also set" >&2
+        echo "LATEST_IMAGE_TAG explicitly to override this check." >&2
+        exit 1
+    fi
 fi
 
 # The boilerplate commit hash. Export for convention `update` scripts.

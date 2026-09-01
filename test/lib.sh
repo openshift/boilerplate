@@ -2,8 +2,11 @@ if [ "$BOILERPLATE_SET_X" ]; then
     set -x
 fi
 
-# NOTE: Change this when publishing a new image tag.
-LATEST_IMAGE_TAG=image-v4.0.1
+# Pin the build image tag for tests. Exporting this short-circuits the
+# registry lookup `update` would otherwise do to find the newest *published*
+# tag, which keeps the bulk of the suite offline and deterministic. Tests that
+# exercise the lookup itself unset this.
+export LATEST_IMAGE_TAG=image-v4.0.1
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
