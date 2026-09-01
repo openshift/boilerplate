@@ -17,7 +17,7 @@ parameters:
     value: "5"
     description: Number of times to retry the Prow job on failure before reporting failure
   - name: ACTIVE_DEADLINE
-    value: "50400"
+    value: "54000"
     description: Kubernetes Job deadline in seconds (must exceed all attempts plus backoff delays)
   - name: INITIAL_DELAY
     value: "0"
@@ -65,12 +65,13 @@ objects:
 
                   # Backoff sum: base 30s doubling each retry, capped at 900s, plus 15s max jitter
                   MAX_BACKOFF_SUM=$(( 30 * ((1 << MAX_RETRIES) - 1) + MAX_RETRIES * 15 ))
-                  # Each attempt may overshoot TIMEOUT by up to POLL_INTERVAL + status-request
-                  # max-time (30s) on the last poll cycle
-                  POLL_OVERSHOOT=$(( POLL_INTERVAL + 30 ))
+                  # Each attempt may overshoot TIMEOUT by up to the max poll_backoff (300s) +
+                  # status-request max-time (30s) + max 429 extra sleep (300s) on the last poll cycle
+                  POLL_OVERSHOOT=$(( 300 + 30 + 300 ))
                   # Trigger POST max-time (60s) + worst-case Retry-After (600s) per attempt
                   TRIGGER_OVERHEAD=$(( 60 + 600 ))
-                  REQUIRED_DEADLINE=$(( (MAX_RETRIES + 1) * (TIMEOUT + POLL_OVERSHOOT + TRIGGER_OVERHEAD) + MAX_BACKOFF_SUM ))
+                  # INITIAL_DELAY is a one-time cost at job startup, not per attempt
+                  REQUIRED_DEADLINE=$(( (MAX_RETRIES + 1) * (TIMEOUT + POLL_OVERSHOOT + TRIGGER_OVERHEAD) + MAX_BACKOFF_SUM + INITIAL_DELAY ))
                   if [[ "${ACTIVE_DEADLINE}" -lt "${REQUIRED_DEADLINE}" ]]; then
                     log "ERROR: ACTIVE_DEADLINE (${ACTIVE_DEADLINE}s) is less than the minimum required for ${MAX_RETRIES} retries with TIMEOUT=${TIMEOUT}s (need at least ${REQUIRED_DEADLINE}s)"
                     exit 1
