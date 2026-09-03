@@ -71,6 +71,10 @@ spec:
       default: "false"
       type: string
       description: Skip the preflight cert-check. This can required for scratch images. Valid values are false and true.
+    - name: skip-roxctl-scan
+      default: "false"
+      type: string
+      description: Skip ACS/roxctl-scan only (keep clamav, SAST, RPM signature, etc.). Use for FROM-scratch PKO/package images that have no OS for ACS to scan. Valid values are false and true.
     - name: enable-package-registry-proxy
       default: 'true'
       description: Use the package registry proxy when prefetching dependencies
@@ -302,6 +306,10 @@ spec:
         resolver: bundles
       when:
         - input: $(params.skip-checks)
+          operator: in
+          values:
+            - "false"
+        - input: $(params.skip-roxctl-scan)
           operator: in
           values:
             - "false"
