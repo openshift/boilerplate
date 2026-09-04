@@ -14,9 +14,50 @@ source $CONVENTION_ROOT/_lib/common.sh
 echo "Copying .codecov.yml to your repository root."
 cp ${HERE}/.codecov.yml $REPO_ROOT
 
-# Add CodeRabbit configuration
-echo "Copying .coderabbit.yaml to your repository root."
-cp ${HERE}/.coderabbit.yaml $REPO_ROOT
+# Ensure the boilerplate path filter exists while preserving repo customizations.
+CODERABBIT_CONFIG="${REPO_ROOT}/.coderabbit.yaml"
+if [[ ! -f "${CODERABBIT_CONFIG}" ]]; then
+  echo "Copying .coderabbit.yaml to your repository root."
+  cp "${HERE}/.coderabbit.yaml" "${CODERABBIT_CONFIG}"
+elif grep -Fq '!boilerplate/**' "${CODERABBIT_CONFIG}"; then
+  echo "The boilerplate CodeRabbit path filter already exists."
+else
+  echo "Adding the boilerplate CodeRabbit path filter while preserving repository customizations."
+  CODERABBIT_UPDATED=$(mktemp)
+  if grep -qE '^  path_filters:[[:space:]]*$' "${CODERABBIT_CONFIG}"; then
+    awk '
+      { print }
+      !inserted && /^  path_filters:[[:space:]]*$/ {
+        print "    # Boilerplate-managed: skip review of boilerplate changes"
+        print "    - \"!boilerplate/**\""
+        inserted = 1
+      }
+    ' "${CODERABBIT_CONFIG}" > "${CODERABBIT_UPDATED}"
+  elif grep -qE '^reviews:[[:space:]]*$' "${CODERABBIT_CONFIG}"; then
+    awk '
+      { print }
+      !inserted && /^reviews:[[:space:]]*$/ {
+        print "  path_filters:"
+        print "    # Boilerplate-managed: skip review of boilerplate changes"
+        print "    - \"!boilerplate/**\""
+        inserted = 1
+      }
+    ' "${CODERABBIT_CONFIG}" > "${CODERABBIT_UPDATED}"
+  else
+    awk '
+      { print }
+      END {
+        if (NR > 0) print ""
+        print "reviews:"
+        print "  path_filters:"
+        print "    # Boilerplate-managed: skip review of boilerplate changes"
+        print "    - \"!boilerplate/**\""
+      }
+    ' "${CODERABBIT_CONFIG}" > "${CODERABBIT_UPDATED}"
+  fi
+  cp "${CODERABBIT_UPDATED}" "${CODERABBIT_CONFIG}"
+  rm "${CODERABBIT_UPDATED}"
+fi
 
 # Add OWNERS_ALIASES to $REPO_ROOT
 echo "Copying OWNERS_ALIASES to your repository root."
