@@ -90,7 +90,7 @@ spec:
       - name: name
         value: init
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-init:0.4.3@sha256:f71e6710ff88f675ab27fcd1ba9ec4cad88d7169b5da018c51dde44f1ba7921c
+        value: quay.io/konflux-ci/tekton-catalog/task-init:0.4.3@sha256:4be9343579d91c7b501cafe966cff59a601dfeca903c476e3763dd8d7599b900
       - name: kind
         value: task
       resolver: bundles
@@ -107,7 +107,7 @@ spec:
       - name: name
         value: git-clone
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.2.6@sha256:2e2bb56b0ede7415784d4bc0d31432d7a6f7ea00b646409c76b04b78c01b6c05
+        value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.2.6@sha256:0d3092d5f0800ace9f64cfa2b9585feca5fa4ded584b39e9e83535a5a61baa55
       - name: kind
         value: task
       resolver: bundles
@@ -185,7 +185,7 @@ spec:
       - name: name
         value: buildah
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.12.1@sha256:dcb924d03143ca76ac10ff606f04510b0684ed528a03e638e4d98b8d9a7c3e8e
+        value: quay.io/konflux-ci/tekton-catalog/task-buildah:0.12.1@sha256:338f9095eadf56a9f5c28bd901adba3dc28c58e9759ed5a542f15083486dfa7f
       - name: kind
         value: task
       resolver: bundles
@@ -205,7 +205,7 @@ spec:
       - name: name
         value: apply-tags
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.3.1@sha256:721a5937da7958a568b6ed4c2b97c6c9047cd795de1a9c3dcfff4b5936be4bc3
+        value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.3.1@sha256:ccd3665345d86c6799bc7e2e6ad86b277d9f3a5c40b513e6f2a0af8ad92e7dba
       - name: kind
         value: task
       resolver: bundles
@@ -226,7 +226,7 @@ spec:
       - name: name
         value: push-dockerfile
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-push-dockerfile:0.3.1@sha256:68a108bb3efa614d4c28bad83d4b3e09bfa5c225cbb047a1c56bd4bc47e4786c
+        value: quay.io/konflux-ci/tekton-catalog/task-push-dockerfile:0.3.1@sha256:b15e22886a41201e005c26671882e09d4c76876832f61c69746bcc640d1d382f
       - name: kind
         value: task
       resolver: bundles
