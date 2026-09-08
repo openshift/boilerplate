@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e
+
+source $CONVENTION_ROOT/_lib/common.sh
+
+# No PRE
+[[ "$1" == "PRE" ]] && exit 0
+
+# Expect POST
+[[ "$1" == "POST" ]] || err "Got a parameter I don't understand: '$1'. Did the infrastructure change?"
+
+# Seed CodeRabbit configuration without overwriting repo customizations.
+if [[ ! -f "${REPO_ROOT}/.coderabbit.yaml" ]]; then
+  echo "Copying .coderabbit.yaml to your repository root."
+  cp "${HERE}/.coderabbit.yaml" "${REPO_ROOT}/.coderabbit.yaml"
+else
+  echo ".coderabbit.yaml already exists; leaving it unchanged."
+fi
