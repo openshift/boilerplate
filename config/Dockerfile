@@ -19,7 +19,7 @@ RUN curl -L -o kubectl-package ${KUBECTL_PACKAGE_LOCATION} && \
     chmod +x kubectl-package && \
     mv kubectl-package /usr/local/bin
 
-FROM registry.access.redhat.com/ubi9:9.8-1785906690
+FROM registry.access.redhat.com/ubi9:9.8-1788245065
 
 RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync && \
     dnf clean all && \
