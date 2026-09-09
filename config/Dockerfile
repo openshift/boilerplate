@@ -21,7 +21,7 @@ RUN curl -L -o kubectl-package ${KUBECTL_PACKAGE_LOCATION} && \
 
 FROM registry.access.redhat.com/ubi9:9.8-1785906690
 
-RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync && \
+RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset-1.26.7 rsync && \
     dnf clean all && \
     dnf -y autoremove && \
     rm -rf /var/cache/dnf
