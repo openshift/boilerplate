@@ -21,10 +21,18 @@ RUN curl -L -o kubectl-package ${KUBECTL_PACKAGE_LOCATION} && \
 
 FROM registry.access.redhat.com/ubi9:9.8-1785906690
 
-RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git go-toolset rsync && \
+ARG GO_VERSION="1.26.8"
+ARG GO_SHA256SUM="d0f743b33e8d8945e6b1f432edd15785c70507121d6e2a723b21285eddf8b57b"
+
+RUN dnf -y install openssh-clients jq skopeo python3-pyyaml git rsync && \
     dnf clean all && \
     dnf -y autoremove && \
     rm -rf /var/cache/dnf
+
+RUN curl -L -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" && \
+    echo "${GO_SHA256SUM}  /tmp/go.tar.gz" | sha256sum -c && \
+    tar -C /usr/local -xzf /tmp/go.tar.gz && \
+    rm /tmp/go.tar.gz
 
 ARG GOCILINT_VERSION="v2.7.2" \
     KUSTOMIZE_VERSION="v5.6.0" \
