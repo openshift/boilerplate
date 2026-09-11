@@ -335,7 +335,11 @@ In your fork of this repository (not a consuming repository):
       note, `${CONVENTION_ROOT}/_lib/` contains some utilities that may
       be useful for `update`s.
     - `LATEST_IMAGE_TAG`: The tag for the most recent build image
-      produced by boilerplate.
+      produced by boilerplate. This is the newest `image-v*` tag that has
+      actually been **published to the registry**, which is not
+      necessarily the newest tag in git -- see [Creating a Konflux
+      release](#creating-a-konflux-release). You can set this in the
+      environment to pin a specific tag and skip the registry lookup.
 
 ### Testing Boilerplate Locally
 To test your changes, you can use the `BOILERPLATE_GIT_REPO` environment
@@ -372,6 +376,14 @@ See existing test cases for examples.
 ### Creating a Konflux release
 If you make a change to the build image produced by boilerplate in `config/Dockerfile`, you must build a new image
 from a tag through Konflux. To build a new image from a tag:
+
+> **Note:** Publishing the tag does not publish the image; it only lets you
+> start the release that builds one. Until that release completes, the tag
+> exists in git with no image behind it. `boilerplate/update` accounts for this
+> by resolving `LATEST_IMAGE_TAG` to the newest tag that is actually present in
+> the registry, so consumers who update mid-release get the previous (working)
+> image rather than a broken reference. This means **your new tag won't be
+> picked up by consumers until you finish the steps below.**
 
 1. Publish a new tag. The tag must be named `image-v{X}.{Y}.{Z}`, using [semver](https://semver.org/)
 principles when deciding what `{X}.{Y}.{Z}` should be. See https://github.com/openshift/boilerplate/pull/180

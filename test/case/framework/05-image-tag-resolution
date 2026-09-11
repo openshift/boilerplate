@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+
+set -e
+
+cat <<EOF
+Tests that the update driver resolves LATEST_IMAGE_TAG to the newest image-v*
+tag that has actually been published to the registry, rather than the newest
+tag in git. Publishing a tag only kicks off the Konflux release that builds the
+image, so for a while a tag can exist with no image behind it.
+EOF
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source $REPO_ROOT/test/lib.sh
+
+# We're testing the registry lookup itself, so don't let the suite-wide pin
+# short-circuit it.
+unset LATEST_IMAGE_TAG
+
+# A stub `skopeo` standing in for the registry, so this test stays offline and
+# deterministic. It reports success for tags listed in $PUBLISHED_TAGS, the
+# registry's real "manifest unknown" for anything else, and a hard error for
+# tags listed in $BROKEN_TAGS.
+stubdir=$(mktemp -d -t boilerplate-stub-XXXXXXXX)
+add_cleanup $stubdir
+export PUBLISHED_TAGS=$stubdir/published
+export BROKEN_TAGS=$stubdir/broken
+touch $PUBLISHED_TAGS $BROKEN_TAGS
+cat <<'EOF' > $stubdir/skopeo
+#!/usr/bin/env bash
+# Last arg is docker://...:tag
+for arg; do :; done
+tag=${arg##*:}
+if grep -qx "$tag" "$BROKEN_TAGS" 2>/dev/null; then
+    echo "unauthorized: access to the requested resource is not authorized" >&2
+    exit 1
+fi
+if grep -qx "$tag" "$PUBLISHED_TAGS" 2>/dev/null; then
+    echo '{"Digest":"sha256:decafbad"}'
+    exit 0
+fi
+echo "reading manifest $tag in quay.io/redhat-services-prod/openshift/boilerplate: manifest unknown" >&2
+exit 1
+EOF
+chmod +x $stubdir/skopeo
+export PATH=$stubdir:$PATH
+
+# A local clone we can hang synthetic tags off of, so we don't depend on the
+# real tag history. Tags sort above any real image-v* tag so they win the walk.
+bp_clone=$(mktemp -d -t boilerplate-clone-XXXXXXXX)
+add_cleanup $bp_clone
+git clone -q $REPO_ROOT $bp_clone
+git -C $bp_clone tag image-v90.0.0
+git -C $bp_clone tag image-v90.1.0
+git -C $bp_clone tag image-v90.2.0
+export BOILERPLATE_GIT_REPO=$bp_clone
+
+## assert_resolved_tag EXPECTED
+#
+# Bootstrap a fresh consumer, update it, and check the recorded backing image
+# tag matches EXPECTED.
+assert_resolved_tag() {
+    local expected=$1
+    local repo=$(empty_repo)
+    add_cleanup $repo
+    bootstrap_repo $repo
+    (
+        cd $repo
+        make boilerplate-update >/dev/null
+        local actual=$(cat boilerplate/_data/backing-image-tag)
+        [[ "$actual" == "$expected" ]] || err "Expected backing-image-tag '$expected', got '$actual'"
+    )
+}
+
+echo "== Newest tag published: it wins"
+printf 'image-v90.2.0\nimage-v90.1.0\nimage-v90.0.0\n' > $PUBLISHED_TAGS
+assert_resolved_tag image-v90.2.0
+
+echo "== Newest tag unpublished: falls back to the newest published one"
+# This is the regression under test: image-v90.2.0 is tagged in git but its
+# release hasn't produced an image yet.
+printf 'image-v90.1.0\nimage-v90.0.0\n' > $PUBLISHED_TAGS
+assert_resolved_tag image-v90.1.0
+
+echo "== Several newest tags unpublished: keeps walking back"
+printf 'image-v90.0.0\n' > $PUBLISHED_TAGS
+assert_resolved_tag image-v90.0.0
+
+echo "== Tags not reachable from HEAD are ignored"
+# freeze-check re-runs this driver at an older commit and must not pick up a
+# tag published after it.
+git -C $bp_clone checkout -q -b sidebar
+git -C $bp_clone commit -q --allow-empty -m "Not on master"
+git -C $bp_clone tag image-v91.0.0
+git -C $bp_clone checkout -q -
+printf 'image-v91.0.0\nimage-v90.1.0\n' > $PUBLISHED_TAGS
+assert_resolved_tag image-v90.1.0
+
+echo "== An explicit LATEST_IMAGE_TAG overrides the lookup entirely"
+printf 'image-v90.2.0\n' > $PUBLISHED_TAGS
+(
+    export LATEST_IMAGE_TAG=image-v1.2.3
+    # Point skopeo at nothing to prove we never consult the registry.
+    export PUBLISHED_TAGS=/dev/null
+    assert_resolved_tag image-v1.2.3
+)
+
+echo "== No published image among the candidates: fail loudly"
+> $PUBLISHED_TAGS
+repo=$(empty_repo)
+add_cleanup $repo
+bootstrap_repo $repo
+(
+    cd $repo
+    # Keep the walk shallow so it doesn't reach the real published tags.
+    IMAGE_TAG_SEARCH_DEPTH=3 make boilerplate-update >$LOG_DIR/05-no-image 2>&1 \
+        && err "Expected the update to fail when no candidate tag has an image"
+    grep -q "Failed to find a published build image" $LOG_DIR/05-no-image \
+        || err "Expected a 'no published build image' error; got: $(cat $LOG_DIR/05-no-image)"
+)
+
+echo "== A registry error is not treated as 'unpublished'"
+# Otherwise an auth failure or outage would silently pin consumers to an
+# arbitrarily old image.
+> $PUBLISHED_TAGS
+printf 'image-v90.2.0\n' > $BROKEN_TAGS
+repo=$(empty_repo)
+add_cleanup $repo
+bootstrap_repo $repo
+(
+    cd $repo
+    make boilerplate-update >$LOG_DIR/05-registry-error 2>&1 \
+        && err "Expected the update to fail when the registry query errors"
+    grep -q "Error querying the registry" $LOG_DIR/05-registry-error \
+        || err "Expected a registry query error; got: $(cat $LOG_DIR/05-registry-error)"
+)
+
+echo "All image tag resolution checks passed."
+exit 0
