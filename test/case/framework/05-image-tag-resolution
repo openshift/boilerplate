@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+
+set -e
+
+cat <<EOF
+Tests that boilerplate/update selects the newest image-v* tag whose image is
+published, while ignoring unreachable tags and propagating registry errors.
+EOF
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source "$REPO_ROOT/test/lib.sh"
+
+# The rest of the framework pins an image so it stays offline. This test
+# exercises the lookup itself instead.
+unset LATEST_IMAGE_TAG
+
+# Use a deterministic skopeo replacement instead of contacting Quay.
+stubdir=$(mktemp -d -t boilerplate-skopeo-XXXXXXXX)
+add_cleanup "$stubdir"
+export PUBLISHED_TAGS="$stubdir/published"
+export BROKEN_TAGS="$stubdir/broken"
+touch "$PUBLISHED_TAGS" "$BROKEN_TAGS"
+cat <<'EOF' > "$stubdir/skopeo"
+#!/usr/bin/env bash
+
+set -e
+
+for arg in "$@"; do
+    image_uri=$arg
+done
+tag=${image_uri##*:}
+
+if grep -Fqx "$tag" "$BROKEN_TAGS"; then
+    echo "unauthorized: access to the requested resource is not authorized" >&2
+    exit 1
+fi
+
+if grep -Fqx "$tag" "$PUBLISHED_TAGS"; then
+    echo '{"Digest":"sha256:decafbad"}'
+    exit 0
+fi
+
+echo "reading manifest $tag: manifest unknown" >&2
+exit 1
+EOF
+chmod +x "$stubdir/skopeo"
+export PATH="$stubdir:$PATH"
+
+# Create a local boilerplate repository with synthetic tags. Copy the two
+# files under test into the clone as well, so this case remains useful when
+# run against an uncommitted working tree.
+bp_clone=$(mktemp -d -t boilerplate-image-tags-XXXXXXXX)
+add_cleanup "$bp_clone"
+git clone -q "$REPO_ROOT" "$bp_clone"
+git -C "$bp_clone" config user.name "Boilerplate Image Tag Test"
+git -C "$bp_clone" config user.email "boilerplate-image-tag-test@example.com"
+cp "$REPO_ROOT/boilerplate/update" "$bp_clone/boilerplate/update"
+cp "$REPO_ROOT/boilerplate/_lib/common.sh" "$bp_clone/boilerplate/_lib/common.sh"
+git -C "$bp_clone" add boilerplate/update boilerplate/_lib/common.sh
+if ! git -C "$bp_clone" diff --cached --quiet; then
+    git -C "$bp_clone" commit -q -m "Use working tree update scripts for test"
+fi
+git -C "$bp_clone" tag image-v90.0.0
+git -C "$bp_clone" tag image-v90.1.0
+git -C "$bp_clone" tag image-v90.2.0
+
+# Add a newer tag on a side branch. It must not be selected when the update
+# runs against the default branch.
+default_branch=$(git -C "$bp_clone" symbolic-ref --short HEAD)
+git -C "$bp_clone" checkout -q -b image-tag-test-side
+git -C "$bp_clone" commit -q --allow-empty -m "Create unreachable image tag"
+git -C "$bp_clone" tag image-v91.0.0
+git -C "$bp_clone" checkout -q "$default_branch"
+
+export BOILERPLATE_GIT_REPO="$bp_clone"
+
+assert_resolved_tag() {
+    local expected=$1
+    local repo
+    local actual
+
+    repo=$(empty_repo)
+    add_cleanup "$repo"
+    bootstrap_repo "$repo"
+    (
+        cd "$repo"
+        make --no-print-directory boilerplate-update >/dev/null
+        actual=$(cat boilerplate/_data/backing-image-tag)
+        [[ "$actual" == "$expected" ]] || err "Expected backing-image-tag '$expected', got '$actual'"
+    )
+}
+
+echo "== Select the newest published tag"
+printf '%s\n' image-v90.2.0 image-v90.1.0 image-v90.0.0 > "$PUBLISHED_TAGS"
+assert_resolved_tag image-v90.2.0
+
+echo "== Fall back when the newest Git tag is unpublished"
+printf '%s\n' image-v90.1.0 image-v90.0.0 > "$PUBLISHED_TAGS"
+assert_resolved_tag image-v90.1.0
+
+echo "== Ignore tags that are not reachable from HEAD"
+printf '%s\n' image-v91.0.0 image-v90.1.0 > "$PUBLISHED_TAGS"
+assert_resolved_tag image-v90.1.0
+
+echo "== Respect an explicit tag override"
+> "$PUBLISHED_TAGS"
+(
+    export LATEST_IMAGE_TAG=image-v99.0.0
+    assert_resolved_tag image-v99.0.0
+)
+
+echo "== Fail when no candidate image is published"
+> "$PUBLISHED_TAGS"
+repo=$(empty_repo)
+add_cleanup "$repo"
+bootstrap_repo "$repo"
+if (
+    cd "$repo"
+    make --no-print-directory boilerplate-update > "$LOG_DIR/05-no-image" 2>&1
+); then
+    err "Expected the update to fail when no candidate image exists"
+fi
+grep -q "Failed to find a published build image" "$LOG_DIR/05-no-image" \
+    || err "Expected a no-published-image error; got: $(cat "$LOG_DIR/05-no-image")"
+
+echo "== Propagate registry errors"
+printf '%s\n' image-v90.2.0 > "$BROKEN_TAGS"
+repo=$(empty_repo)
+add_cleanup "$repo"
+bootstrap_repo "$repo"
+if (
+    cd "$repo"
+    make --no-print-directory boilerplate-update > "$LOG_DIR/05-registry-error" 2>&1
+); then
+    err "Expected the update to fail when the registry query errors"
+fi
+grep -q "Error querying the repository" "$LOG_DIR/05-registry-error" \
+    || err "Expected a registry-query error; got: $(cat "$LOG_DIR/05-registry-error")"
+
+echo "All image tag resolution checks passed."

@@ -335,7 +335,10 @@ In your fork of this repository (not a consuming repository):
       note, `${CONVENTION_ROOT}/_lib/` contains some utilities that may
       be useful for `update`s.
     - `LATEST_IMAGE_TAG`: The tag for the most recent build image
-      produced by boilerplate.
+      published by boilerplate. When unset, `boilerplate/update` searches
+      reachable `image-v*` tags and selects the newest one whose image is
+      present in the registry. Set this explicitly to pin a tag or skip the
+      registry lookup.
 
 ### Testing Boilerplate Locally
 To test your changes, you can use the `BOILERPLATE_GIT_REPO` environment
@@ -376,6 +379,10 @@ from a tag through Konflux. To build a new image from a tag:
 1. Publish a new tag. The tag must be named `image-v{X}.{Y}.{Z}`, using [semver](https://semver.org/)
 principles when deciding what `{X}.{Y}.{Z}` should be. See https://github.com/openshift/boilerplate/pull/180
 for an example.
+
+   Publishing the Git tag starts the image release but does not make the image
+   immediately available. Until the release finishes, `boilerplate/update`
+   will continue using the newest previously published image tag.
 
     ```shell
     # create tag
