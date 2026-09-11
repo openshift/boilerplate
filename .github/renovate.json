@@ -7,9 +7,15 @@
     "group:allDigest"
   ],
   "enabledManagers": [
+    "dockerfile",
     "tekton",
     "gomod"
   ],
+  "dockerfile": {
+    "includePaths": [
+      "config/Dockerfile"
+    ]
+  },
   "tekton": {
     "includePaths": [
       "pipelines/**",
