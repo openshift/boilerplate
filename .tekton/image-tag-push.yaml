@@ -6,21 +6,14 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: '3'
-    pipelinesascode.tekton.dev/on-cel-expression: |
-      event == "push" &&
-      target_branch == "master" &&
-      (
-        "config/***".pathChanged() ||
-        ".tekton/image-pull-request.yaml".pathChanged() ||
-        "boilerplate/***".pathChanged() ||
-        "test/***".pathChanged()
-      )
+    pipelinesascode.tekton.dev/on-event: "[push]"
+    pipelinesascode.tekton.dev/on-target-branch: "[refs/tags/image-v*]"
+  creationTimestamp:
   labels:
     appstudio.openshift.io/application: boilerplate-master
     appstudio.openshift.io/component: image
     pipelines.appstudio.openshift.io/type: build
-    release.appstudio.openshift.io/auto-release: "false"
-  name: image-on-push
+  name: image-on-tag-push
   namespace: boilerplate-cicada-tenant
 spec:
   params:
@@ -34,6 +27,9 @@ spec:
       value: config/Dockerfile
     - name: build-source-image
       value: 'true'
+    - name: build-args
+      value:
+        - "VERSION={{ git_tag }}"
   taskRunSpecs:
     - computeResources:
         limits:

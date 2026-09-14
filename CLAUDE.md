@@ -77,8 +77,10 @@ The repository supports both Docker and Podman. The `CONTAINER_ENGINE` variable 
 ### Release Process
 For changes to the build image (`config/Dockerfile`):
 1. Create semver tag: `image-v{X}.{Y}.{Z}`
-2. Update Konflux `ReleasePlanAdmission` resource
-3. Create `Release` resource in Konflux
+2. Push the tag to GitHub. The tag-only Pipelines-as-Code build passes the tag
+   into the image's `version` label.
+3. Konflux creates the `Release` automatically after the tagged snapshot passes
+   its required tests; no RPA edit or manual `Release` resource is needed.
 4. Update Prow mirroring configuration
 
 ## Environment Variables
