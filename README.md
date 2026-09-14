@@ -380,6 +380,11 @@ from a tag through Konflux. To build a new image from a tag:
 principles when deciding what `{X}.{Y}.{Z}` should be. See https://github.com/openshift/boilerplate/pull/180
 for an example.
 
+   If this is a major-version bump, update the Boilerplate
+   `ReleasePlanAdmission`'s `product_version` to the new major version (for
+   example, change `8` to `9`). Patch and minor releases do not require an RPA
+   update.
+
    Publishing the Git tag starts the image release but does not make the image
    immediately available. Until the release finishes, `boilerplate/update`
    will continue using the newest previously published image tag.
