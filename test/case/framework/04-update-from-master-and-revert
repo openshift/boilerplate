@@ -3,27 +3,14 @@
 set -e
 
 cat <<EOF
-Tests updating from the current boilerplate master to the current
-commit, and then reverting to the master.
+Tests updating from a local boilerplate baseline to the current files, and
+then reverting to the baseline.
 EOF
-
-# Sometimes, e.g. when openshift/release runs this test in a rehearsal,
-# we're *at* master. In such cases, this test would legitimately fail on
-# `boilerplate-commit` because there's nothing to update and therefore
-# nothing to commit. We can skip the test in such cases (master has
-# already been tested anyway).
-if [[ $(git rev-parse HEAD) == $(git rev-parse master) ]]; then
-    echo "==SKIP== We're already at master"
-    exit 0
-fi
-
-# TODO: This test requires an active network connection to access the
-# actual boilerplate github repository. We should label it as such and
-# make a granny switch to disable all such tests.
 
 HERE=${0%/*}
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
+current_commit=$(git -C "$REPO_ROOT" rev-parse HEAD)
 
 source $REPO_ROOT/test/lib.sh
 
@@ -38,7 +25,17 @@ bootstrap_repo $repo
 
 cd $repo
 
-boilerplate_master=$(new_boilerplate_clone)
+boilerplate_master=$(mktemp -d -t boilerplate-master-XXXXXXXX)
+add_cleanup "$boilerplate_master"
+git clone -q "$REPO_ROOT" "$boilerplate_master"
+git -C "$boilerplate_master" config user.name "Boilerplate Update Test"
+git -C "$boilerplate_master" config user.email "boilerplate-update-test@example.com"
+git -C "$boilerplate_master" fetch -q "$REPO_ROOT" "$current_commit"
+git -C "$boilerplate_master" checkout -q -b boilerplate-test-current FETCH_HEAD
+git -C "$boilerplate_master" checkout -q -b boilerplate-test-master
+echo "baseline-only test fixture" > "$boilerplate_master/boilerplate/test/test-base-convention/master-only.txt"
+git -C "$boilerplate_master" add boilerplate/test/test-base-convention/master-only.txt
+git -C "$boilerplate_master" commit -q -m "Create local baseline for update test"
 
 override_boilerplate_repo $boilerplate_master || exit $?
 
@@ -48,13 +45,15 @@ check_update $repo 04-check-after-init || exit $?
 # So the next update starts "clean"
 ./boilerplate/_lib/boilerplate-commit
 
-reset_boilerplate_repo
+git -C "$boilerplate_master" checkout -q boilerplate-test-current
+override_boilerplate_repo $boilerplate_master || exit $?
 
 make boilerplate-update || exit $?
 check_update $repo 04-check-new-version-update || exit $?
 # So the next update starts "clean"
 ./boilerplate/_lib/boilerplate-commit
 
+git -C "$boilerplate_master" checkout -q boilerplate-test-master
 override_boilerplate_repo $boilerplate_master || exit $?
 
 make boilerplate-update || exit $?

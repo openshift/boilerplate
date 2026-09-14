@@ -2,8 +2,9 @@ if [ "$BOILERPLATE_SET_X" ]; then
     set -x
 fi
 
-# NOTE: Change this when publishing a new image tag.
-LATEST_IMAGE_TAG=image-v4.0.1
+# Keep the existing test suite offline and deterministic. Tests that exercise
+# published image-tag resolution explicitly unset this variable.
+export LATEST_IMAGE_TAG=image-v4.0.1
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 # Make all tests use this local clone by default.
