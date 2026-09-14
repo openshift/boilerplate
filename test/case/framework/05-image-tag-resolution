@@ -67,11 +67,11 @@ git -C "$bp_clone" tag image-v90.2.0
 
 # Add a newer tag on a side branch. It must not be selected when the update
 # runs against the default branch.
-default_branch=$(git -C "$bp_clone" symbolic-ref --short HEAD)
+default_commit=$(git -C "$bp_clone" rev-parse HEAD)
 git -C "$bp_clone" checkout -q -b image-tag-test-side
 git -C "$bp_clone" commit -q --allow-empty -m "Create unreachable image tag"
 git -C "$bp_clone" tag image-v91.0.0
-git -C "$bp_clone" checkout -q "$default_branch"
+git -C "$bp_clone" checkout -q "$default_commit"
 
 export BOILERPLATE_GIT_REPO="$bp_clone"
 
