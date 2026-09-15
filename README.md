@@ -380,6 +380,11 @@ from a tag through Konflux. To build a new image from a tag:
 principles when deciding what `{X}.{Y}.{Z}` should be. See https://github.com/openshift/boilerplate/pull/180
 for an example.
 
+   If this is a major-version bump, update the Boilerplate
+   `ReleasePlanAdmission`'s `product_version` to the new major version (for
+   example, change `8` to `9`). Patch and minor releases do not require an RPA
+   update.
+
    Publishing the Git tag starts the image release but does not make the image
    immediately available. Until the release finishes, `boilerplate/update`
    will continue using the newest previously published image tag.
@@ -392,38 +397,20 @@ for an example.
     git push upstream image-v1.2.3
     ```
 
-2. Update the `ReleasePlanAdmission` resource [here](https://gitlab.cee.redhat.com/releng/konflux-release-data/-/blob/main/config/stone-prd-rh01.pg1f.p1/service/ReleasePlanAdmission/boilerplate-cicada/boilerplate.yaml?ref_type=heads#L18-23) with your new tag. See this [MR](https://gitlab.cee.redhat.com/releng/konflux-release-data/-/merge_requests/6282) for an example.
+2. The tag-only Pipelines-as-Code build matches `refs/tags/image-v*`, passes the
+   tag into the image's `version` label, and uses that label for the published
+   image tag. No `ReleasePlanAdmission` update is needed for each release.
 3. If needed, login to the Konflux cluster for Boilerplate
 ```shell
 oc login --web https://api.stone-prd-rh01.pg1f.p1.openshiftapps.com:6443/
 ```
-4. Once the above MR merges, wait a bit, then validate the changes have synced to Konflux. You should see your updates in the tags output below:
+4. The tagged snapshot is eligible for automatic release. After required tests
+   pass, the `boilerplate-releaseplan` creates a `kind: Release` automatically.
+   You can watch the resulting Releases with:
     ```shell
-   oc get releaseplanadmissions -n rhtap-releng-tenant boilerplate -o json | jq .spec.data.mapping.defaults.tags
+    oc get releases -n boilerplate-cicada-tenant -w
     ```
-    > **⚠️ IMPORTANT:** Do not move on until the above releaseplanadmission matches your changes!
-5. Find the resulting snapshot that contains the newly built artifact. Grab the commit that corresponds to the tag you pushed to filter by.
-    ```shell
-    oc get snapshots -n boilerplate-cicada-tenant -l pac.test.appstudio.openshift.io/sha=$COMMIT
-    ```
-6. Once the `ReleasePlanAdmission` changes are live in the Konflux cluster, create your `Release`:
-    - Setup variables needed for the `Release` (note the `v` is prefixing the version):
-     ```shell
-    export BOILERPLATE_VERSION=vX.Y.Z
-    export BOILERPLATE_SNAPSHOT=$snapshotname
-     ```
-    - Create the `Release`:
-    ```shell
-    echo "apiVersion: appstudio.redhat.com/v1alpha1
-    kind: Release
-    metadata:
-     name: image-${BOILERPLATE_VERSION}
-     namespace: boilerplate-cicada-tenant
-    spec:
-     releasePlan: boilerplate-releaseplan
-     snapshot: ${BOILERPLATE_SNAPSHOT}" | oc apply -f -
-    ```
-7. You can watch the release pipeline in the Konflux UI [here](https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/boilerplate-cicada-tenant/applications/boilerplate-master/releases).
-8. Once the release is complete, open a PR adding the new image tag to Prow mirroring.
+   The release pipeline is also visible in the Konflux UI [here](https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/boilerplate-cicada-tenant/applications/boilerplate-master/releases).
+5. Once the release is complete, open a PR adding the new image tag to Prow mirroring.
    - See this [PR](https://github.com/openshift/release/pull/64991) for an example.
    - Reach out in #forum-ocp-testplatform and ask for them to review it.
