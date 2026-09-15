@@ -30,7 +30,7 @@ spec:
           - name: COMPONENT_GIT_REVISION
             description: parsed component git revision
         steps:
-          - image: "registry.access.redhat.com/ubi8/ubi-minimal:latest@sha256:4e4bb2f1d53efe9a198adc197037aa2d63f113f90911d7d074bf43bb732ed8f0"
+          - image: "registry.access.redhat.com/ubi8/ubi-minimal:latest@sha256:e2e7f267999e366c768ff36ff69e8c1cf591375f0f27109535570029d1020784"
             env:
               - name: SNAPSHOT
                 value: $(params.SNAPSHOT)
