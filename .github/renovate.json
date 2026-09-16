@@ -14,6 +14,19 @@
   "dockerfile": {
     "includePaths": [
       "config/Dockerfile"
+    ],
+    "packageRules": [
+      {
+        "matchUpdateTypes": [
+          "minor",
+          "patch",
+          "pin",
+          "digest"
+        ],
+        "automerge": false,
+        "platformAutomerge": false,
+        "addLabels": ["lgtm", "approved"]
+      }
     ]
   },
   "tekton": {
