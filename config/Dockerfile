@@ -1,4 +1,4 @@
-FROM quay.io/konflux-ci/yq:latest AS yq
+FROM quay.io/konflux-ci/yq:latest@sha256:9b73d39c362692d0bc5787c2b5e955cd54713e6bb97195a0fb2e87a6557040ee AS yq
 FROM registry.access.redhat.com/ubi9:9.8-1789348643@sha256:12b3fafdd3d51cb894196ecf944b1119ff4bc2d390a3a57fd141c3b5f0de9b15 AS builder
 
 ARG GH_VERSION="2.58.0"
