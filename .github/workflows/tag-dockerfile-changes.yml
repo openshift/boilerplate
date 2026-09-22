@@ -14,10 +14,11 @@ concurrency:
 
 jobs:
   tag-image:
+    if: github.repository == 'openshift/boilerplate'
     runs-on: ubuntu-latest
     steps:
       - name: Check out master
-          uses: actions/checkout@v5
+        uses: actions/checkout@v5
         with:
           ref: master
           fetch-depth: 0
