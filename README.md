@@ -372,32 +372,23 @@ See existing test cases for examples.
 
 ### Creating a Konflux release
 If you make a change to the build image produced by boilerplate in `config/Dockerfile`, you must build a new image
-from a tag through Konflux. To build a new image from a tag:
+from a tag through Konflux. The daily GitHub Actions workflow creates that tag automatically:
 
-1. Publish a new tag. The tag must be named `image-v{X}.{Y}.{Z}`, using [semver](https://semver.org/)
-principles when deciding what `{X}.{Y}.{Z}` should be. See https://github.com/openshift/boilerplate/pull/180
-for an example.
-
-   If this is a major-version bump, update the Boilerplate
-   `ReleasePlanAdmission`'s `product_version` to the new major version (for
-   example, change `8` to `9`). Patch and minor releases do not require an RPA
-   update.
+1. The `.github/workflows/tag-dockerfile-changes.yml` workflow runs daily at
+00:00 UTC. It checks `master` for commits touching `config/Dockerfile` since
+the newest reachable `image-v*` tag. When it finds one, it creates and pushes
+an annotated `image-vYYYYMMDD` tag at the current `master` commit. There is at
+most one generated tag per UTC day; use the workflow's manual-dispatch option
+to retry a missed run.
 
    Publishing the Git tag starts the image release but does not make the image
    immediately available. Consuming repositories use the stable `latest` tag,
    which is updated as part of the release.
 
-    ```shell
-    # create tag
-    git tag -a image-v1.2.3 -m "Release v1.2.3"
-
-    # push tag to upstream
-    git push upstream image-v1.2.3
-    ```
-
 2. The tag-only Pipelines-as-Code build matches `refs/tags/image-v*`, passes the
    tag into the image's `version` label, and uses that label for the published
-   image tag. No `ReleasePlanAdmission` update is needed for each release.
+   image tag. No `ReleasePlanAdmission` update is needed for date-tagged
+   releases.
 3. If needed, login to the Konflux cluster for Boilerplate
 ```shell
 oc login --web https://api.stone-prd-rh01.pg1f.p1.openshiftapps.com:6443/

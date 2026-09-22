@@ -1,0 +1,64 @@
+name: Tag image on Dockerfile changes
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: image-tag-master
+  cancel-in-progress: false
+
+jobs:
+  tag-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Tag Dockerfile changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Refresh master and tags so the tag is created from the latest branch tip.
+          git fetch --force --tags origin "+refs/heads/master:refs/remotes/origin/master"
+          git checkout --detach origin/master
+
+          today_tag="image-v$(date -u +%Y%m%d)"
+
+          # A scheduled run and a manual retry on the same UTC date must be harmless.
+          if git show-ref --verify --quiet "refs/tags/${today_tag}"; then
+            tag_commit=$(git rev-parse "${today_tag}^{commit}")
+            if git merge-base --is-ancestor "${tag_commit}" origin/master; then
+              echo "${today_tag} already exists on master; nothing to do."
+              exit 0
+            fi
+
+            echo "${today_tag} exists but does not point to master history." >&2
+            exit 1
+          fi
+
+          baseline_tag=$(git describe --tags --abbrev=0 --match 'image-v*' origin/master || true)
+          if [[ -z "${baseline_tag}" ]]; then
+            echo "No reachable image-v* baseline tag exists on master." >&2
+            exit 1
+          fi
+
+          dockerfile_commit=$(git log -1 --format='%H' "${baseline_tag}..origin/master" -- config/Dockerfile)
+          if [[ -z "${dockerfile_commit}" ]]; then
+            echo "No commit since ${baseline_tag} touched config/Dockerfile."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag --annotate "${today_tag}" --message "Automated image release ${today_tag}" HEAD
+          git push origin "refs/tags/${today_tag}"
