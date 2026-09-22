@@ -334,11 +334,9 @@ In your fork of this repository (not a consuming repository):
       `update` driver and the convention subdirectories themselves. Of
       note, `${CONVENTION_ROOT}/_lib/` contains some utilities that may
       be useful for `update`s.
-    - `LATEST_IMAGE_TAG`: The tag for the most recent build image
-      published by boilerplate. When unset, `boilerplate/update` searches
-      reachable `image-v*` tags and selects the newest one whose image is
-      present in the registry. Set this explicitly to pin a tag or skip the
-      registry lookup.
+    - `LATEST_IMAGE_TAG`: The tag for the boilerplate backing image. When
+      unset, `boilerplate/update` uses `latest`. Set this explicitly to pin a
+      tag for local testing.
 
 ### Testing Boilerplate Locally
 To test your changes, you can use the `BOILERPLATE_GIT_REPO` environment
@@ -386,8 +384,8 @@ for an example.
    update.
 
    Publishing the Git tag starts the image release but does not make the image
-   immediately available. Until the release finishes, `boilerplate/update`
-   will continue using the newest previously published image tag.
+   immediately available. Consuming repositories use the stable `latest` tag,
+   which is updated as part of the release.
 
     ```shell
     # create tag
