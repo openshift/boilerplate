@@ -3,21 +3,44 @@ FROM registry.access.redhat.com/ubi9:9.8-1790556197@sha256:7a38d75d376f7989033e7
 
 ARG GH_VERSION="2.58.0"
 ARG GH_SHA256SUM="84feae3d143bc360ea1004b474f124c8cfd75363a5e197d3ce63fe23d9f3a2ea"
+ARG GH_SHA256SUM_ARM64="ca23d893a7705db423f4c9b1d660cf2ac5ebf69cb4d8094496ba16756bfa26ee"
 ARG GH_LOCATION=https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz
-
-RUN curl -L -o gh.tar.gz ${GH_LOCATION} && \
-    echo ${GH_SHA256SUM} gh.tar.gz | sha256sum -c && \
-    tar xzf gh.tar.gz gh_${GH_VERSION}_linux_amd64/bin/gh && \
-    mv gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin
+ARG GH_LOCATION_ARM64=https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_arm64.tar.gz
 
 ARG KUBECTL_PACKAGE_VERSION="1.18.6"
 ARG KUBECTL_PACKAGE_SHA256SUM="d0efbc20d5965a76768850f6d787353499a7a42484e2a3673587430499a04667"
+ARG KUBECTL_PACKAGE_SHA256SUM_ARM64="0e4783710e27281f0db580bae56b5cf982dafe80028ec0c9c60cfc5418f13188"
 ARG KUBECTL_PACKAGE_LOCATION=https://github.com/package-operator/package-operator/releases/download/v${KUBECTL_PACKAGE_VERSION}/kubectl-package_linux_amd64
+ARG KUBECTL_PACKAGE_LOCATION_ARM64=https://github.com/package-operator/package-operator/releases/download/v${KUBECTL_PACKAGE_VERSION}/kubectl-package_linux_arm64
 
-RUN curl -L -o kubectl-package ${KUBECTL_PACKAGE_LOCATION} && \
-    echo ${KUBECTL_PACKAGE_SHA256SUM} kubectl-package | sha256sum -c && \
+RUN set -eu; \
+    machine="$(uname -m)"; \
+    case "${machine}" in \
+      x86_64) \
+        arch=amd64; \
+        gh_sha256sum="${GH_SHA256SUM}"; \
+        gh_location="${GH_LOCATION}"; \
+        kubectl_package_sha256sum="${KUBECTL_PACKAGE_SHA256SUM}"; \
+        kubectl_package_location="${KUBECTL_PACKAGE_LOCATION}" ;; \
+      aarch64) \
+        arch=arm64; \
+        gh_sha256sum="${GH_SHA256SUM_ARM64}"; \
+        gh_location="${GH_LOCATION_ARM64}"; \
+        kubectl_package_sha256sum="${KUBECTL_PACKAGE_SHA256SUM_ARM64}"; \
+        kubectl_package_location="${KUBECTL_PACKAGE_LOCATION_ARM64}" ;; \
+      *) \
+        echo "Unsupported build architecture: ${machine}" >&2; \
+        exit 1 ;; \
+    esac; \
+    curl -fL -o gh.tar.gz "${gh_location}" && \
+    printf '%s  %s\n' "${gh_sha256sum}" gh.tar.gz | sha256sum -c - && \
+    tar xzf gh.tar.gz "gh_${GH_VERSION}_linux_${arch}/bin/gh" && \
+    mv "gh_${GH_VERSION}_linux_${arch}/bin/gh" /usr/local/bin/gh && \
+    curl -fL -o kubectl-package "${kubectl_package_location}" && \
+    printf '%s  %s\n' "${kubectl_package_sha256sum}" kubectl-package | sha256sum -c - && \
     chmod +x kubectl-package && \
-    mv kubectl-package /usr/local/bin
+    mv kubectl-package /usr/local/bin/kubectl-package && \
+    rm -f gh.tar.gz
 
 FROM registry.access.redhat.com/ubi9:9.8-1790556197@sha256:7a38d75d376f7989033e75fcaaf9fcbb090fafc58e05c2c99de76ae0ba083fdb
 
