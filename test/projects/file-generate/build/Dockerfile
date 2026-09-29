@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+FROM registry.access.redhat.com/ubi9/ubi-micro:latest
 
 ENV OPERATOR=/usr/local/bin/file-generate \
     USER_UID=1001 \
