@@ -31,6 +31,12 @@ spec:
       value: '{{revision}}'
     - name: output-image
       value: quay.io/redhat-user-workloads/boilerplate-cicada-tenant/boilerplate-master/image:on-pr-{{revision}}
+    - name: build-platforms
+      value:
+        - linux/amd64
+        - linux/arm64
+    - name: build-image-index
+      value: 'true'
     - name: image-expires-after
       value: 5d
     - name: dockerfile
@@ -41,7 +47,7 @@ spec:
     - computeResources:
         limits:
           memory: 4Gi
-      pipelineTaskName: build-container
+      pipelineTaskName: build-images
     - computeResources:
         limits:
           memory: 4Gi
@@ -64,12 +70,12 @@ spec:
       secret:
         secretName: '{{ git_auth_secret }}'
   pipelineRef:
-    resolver: git
+    resolver: bundles
     params:
-      - name: url
-        value: https://github.com/openshift/boilerplate
-      - name: revision
-        value: "{{ revision }}"
-      - name: pathInRepo
-        value: pipelines/docker-build-oci-ta/pipeline.yaml
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/pipeline-docker-build-multi-platform-oci-ta:36b2adfb556e9a9cbda16f33d99907ca1204078e@sha256:587a6c6d4834bdbb21192027b5e87c60371438e4209ba5470f06528460069cb5
+      - name: name
+        value: docker-build-multi-platform-oci-ta
+      - name: kind
+        value: pipeline
 status: {}
