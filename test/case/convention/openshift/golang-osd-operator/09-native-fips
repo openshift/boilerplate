@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+# shellcheck disable=SC1091
+source "${REPO_ROOT}/test/lib.sh"
+
+toolchain_version="$(go version)"
+repo="$(empty_repo)"
+add_cleanup "${repo}"
+cd "${repo}"
+
+cat > go.mod <<'EOF'
+module example.com/native-fips-test
+
+go 1.24.0
+EOF
+
+cat > main.go <<'EOF'
+package main
+
+import (
+	"crypto/fips140"
+	"fmt"
+)
+
+func main() {
+	fmt.Printf("enabled=%t version=%s\n", fips140.Enabled(), fips140.Version())
+}
+EOF
+
+cat > Makefile <<EOF
+IMAGE_REGISTRY := example.com
+IMAGE_REPOSITORY := example
+IMAGE_NAME := native-fips-test
+VERSION_MAJOR := 0
+VERSION_MINOR := 1
+OPERATOR_NAME := native-fips-test
+include ${REPO_ROOT}/boilerplate/openshift/golang-osd-operator/standard.mk
+EOF
+
+mkdir -p build/_output/bin
+git add go.mod main.go Makefile
+git commit -m "Add minimal Go build fixture" >/dev/null
+
+unset FIPS_ENABLED GOFIPS140 GOFLAGS_MOD
+
+enabled_command="$(FIPS_ENABLED=true make --no-print-directory --dry-run go-build)"
+if ! grep -q 'GOFIPS140=v1.0.0' <<< "${enabled_command}"; then
+    err "FIPS-enabled go-build did not select GOFIPS140=v1.0.0"
+fi
+if grep -Eq 'GOEXPERIMENT=boringcrypto|GOFIPS140=off|-tags=fips_enabled|ensure-fips' <<< "${enabled_command}"; then
+    err "FIPS-enabled go-build still injects a legacy BoringCrypto setting or target"
+fi
+if [[ "${toolchain_version}" == *"(Red Hat "* ]]; then
+    if ! grep -q 'no_openssl' <<< "${enabled_command}"; then
+        err "FIPS-enabled Red Hat Go builds must select the native Go crypto backend"
+    fi
+elif grep -q 'no_openssl' <<< "${enabled_command}"; then
+    err "The Red Hat-specific no_openssl tag was unexpectedly added for this toolchain"
+fi
+
+false_command="$(FIPS_ENABLED=false make --no-print-directory --dry-run go-build)"
+if grep -Eq 'GOFIPS140=|no_openssl' <<< "${false_command}"; then
+    err "FIPS_ENABLED=false unexpectedly injects native FIPS build settings"
+fi
+
+unset FIPS_ENABLED
+unset_command="$(make --no-print-directory --dry-run go-build)"
+if grep -Eq 'GOFIPS140=|no_openssl' <<< "${unset_command}"; then
+    err "An unset FIPS_ENABLED unexpectedly injects native FIPS build settings"
+fi
+
+FIPS_ENABLED=true make --no-print-directory go-build
+enabled_binary="build/_output/bin/native-fips-test"
+enabled_info="$(go version -m "${enabled_binary}")"
+if ! grep -Eq 'GOFIPS140=v1\.0\.0([^[:space:]]*)' <<< "${enabled_info}"; then
+    err "FIPS-enabled binary does not report module v1.0.0 (or a resolved snapshot): ${enabled_info}"
+fi
+if [[ "${toolchain_version}" == *"(Red Hat "* ]]; then
+    expected_fips_default=auto
+else
+    expected_fips_default='(on|auto)'
+fi
+if ! grep -E 'DefaultGODEBUG=' <<< "${enabled_info}" | grep -Eq "(^|[=,])fips140=${expected_fips_default}([,[:space:]]|$)"; then
+    err "FIPS-enabled binary does not embed a supported default FIPS mode (${expected_fips_default}): ${enabled_info}"
+fi
+if [[ "${toolchain_version}" == *"(Red Hat "* ]] && ! grep -q 'no_openssl' <<< "${enabled_info}"; then
+    err "FIPS-enabled Red Hat binary did not select the native Go crypto backend: ${enabled_info}"
+fi
+if grep -Eqi 'boringcrypto|fips_enabled' <<< "${enabled_info}"; then
+    err "FIPS-enabled binary still reports BoringCrypto or the legacy fips_enabled tag: ${enabled_info}"
+fi
+
+forced_on_status="$(GODEBUG=fips140=on "./${enabled_binary}")"
+if [[ "${forced_on_status}" != "enabled=true version=v1.0.0" ]]; then
+    err "The selected Go FIPS module did not enter FIPS mode when explicitly enabled: ${forced_on_status}"
+fi
+
+assert_non_fips_binary() {
+    local setting="$1"
+    local info="$2"
+    # Red Hat Go toolsets may report v1.0.0 as their implicit module snapshot;
+    # FIPS_ENABLED must not inject the runtime mode or native-backend tag.
+    if grep -Eq 'DefaultGODEBUG=.*fips140=(on|auto)|no_openssl' <<< "${info}"; then
+        err "${setting} unexpectedly enabled native FIPS mode: ${info}"
+    fi
+}
+
+FIPS_ENABLED=false make --no-print-directory go-build
+false_info="$(go version -m "${enabled_binary}")"
+assert_non_fips_binary "FIPS_ENABLED=false" "${false_info}"
+
+unset FIPS_ENABLED
+make --no-print-directory go-build
+unset_info="$(go version -m "${enabled_binary}")"
+assert_non_fips_binary "unset FIPS_ENABLED" "${unset_info}"
+
+if make --no-print-directory --dry-run ensure-fips >/dev/null 2>&1; then
+    err "ensure-fips target should not exist"
+fi
+if [[ -e fips.go ]]; then
+    err "A native FIPS build unexpectedly generated legacy fips.go"
+fi
+
+colorprint "${GREEN}" "Native Go FIPS 140-3 tests passed!"
