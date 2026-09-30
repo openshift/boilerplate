@@ -133,23 +133,23 @@ Both targets require `kubectl-package`. If it is not found, the target fails wit
 
 ## FIPS (Federal Information Processing Standards)
 
-To enable FIPS in your build there is a `make ensure-fips` target.
+FIPS-enabled builds use Go's native FIPS 140-3 module and require Go 1.24 or newer. Setting `FIPS_ENABLED=true` selects the frozen `v1.0.0` module with `GOFIPS140=v1.0.0`. On Red Hat Go toolsets, the convention also selects the native Go crypto backend instead of the default OpenSSL backend; the toolchain's `fips140=auto` mode activates FIPS when the host is configured for FIPS. Other Go toolchains may embed `fips140=on` by default. `CGO_ENABLED` is unchanged. No generated `fips.go`, `crypto/tls/fipsonly` import, or separate runtime `GODEBUG` setting is needed.
 
-Add `FIPS_ENABLED=true` to your repos Makefile. Please ensure that this variable is added **before** including boilerplate Makefiles.
+To enable FIPS for one build, run:
 
-e.g.
+```sh
+FIPS_ENABLED=true make go-build
+```
 
-```.mk
+To enable it for all builds, add `FIPS_ENABLED=true` to your repository's Makefile **before** including boilerplate Makefiles:
+
+```makefile
 FIPS_ENABLED=true
 
 include boilerplate/generated-includes.mk
 ```
 
-`ensure-fips` will add a [fips.go](./fips.go) file in the same directory as the `main.go` file. (Please commit this file as normal)
-
-`fips.go` will import the necessary packages to restrict all TLS configuration to FIPS-approved settings.
-
-With `FIPS_ENABLED=true`, `ensure-fips` is always run before `make go-build`
+If you previously ran `make ensure-fips`, the convention update removes an unmodified generated `fips.go` from the repository root or `cmd/manager` (for older SDK layouts). Modified or customized files are left in place with a warning; review them manually and remove the obsolete `crypto/tls/fipsonly` import and `fips_enabled` build constraint as appropriate.
 
 ## Additional deployment support
 
