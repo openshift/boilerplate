@@ -102,11 +102,13 @@ GOENV+=GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=1 GOFLAGS="${GOFLAGS_MOD}"
 GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPATH}"
 
 ifeq (${FIPS_ENABLED}, true)
-GOFLAGS_MOD+=-tags=fips_enabled
+GOENV+=GOFIPS140=v1.0.0
+# Red Hat Go toolsets use OpenSSL by default on Linux with cgo. Select the
+# native Go crypto implementation for FIPS-enabled builds instead.
+ifneq (,$(findstring Red Hat,$(shell go version)))
+GOFLAGS_MOD+=-tags=no_openssl
 GOFLAGS_MOD:=$(strip ${GOFLAGS_MOD})
-$(warning Setting GOEXPERIMENT=boringcrypto - this generally causes builds to fail unless building inside the provided Dockerfile. If building locally consider calling 'go build .')
-GOENV+=GOEXPERIMENT=boringcrypto
-GOENV+=GOFIPS140=off
+endif
 GOENV:=$(strip ${GOENV})
 endif
 
@@ -266,10 +268,6 @@ endif
 
 .PHONY: generate
 generate: op-generate go-generate openapi-generate manifests sync-pko-crds
-
-ifeq (${FIPS_ENABLED}, true)
-go-build: ensure-fips
-endif
 
 .PHONY: go-build
 go-build: ## Build binary
@@ -461,10 +459,6 @@ opm-build-push: python-venv docker-push
 	OPERATOR_IMAGE_TAG="${OPERATOR_IMAGE_TAG}" \
 	OLM_CHANNEL="${OLM_CHANNEL}" \
 	${CONVENTION_DIR}/build-opm-catalog.sh
-
-.PHONY: ensure-fips
-ensure-fips:
-	${CONVENTION_DIR}/configure-fips.sh
 
 # You will need to export the forked/cloned operator repository directory as OLD_SDK_REPO_DIR to make this work.
 # Example: export OLD_SDK_REPO_DIR=~/Projects/My-Operator-Fork
