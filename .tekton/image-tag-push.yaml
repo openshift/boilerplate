@@ -23,12 +23,6 @@ spec:
       value: '{{revision}}'
     - name: output-image
       value: quay.io/redhat-user-workloads/boilerplate-cicada-tenant/boilerplate-master/image:{{revision}}
-    - name: build-platforms
-      value:
-        - linux/amd64
-        - linux/arm64
-    - name: build-image-index
-      value: 'true'
     - name: dockerfile
       value: config/Dockerfile
     - name: build-source-image

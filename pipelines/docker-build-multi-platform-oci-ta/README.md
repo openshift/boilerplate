@@ -30,8 +30,12 @@ spec:
         value: pipelines/docker-build-multi-platform-oci-ta/pipeline.yaml
 ```
 
-Pass the desired architectures through `build-platforms` and enable the image
-index, for example:
+By default, the pipeline builds `linux/amd64` and `linux/arm64` and creates an
+OCI image index. A `PipelineRun` can omit both parameters. Override
+`build-platforms` when targeting a different set of architectures or
+`build-image-index` when an index is not needed.
+
+For an AMD64-only build, override the platform list:
 
 ```yaml
 spec:
@@ -39,9 +43,6 @@ spec:
     - name: build-platforms
       value:
         - linux/amd64
-        - linux/arm64
-    - name: build-image-index
-      value: 'true'
 ```
 
 `build-platform` defaults to `linux/amd64` and selects the platform used by

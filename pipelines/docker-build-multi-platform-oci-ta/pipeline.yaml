@@ -94,6 +94,7 @@ spec:
       type: array
       default:
         - linux/amd64
+        - linux/arm64
       description: Platforms to build. Each platform must be supported by the configured multi-platform controller.
     - name: build-platform
       type: string

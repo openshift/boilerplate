@@ -32,12 +32,6 @@ spec:
       value: '{{revision}}'
     - name: output-image
       value: quay.io/redhat-user-workloads/boilerplate-cicada-tenant/boilerplate-master/image:on-pr-{{revision}}
-    - name: build-platforms
-      value:
-        - linux/amd64
-        - linux/arm64
-    - name: build-image-index
-      value: 'true'
     - name: image-expires-after
       value: 5d
     - name: dockerfile
