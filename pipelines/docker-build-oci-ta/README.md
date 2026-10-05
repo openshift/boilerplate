@@ -3,6 +3,10 @@
 This directory contains a centralized Tekton pipeline for building container
 images with OCI trusted artifacts support.
 
+For multi-platform builds, use the
+[`docker-build-multi-platform-oci-ta`](../docker-build-multi-platform-oci-ta/README.md)
+pipeline.
+
 ## What it does
 
 Builds container images using the `docker-build-oci-ta` pipeline that is
