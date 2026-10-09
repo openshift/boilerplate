@@ -37,15 +37,15 @@
     "enabled": true,
     "packageRules": [
       {
-        "description": "Tekton patch/minor; batch Mon-Fri 02:00-04:59 UTC — pre-label lgtm/approved; Tide merges after Prow + Konflux",
+        "description": "Tekton patch/minor; batch Mon-Fri 9am-5pm EST — pre-label lgtm/approved; Tide merges after Prow + Konflux",
         "matchUpdateTypes": [
           "minor",
           "patch",
           "pin",
           "digest"
         ],
-        "schedule": ["* 2-4 * * 1-5"],
         "automerge": false,
+        "schedule": ["* 9-16 * * 1-5"],
         "platformAutomerge": false,
         "addLabels": ["lgtm", "approved"]
       },
@@ -55,7 +55,6 @@
           "major"
         ],
         "automerge": false,
-        "schedule": ["* 2-4 * * 1-5"],
         "addLabels": [
           "major-update",
           "manual-review-required",
@@ -68,7 +67,7 @@
   "gomod": {
     "packageRules": [
       {
-        "description": "Grouped gomod minor/patch; batch Mon-Fri 02:00-04:59 UTC — pre-label lgtm/approved; Tide merges after Prow + Konflux",
+        "description": "Grouped gomod minor/patch; batch Mon-Fri 9am-5pm EST — pre-label lgtm/approved; Tide merges after Prow + Konflux",
         "matchUpdateTypes": [
           "minor",
           "patch",
@@ -76,18 +75,18 @@
           "digest"
         ],
         "groupName": "gomod dependencies",
-        "schedule": ["* 2-4 * * 1-5"],
+        "schedule": ["* 9-16 * * 1-5"],
         "automerge": false,
         "platformAutomerge": false,
         "addLabels": ["lgtm", "approved"]
       },
       {
-        "description": "Gomod major — MintMaker opens PR; manual /lgtm after CI (no lgtm/approved here)",
+        "description": "Gomod major — MintMaker opens PR; batch Mon-Fri 9am-5pm EST - manual /lgtm after CI (no lgtm/approved here)",
         "matchUpdateTypes": [
           "major"
         ],
         "automerge": false,
-        "schedule": ["* 2-4 * * 1-5"],
+        "schedule": ["* 9-16 * * 1-5"],
         "addLabels": [
           "major-update",
           "manual-review-required",
@@ -97,7 +96,7 @@
       }
     ]
   },
-  "timezone": "UTC",
+  "timezone": "America/New_York",
   "updateNotScheduled": false,
   "dependencyDashboard": true,
   "semanticCommits": "enabled",
