@@ -1,5 +1,5 @@
 FROM quay.io/konflux-ci/yq:latest@sha256:9b73d39c362692d0bc5787c2b5e955cd54713e6bb97195a0fb2e87a6557040ee AS yq
-FROM registry.access.redhat.com/ubi9:9.8-1791269371@sha256:5858f9ace07316e3b12caab62f6c2481a5030bb6bafdca5a9ea324c321ef36df AS builder
+FROM registry.access.redhat.com/ubi9:9.8-1791765424@sha256:866c52a4f649b2e027e0eafeede5f37dd13ac58ab63bbe2950d7928334312a4c AS builder
 
 ARG GH_VERSION="2.58.0"
 ARG GH_SHA256SUM="84feae3d143bc360ea1004b474f124c8cfd75363a5e197d3ce63fe23d9f3a2ea"
@@ -42,7 +42,7 @@ RUN set -eu; \
     mv kubectl-package /usr/local/bin/kubectl-package && \
     rm -f gh.tar.gz
 
-FROM registry.access.redhat.com/ubi9:9.8-1791269371@sha256:5858f9ace07316e3b12caab62f6c2481a5030bb6bafdca5a9ea324c321ef36df
+FROM registry.access.redhat.com/ubi9:9.8-1791765424@sha256:866c52a4f649b2e027e0eafeede5f37dd13ac58ab63bbe2950d7928334312a4c
 
 ARG VERSION=""
 LABEL version="${VERSION}"
