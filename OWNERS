@@ -1,12 +1,13 @@
 reviewers:
-- srep-functional-team-aurora
 - rosa-staff-engineers
-- xiaoyu74
-- joshbranham
+- rosa-hcp-platform-staff-engineers
+- rosa-hcp-platform-core-team
 approvers:
-- srep-functional-team-aurora
 - rosa-staff-engineers
-- joshbranham
+- rosa-hcp-platform-staff-engineers
+- rosa-hcp-platform-core-team
+
 maintainers:
 - rosa-staff-engineers
-- joshbranham
+- rosa-hcp-platform-staff-engineers
+- rosa-hcp-platform-core-team
