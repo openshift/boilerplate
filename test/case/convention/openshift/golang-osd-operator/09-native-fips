@@ -83,8 +83,8 @@ fi
 
 FIPS_ENABLED=true make --no-print-directory go-build
 enabled_binary="build/_output/bin/native-fips-test"
-if [[ ! -f fips.go ]] || ! grep -q 'crypto/fips140' fips.go; then
-    err "FIPS-enabled go-build did not generate the native FIPS startup assertion"
+if [[ ! -f fips.go ]] || ! grep -q 'crypto/fips140' fips.go || ! grep -q '^//go:debug fips140=on$' fips.go; then
+    err "FIPS-enabled go-build did not generate the native FIPS assertion and default"
 fi
 cat > fips.go <<'EOF'
 //go:build boilerplate_fips_assertion
@@ -105,8 +105,30 @@ func init() {
 }
 EOF
 FIPS_ENABLED=true make --no-print-directory ensure-fips >/dev/null
-if ! grep -q 'fips_enabled' fips.go || grep -q 'boilerplate_fips_assertion' fips.go; then
-    err "ensure-fips did not migrate the previous assertion tag"
+if ! grep -q 'fips_enabled' fips.go || grep -q 'boilerplate_fips_assertion' fips.go || ! grep -q '^//go:debug fips140=on$' fips.go; then
+    err "ensure-fips did not migrate the previous assertion tag and embed the FIPS default"
+fi
+cat > fips.go <<'EOF'
+//go:build fips_enabled
+// +build fips_enabled
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import "crypto/fips140"
+
+func init() {
+	// Assert that FIPS mode is enabled via GODEBUG=fips140=on (or =only)
+	if !fips140.Enabled() {
+		panic("CRITICAL: Application startup aborted. FIPS 140 mode is NOT enabled!")
+	}
+}
+EOF
+FIPS_ENABLED=true make --no-print-directory ensure-fips >/dev/null
+if ! grep -q '^//go:debug fips140=on$' fips.go; then
+    err "ensure-fips did not migrate a fips_enabled template missing the runtime default"
 fi
 cp fips.go fips.go.original
 printf '\n// consumer customization\n' >>fips.go
@@ -122,13 +144,8 @@ enabled_info="$(go version -m "${enabled_binary}")"
 if ! grep -Eq 'GOFIPS140=v1\.0\.0([^[:space:]]*)' <<< "${enabled_info}"; then
     err "FIPS-enabled binary does not report module v1.0.0 (or a resolved snapshot): ${enabled_info}"
 fi
-if [[ "${toolchain_version}" == *"(Red Hat "* ]]; then
-    expected_fips_default=auto
-else
-    expected_fips_default='(on|auto)'
-fi
-if ! grep -E 'DefaultGODEBUG=' <<< "${enabled_info}" | grep -Eq "(^|[=,])fips140=${expected_fips_default}([,[:space:]]|$)"; then
-    err "FIPS-enabled binary does not embed a supported default FIPS mode (${expected_fips_default}): ${enabled_info}"
+if ! grep -E 'DefaultGODEBUG=' <<< "${enabled_info}" | grep -Eq '(^|[=,])fips140=on([,[:space:]]|$)'; then
+    err "FIPS-enabled binary does not embed fips140=on as its default: ${enabled_info}"
 fi
 if [[ "${toolchain_version}" == *"(Red Hat "* ]] && ! grep -q 'no_openssl' <<< "${enabled_info}"; then
     err "FIPS-enabled Red Hat binary did not select the native Go crypto backend: ${enabled_info}"
@@ -140,6 +157,10 @@ if ! grep -q 'fips_enabled' <<< "${enabled_info}"; then
     err "FIPS-enabled binary does not include the fips_enabled tag: ${enabled_info}"
 fi
 
+default_status="$("./${enabled_binary}")"
+if [[ "${default_status}" != "FIPS mode successfully verified. Running safely..." ]]; then
+    err "The embedded FIPS default did not allow the application to start: ${default_status}"
+fi
 forced_on_status="$(GODEBUG=fips140=on "./${enabled_binary}")"
 if [[ "${forced_on_status}" != "FIPS mode successfully verified. Running safely..." ]]; then
     err "The FIPS startup assertion did not allow the application to start in FIPS mode: ${forced_on_status}"
