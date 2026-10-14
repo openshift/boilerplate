@@ -133,9 +133,9 @@ Both targets require `kubectl-package`. If it is not found, the target fails wit
 
 ## FIPS (Federal Information Processing Standards)
 
-FIPS-enabled builds use Go's native FIPS 140-3 module and require Go 1.24 or newer. Setting `FIPS_ENABLED=true` selects the frozen `v1.0.0` module with `GOFIPS140=v1.0.0`. On Red Hat Go toolsets, the convention also selects the native Go crypto backend instead of the default OpenSSL backend; the toolchain's `fips140=auto` mode activates FIPS when the host is configured for FIPS. Other Go toolchains may embed `fips140=on` by default. `CGO_ENABLED` is unchanged.
+FIPS-enabled builds use Go's native FIPS 140-3 module and require Go 1.24 or newer. Setting `FIPS_ENABLED=true` selects the frozen `v1.0.0` module with `GOFIPS140=v1.0.0`. On Red Hat Go toolsets, the convention also selects the native Go crypto backend instead of the default OpenSSL backend. `CGO_ENABLED` is unchanged.
 
-FIPS-enabled operator builds also generate a startup assertion in `fips.go`. It calls `crypto/fips140.Enabled()` and panics before the application starts if FIPS mode is not active. The assertion uses the existing `fips_enabled` build tag, so non-FIPS builds are unaffected. The tag only controls compilation; it does not enable BoringCrypto or activate native FIPS mode. `GOFIPS140` selects the module but does not always activate runtime FIPS mode: when the toolchain or host does not enable it automatically, run the binary with `GODEBUG=fips140=on` (or `fips140=only`).
+FIPS-enabled operator builds generate a startup assertion in `fips.go`. It calls `crypto/fips140.Enabled()` and panics before the application starts if FIPS mode is not active. The assertion uses the existing `fips_enabled` build tag, so non-FIPS builds are unaffected. The `//go:debug fips140=on` directive in this file embeds FIPS mode as the binary's default, including on toolchains that would otherwise default to `fips140=auto`. An explicit runtime `GODEBUG` value overrides that default; if it disables FIPS, the startup assertion aborts.
 
 To enable FIPS for one build, run:
 

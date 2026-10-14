@@ -32,6 +32,24 @@ func init() {
 	}
 }
 EOF
+  ) || cmp -s "${FIPS_FILE}" <(cat <<'EOF'
+//go:build fips_enabled
+// +build fips_enabled
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import "crypto/fips140"
+
+func init() {
+	// Assert that FIPS mode is enabled via GODEBUG=fips140=on (or =only)
+	if !fips140.Enabled() {
+		panic("CRITICAL: Application startup aborted. FIPS 140 mode is NOT enabled!")
+	}
+}
+EOF
   )
 }
 if [[ -e "${FIPS_FILE}" ]] && ! cmp -s "${FIPS_FILE}" "${CONVENTION_DIR}/fips.go.tmplt" && ! is_previous_fips_template; then
