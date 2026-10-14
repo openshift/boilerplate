@@ -1,5 +1,5 @@
-//go:build boilerplate_fips_assertion
-// +build boilerplate_fips_assertion
+//go:build fips_enabled
+// +build fips_enabled
 
 // BOILERPLATE GENERATED -- DO NOT EDIT
 // Run 'make ensure-fips' to regenerate

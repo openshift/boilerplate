@@ -20,6 +20,29 @@ is_unmodified_boilerplate_fips_file() {
     return 0
   fi
 
+  # Recognize the earlier native-FIPS template with the namespaced assertion tag.
+  if cmp -s "$fips_file" <(cat <<'EOF'
+//go:build boilerplate_fips_assertion
+// +build boilerplate_fips_assertion
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import "crypto/fips140"
+
+func init() {
+	// Assert that FIPS mode is enabled via GODEBUG=fips140=on (or =only)
+	if !fips140.Enabled() {
+		panic("CRITICAL: Application startup aborted. FIPS 140 mode is NOT enabled!")
+	}
+}
+EOF
+  ); then
+    return 0
+  fi
+
   # Recognize both legacy template versions, before and after //go:build was added.
   cmp -s "$fips_file" <(cat <<'EOF'
 //go:build fips_enabled
