@@ -49,17 +49,17 @@ enabled_command="$(FIPS_ENABLED=true make --no-print-directory --dry-run go-buil
 if ! grep -q 'GOFIPS140=v1.0.0' <<< "${enabled_command}"; then
     err "FIPS-enabled go-build did not select GOFIPS140=v1.0.0"
 fi
-if grep -Eq 'GOEXPERIMENT=boringcrypto|GOFIPS140=off|-tags=fips_enabled' <<< "${enabled_command}"; then
-    err "FIPS-enabled go-build still injects a legacy BoringCrypto setting or tag"
+if grep -Eq 'GOEXPERIMENT=boringcrypto|GOFIPS140=off' <<< "${enabled_command}"; then
+    err "FIPS-enabled go-build still injects a legacy BoringCrypto setting"
 fi
-if ! grep -q 'boilerplate_fips_assertion' <<< "${enabled_command}"; then
-    err "FIPS-enabled go-build did not enable the startup assertion"
+if ! grep -q 'fips_enabled' <<< "${enabled_command}"; then
+    err "FIPS-enabled go-build did not preserve the fips_enabled build tag"
 fi
 if ! grep -q 'configure-fips.sh' <<< "${enabled_command}"; then
     err "FIPS-enabled go-build did not generate the startup assertion file"
 fi
 custom_tags_command="$(GOFLAGS_MOD='-mod=vendor -tags=custom' FIPS_ENABLED=true make --no-print-directory --dry-run go-build)"
-if ! grep -Eq 'GOFLAGS="-mod=vendor -tags=boilerplate_fips_assertion(,no_openssl)?,custom"' <<< "${custom_tags_command}"; then
+if ! grep -Eq 'GOFLAGS="-mod=vendor -tags=fips_enabled(,no_openssl)?,custom"' <<< "${custom_tags_command}"; then
     err "FIPS build flags did not preserve consumer Go build flags: ${custom_tags_command}"
 fi
 if [[ "${toolchain_version}" == *"(Red Hat "* ]]; then
@@ -71,13 +71,13 @@ elif grep -q 'no_openssl' <<< "${enabled_command}"; then
 fi
 
 false_command="$(FIPS_ENABLED=false make --no-print-directory --dry-run go-build)"
-if grep -Eq 'GOFIPS140=|no_openssl|boilerplate_fips_assertion|configure-fips.sh' <<< "${false_command}"; then
+if grep -Eq 'GOFIPS140=|no_openssl|fips_enabled|configure-fips.sh' <<< "${false_command}"; then
     err "FIPS_ENABLED=false unexpectedly injects native FIPS build settings"
 fi
 
 unset FIPS_ENABLED
 unset_command="$(make --no-print-directory --dry-run go-build)"
-if grep -Eq 'GOFIPS140=|no_openssl|boilerplate_fips_assertion|configure-fips.sh' <<< "${unset_command}"; then
+if grep -Eq 'GOFIPS140=|no_openssl|fips_enabled|configure-fips.sh' <<< "${unset_command}"; then
     err "An unset FIPS_ENABLED unexpectedly injects native FIPS build settings"
 fi
 
@@ -85,6 +85,28 @@ FIPS_ENABLED=true make --no-print-directory go-build
 enabled_binary="build/_output/bin/native-fips-test"
 if [[ ! -f fips.go ]] || ! grep -q 'crypto/fips140' fips.go; then
     err "FIPS-enabled go-build did not generate the native FIPS startup assertion"
+fi
+cat > fips.go <<'EOF'
+//go:build boilerplate_fips_assertion
+// +build boilerplate_fips_assertion
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import "crypto/fips140"
+
+func init() {
+	// Assert that FIPS mode is enabled via GODEBUG=fips140=on (or =only)
+	if !fips140.Enabled() {
+		panic("CRITICAL: Application startup aborted. FIPS 140 mode is NOT enabled!")
+	}
+}
+EOF
+FIPS_ENABLED=true make --no-print-directory ensure-fips >/dev/null
+if ! grep -q 'fips_enabled' fips.go || grep -q 'boilerplate_fips_assertion' fips.go; then
+    err "ensure-fips did not migrate the previous assertion tag"
 fi
 cp fips.go fips.go.original
 printf '\n// consumer customization\n' >>fips.go
@@ -111,11 +133,11 @@ fi
 if [[ "${toolchain_version}" == *"(Red Hat "* ]] && ! grep -q 'no_openssl' <<< "${enabled_info}"; then
     err "FIPS-enabled Red Hat binary did not select the native Go crypto backend: ${enabled_info}"
 fi
-if grep -Eqi 'boringcrypto|fips_enabled' <<< "${enabled_info}"; then
-    err "FIPS-enabled binary still reports BoringCrypto or the legacy fips_enabled tag: ${enabled_info}"
+if grep -Eqi 'boringcrypto' <<< "${enabled_info}"; then
+    err "FIPS-enabled binary still reports the legacy BoringCrypto experiment: ${enabled_info}"
 fi
-if ! grep -q 'boilerplate_fips_assertion' <<< "${enabled_info}"; then
-    err "FIPS-enabled binary does not include the startup assertion tag: ${enabled_info}"
+if ! grep -q 'fips_enabled' <<< "${enabled_info}"; then
+    err "FIPS-enabled binary does not include the fips_enabled tag: ${enabled_info}"
 fi
 
 forced_on_status="$(GODEBUG=fips140=on "./${enabled_binary}")"
@@ -134,7 +156,7 @@ assert_non_fips_binary() {
     local info="$2"
     # Red Hat Go toolsets may report v1.0.0 as their implicit module snapshot;
     # FIPS_ENABLED must not inject the runtime mode or native-backend tag.
-    if grep -Eq 'DefaultGODEBUG=.*fips140=(on|auto)|no_openssl|boilerplate_fips_assertion' <<< "${info}"; then
+    if grep -Eq 'DefaultGODEBUG=.*fips140=(on|auto)|no_openssl|fips_enabled' <<< "${info}"; then
         err "${setting} unexpectedly enabled native FIPS mode or the startup assertion: ${info}"
     fi
 }

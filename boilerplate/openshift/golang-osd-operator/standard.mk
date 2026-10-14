@@ -103,7 +103,7 @@ GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPAT
 
 ifeq (${FIPS_ENABLED}, true)
 GOENV+=GOFIPS140=v1.0.0
-FIPS_BUILD_TAGS=boilerplate_fips_assertion
+FIPS_BUILD_TAGS=fips_enabled
 # Red Hat Go toolsets use OpenSSL by default on Linux with cgo. Select the
 # native Go crypto implementation for FIPS-enabled builds instead.
 ifneq (,$(findstring Red Hat,$(shell go version)))
