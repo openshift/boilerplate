@@ -103,12 +103,19 @@ GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPAT
 
 ifeq (${FIPS_ENABLED}, true)
 GOENV+=GOFIPS140=v1.0.0
+FIPS_BUILD_TAGS=boilerplate_fips_assertion
 # Red Hat Go toolsets use OpenSSL by default on Linux with cgo. Select the
 # native Go crypto implementation for FIPS-enabled builds instead.
 ifneq (,$(findstring Red Hat,$(shell go version)))
-GOFLAGS_MOD+=-tags=no_openssl
-GOFLAGS_MOD:=$(strip ${GOFLAGS_MOD})
+FIPS_BUILD_TAGS:=${FIPS_BUILD_TAGS},no_openssl
 endif
+# GOFLAGS accepts comma-separated build tags. Keep consumer tags while adding
+# the assertion tag and any toolchain-specific native-crypto tag.
+FIPS_USER_TAGS:=$(patsubst -tags=%,%,$(filter -tags=%,$(GOFLAGS_MOD)))
+ifneq (,$(FIPS_USER_TAGS))
+FIPS_BUILD_TAGS:=${FIPS_BUILD_TAGS},${FIPS_USER_TAGS}
+endif
+override GOFLAGS_MOD:=$(strip $(filter-out -tags=%,$(GOFLAGS_MOD)) -tags=${FIPS_BUILD_TAGS})
 GOENV:=$(strip ${GOENV})
 endif
 
@@ -270,8 +277,15 @@ endif
 generate: op-generate go-generate openapi-generate manifests sync-pko-crds
 
 .PHONY: go-build
+ifeq (${FIPS_ENABLED}, true)
+go-build: ensure-fips
+endif
 go-build: ## Build binary
 	${GOENV} go build ${GOBUILDFLAGS} -o build/_output/bin/$(OPERATOR_NAME) .
+
+.PHONY: ensure-fips
+ensure-fips:
+	${CONVENTION_DIR}/configure-fips.sh
 
 ENVTEST_K8S_VERSION = 1.28.0
 SETUP_ENVTEST_VERSION = release-0.23
