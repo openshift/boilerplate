@@ -103,6 +103,10 @@ GOBUILDFLAGS=-gcflags="all=-trimpath=${GOPATH}" -asmflags="all=-trimpath=${GOPAT
 
 ifeq (${FIPS_ENABLED}, true)
 GOENV+=GOFIPS140=v1.0.0
+ifeq (${GOOS},linux)
+# Native Go crypto may not pull in cgo, so explicitly retain dynamic linking.
+GOBUILDFLAGS+=-ldflags="-linkmode=external"
+endif
 FIPS_BUILD_TAGS=fips_enabled
 # Red Hat Go toolsets use OpenSSL by default on Linux with cgo. Select the
 # native Go crypto implementation for FIPS-enabled builds instead.
@@ -281,7 +285,19 @@ ifeq (${FIPS_ENABLED}, true)
 go-build: ensure-fips
 endif
 go-build: ## Build binary
+ifeq (${FIPS_ENABLED}:${GOOS},true:linux)
+	@command -v readelf >/dev/null 2>&1 || { \
+		echo "[ERROR] FIPS-enabled Linux builds require readelf; install binutils." >&2; \
+		exit 1; \
+	}
+endif
 	${GOENV} go build ${GOBUILDFLAGS} -o build/_output/bin/$(OPERATOR_NAME) .
+ifeq (${FIPS_ENABLED}:${GOOS},true:linux)
+	@readelf -lW "build/_output/bin/$(OPERATOR_NAME)" | grep -E '^[[:space:]]*INTERP[[:space:]]' >/dev/null || { \
+		echo "[ERROR] FIPS-enabled Linux binary must be dynamically linked: build/_output/bin/$(OPERATOR_NAME). Preserve -linkmode=external and remove static linker flags." >&2; \
+		exit 1; \
+	}
+endif
 
 .PHONY: ensure-fips
 ensure-fips:

@@ -7,6 +7,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 source "${REPO_ROOT}/test/lib.sh"
 
 toolchain_version="$(go version)"
+target_os="$(go env GOOS)"
 repo="$(empty_repo)"
 add_cleanup "${repo}"
 cd "${repo}"
@@ -70,19 +71,51 @@ elif grep -q 'no_openssl' <<< "${enabled_command}"; then
     err "The Red Hat-specific no_openssl tag was unexpectedly added for this toolchain"
 fi
 
-false_command="$(FIPS_ENABLED=false make --no-print-directory --dry-run go-build)"
-if grep -Eq 'GOFIPS140=|no_openssl|fips_enabled|configure-fips.sh' <<< "${false_command}"; then
+linux_command="$(FIPS_ENABLED=true make --no-print-directory --dry-run go-build GOOS=linux)"
+if ! grep -Fq -- '-ldflags="-linkmode=external"' <<< "${linux_command}"; then
+    err "FIPS-enabled Linux builds did not select external linking: ${linux_command}"
+fi
+if ! grep -Fq 'CGO_ENABLED=1' <<< "${linux_command}"; then
+    err "FIPS-enabled Linux builds did not retain CGO_ENABLED=1"
+fi
+if ! grep -Fq 'readelf -lW' <<< "${linux_command}"; then
+    err "FIPS-enabled Linux builds did not verify the ELF interpreter"
+fi
+non_linux_command="$(FIPS_ENABLED=true make --no-print-directory --dry-run go-build GOOS=darwin)"
+if grep -Eq 'linkmode=external|readelf' <<< "${non_linux_command}"; then
+    err "FIPS-enabled non-Linux builds unexpectedly received Linux linking settings"
+fi
+
+false_command="$(FIPS_ENABLED=false make --no-print-directory --dry-run go-build GOOS=linux)"
+if grep -Eq 'GOFIPS140=|no_openssl|fips_enabled|configure-fips.sh|linkmode=external|readelf' <<< "${false_command}"; then
     err "FIPS_ENABLED=false unexpectedly injects native FIPS build settings"
 fi
 
 unset FIPS_ENABLED
-unset_command="$(make --no-print-directory --dry-run go-build)"
-if grep -Eq 'GOFIPS140=|no_openssl|fips_enabled|configure-fips.sh' <<< "${unset_command}"; then
+unset_command="$(make --no-print-directory --dry-run go-build GOOS=linux)"
+if grep -Eq 'GOFIPS140=|no_openssl|fips_enabled|configure-fips.sh|linkmode=external|readelf' <<< "${unset_command}"; then
     err "An unset FIPS_ENABLED unexpectedly injects native FIPS build settings"
 fi
 
 FIPS_ENABLED=true make --no-print-directory go-build
 enabled_binary="build/_output/bin/native-fips-test"
+if [[ "${target_os}" == linux ]]; then
+    if ! readelf -lW "${enabled_binary}" | grep -E '^[[:space:]]*INTERP[[:space:]]' >/dev/null; then
+        err "FIPS-enabled Linux binary has no ELF interpreter"
+    fi
+    if ! readelf -dW "${enabled_binary}" | grep -F '(NEEDED)' >/dev/null; then
+        err "FIPS-enabled Linux binary has no shared-library dependencies"
+    fi
+    # Overriding the build flags can bypass external linking, but a static
+    # executable must still be rejected by the post-build ELF check.
+    if FIPS_ENABLED=true make --no-print-directory go-build OPERATOR_NAME=native-fips-static \
+        GOBUILDFLAGS='-ldflags=-linkmode=internal' >static-build.log 2>&1; then
+        err "FIPS-enabled Linux build accepted a statically linked executable"
+    fi
+    if ! grep -Fq '[ERROR] FIPS-enabled Linux binary must be dynamically linked' static-build.log; then
+        err "The static build failed for an unexpected reason: $(<static-build.log)"
+    fi
+fi
 if [[ ! -f fips.go ]] || ! grep -q 'crypto/fips140' fips.go || ! grep -q '^//go:debug fips140=on$' fips.go; then
     err "FIPS-enabled go-build did not generate the native FIPS assertion and default"
 fi
@@ -156,6 +189,9 @@ fi
 if ! grep -q 'fips_enabled' <<< "${enabled_info}"; then
     err "FIPS-enabled binary does not include the fips_enabled tag: ${enabled_info}"
 fi
+if [[ "${target_os}" == linux ]] && ! grep -Fq -- '-linkmode=external' <<< "${enabled_info}"; then
+    err "FIPS-enabled Linux binary does not report external linking: ${enabled_info}"
+fi
 
 default_status="$("./${enabled_binary}")"
 if [[ "${default_status}" != "FIPS mode successfully verified. Running safely..." ]]; then
@@ -177,8 +213,8 @@ assert_non_fips_binary() {
     local info="$2"
     # Red Hat Go toolsets may report v1.0.0 as their implicit module snapshot;
     # FIPS_ENABLED must not inject the runtime mode or native-backend tag.
-    if grep -Eq 'DefaultGODEBUG=.*fips140=(on|auto)|no_openssl|fips_enabled' <<< "${info}"; then
-        err "${setting} unexpectedly enabled native FIPS mode or the startup assertion: ${info}"
+    if grep -Eq 'DefaultGODEBUG=.*fips140=(on|auto)|no_openssl|fips_enabled|linkmode=external' <<< "${info}"; then
+        err "${setting} unexpectedly enabled native FIPS mode, the startup assertion, or external linking: ${info}"
     fi
 }
 
