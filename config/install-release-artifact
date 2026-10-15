@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -lt 3 || $# -gt 4 ]]; then
+    echo "Usage: $0 URL SHA256 DESTINATION [TAR_MEMBER]" >&2
+    exit 2
+fi
+
+url=$1
+sha256=$2
+destination=$3
+tar_member=${4:-}
+workdir=$(mktemp -d)
+
+cleanup() {
+    rm -rf "$workdir"
+}
+trap cleanup EXIT
+
+artifact="$workdir/artifact"
+binary="$workdir/binary"
+
+curl -fL -o "$artifact" "$url"
+printf '%s  %s\n' "$sha256" "$artifact" | sha256sum -c -
+
+if [[ -n "$tar_member" ]]; then
+    tar -xOzf "$artifact" "$tar_member" > "$binary"
+else
+    binary=$artifact
+fi
+
+install -Dm755 "$binary" "$destination"
