@@ -13,6 +13,14 @@ ARG KUBECTL_PACKAGE_SHA256SUM_ARM64="0e4783710e27281f0db580bae56b5cf982dafe80028
 ARG KUBECTL_PACKAGE_LOCATION=https://github.com/package-operator/package-operator/releases/download/v${KUBECTL_PACKAGE_VERSION}/kubectl-package_linux_amd64
 ARG KUBECTL_PACKAGE_LOCATION_ARM64=https://github.com/package-operator/package-operator/releases/download/v${KUBECTL_PACKAGE_VERSION}/kubectl-package_linux_arm64
 
+ARG GORELEASER_VERSION="2.18.3"
+ARG GORELEASER_SHA256SUM="b8dee4728bca1aba0d71a832a17cd0a3799f75372878e7ffa36aef2343bce0bc"
+ARG GORELEASER_SHA256SUM_ARM64="fa7011a7f8de3b504326b8552cf21c708ed3089519b01d372da32ef4e8d298d7"
+ARG GORELEASER_LOCATION=https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/goreleaser_Linux_x86_64.tar.gz
+ARG GORELEASER_LOCATION_ARM64=https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/goreleaser_Linux_arm64.tar.gz
+
+COPY config/install-release-artifact /usr/local/bin/install-release-artifact
+
 RUN set -eu; \
     machine="$(uname -m)"; \
     case "${machine}" in \
@@ -21,26 +29,24 @@ RUN set -eu; \
         gh_sha256sum="${GH_SHA256SUM}"; \
         gh_location="${GH_LOCATION}"; \
         kubectl_package_sha256sum="${KUBECTL_PACKAGE_SHA256SUM}"; \
-        kubectl_package_location="${KUBECTL_PACKAGE_LOCATION}" ;; \
+        kubectl_package_location="${KUBECTL_PACKAGE_LOCATION}"; \
+        goreleaser_sha256sum="${GORELEASER_SHA256SUM}"; \
+        goreleaser_location="${GORELEASER_LOCATION}" ;; \
       aarch64) \
         arch=arm64; \
         gh_sha256sum="${GH_SHA256SUM_ARM64}"; \
         gh_location="${GH_LOCATION_ARM64}"; \
         kubectl_package_sha256sum="${KUBECTL_PACKAGE_SHA256SUM_ARM64}"; \
-        kubectl_package_location="${KUBECTL_PACKAGE_LOCATION_ARM64}" ;; \
+        kubectl_package_location="${KUBECTL_PACKAGE_LOCATION_ARM64}"; \
+        goreleaser_sha256sum="${GORELEASER_SHA256SUM_ARM64}"; \
+        goreleaser_location="${GORELEASER_LOCATION_ARM64}" ;; \
       *) \
         echo "Unsupported build architecture: ${machine}" >&2; \
         exit 1 ;; \
     esac; \
-    curl -fL -o gh.tar.gz "${gh_location}" && \
-    printf '%s  %s\n' "${gh_sha256sum}" gh.tar.gz | sha256sum -c - && \
-    tar xzf gh.tar.gz "gh_${GH_VERSION}_linux_${arch}/bin/gh" && \
-    mv "gh_${GH_VERSION}_linux_${arch}/bin/gh" /usr/local/bin/gh && \
-    curl -fL -o kubectl-package "${kubectl_package_location}" && \
-    printf '%s  %s\n' "${kubectl_package_sha256sum}" kubectl-package | sha256sum -c - && \
-    chmod +x kubectl-package && \
-    mv kubectl-package /usr/local/bin/kubectl-package && \
-    rm -f gh.tar.gz
+    install-release-artifact "${gh_location}" "${gh_sha256sum}" /usr/local/bin/gh "gh_${GH_VERSION}_linux_${arch}/bin/gh"; \
+    install-release-artifact "${kubectl_package_location}" "${kubectl_package_sha256sum}" /usr/local/bin/kubectl-package; \
+    install-release-artifact "${goreleaser_location}" "${goreleaser_sha256sum}" /usr/local/bin/goreleaser goreleaser
 
 FROM registry.access.redhat.com/ubi9:9.8-1791888712@sha256:16e9e43d99e181463513cc84a514859b1abb9460f1c4d9e208da4b4e51cd5cc3
 
@@ -83,6 +89,7 @@ RUN for bit in r x w; do find $(go env GOPATH) -perm -u+${bit} -a ! -perm -g+${b
 
 COPY --from=builder /usr/local/bin/gh /usr/local/bin
 COPY --from=builder /usr/local/bin/kubectl-package /usr/local/bin
+COPY --from=builder /usr/local/bin/goreleaser /usr/local/bin
 COPY --from=yq /usr/bin/yq /usr/bin/yq
 
 COPY LICENSE .

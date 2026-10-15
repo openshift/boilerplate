@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -e
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+source "$REPO_ROOT/test/lib.sh"
+
+workdir=$(mktemp -d -t boilerplate-install-release-artifact-XXXXXXXX)
+add_cleanup "$workdir"
+installer="$REPO_ROOT/config/install-release-artifact"
+
+printf '#!/usr/bin/env bash\nprintf raw\n' > "$workdir/raw-tool"
+raw_sha256=$(sha256sum "$workdir/raw-tool" | cut -d ' ' -f 1)
+"$installer" "file://$workdir/raw-tool" "$raw_sha256" "$workdir/bin/raw-tool"
+[[ $("$workdir/bin/raw-tool") == raw ]] || err "Raw artifact was not installed"
+
+mkdir -p "$workdir/archive/nested"
+printf '#!/usr/bin/env bash\nprintf archive\n' > "$workdir/archive/nested/tool"
+tar -C "$workdir/archive" -czf "$workdir/tool.tar.gz" nested/tool
+archive_sha256=$(sha256sum "$workdir/tool.tar.gz" | cut -d ' ' -f 1)
+"$installer" "file://$workdir/tool.tar.gz" "$archive_sha256" "$workdir/bin/archive-tool" nested/tool
+[[ $("$workdir/bin/archive-tool") == archive ]] || err "Archive artifact was not installed"
+
+if "$installer" "file://$workdir/raw-tool" 0000000000000000000000000000000000000000000000000000000000000000 "$workdir/bin/invalid-tool" >/dev/null 2>&1; then
+    err "Installer accepted an invalid checksum"
+fi
+[[ ! -e "$workdir/bin/invalid-tool" ]] || err "Installer wrote an artifact with an invalid checksum"
