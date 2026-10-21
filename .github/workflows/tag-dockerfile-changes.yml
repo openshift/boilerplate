@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+    inputs:
+      force:
+        description: "Create an image release even when config/Dockerfile has not changed since the previous image tag."
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -28,6 +34,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          FORCE_RELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
         run: |
           set -euo pipefail
 
@@ -49,16 +56,20 @@ jobs:
             exit 1
           fi
 
-          baseline_tag=$(git describe --tags --abbrev=0 --match 'image-v*' origin/master || true)
-          if [[ -z "${baseline_tag}" ]]; then
-            echo "No reachable image-v* baseline tag exists on master." >&2
-            exit 1
-          fi
+          if [[ "${FORCE_RELEASE}" == "true" ]]; then
+            echo "Force release requested; skipping the Dockerfile history check."
+          else
+            baseline_tag=$(git describe --tags --abbrev=0 --match 'image-v*' origin/master || true)
+            if [[ -z "${baseline_tag}" ]]; then
+              echo "No reachable image-v* baseline tag exists on master." >&2
+              exit 1
+            fi
 
-          dockerfile_commit=$(git log -1 --format='%H' "${baseline_tag}..origin/master" -- config/Dockerfile)
-          if [[ -z "${dockerfile_commit}" ]]; then
-            echo "No commit since ${baseline_tag} touched config/Dockerfile."
-            exit 0
+            dockerfile_commit=$(git log -1 --format='%H' "${baseline_tag}..origin/master" -- config/Dockerfile)
+            if [[ -z "${dockerfile_commit}" ]]; then
+              echo "No commit since ${baseline_tag} touched config/Dockerfile."
+              exit 0
+            fi
           fi
 
           git config user.name "github-actions[bot]"

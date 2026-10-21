@@ -375,11 +375,14 @@ If you make a change to the build image produced by boilerplate in `config/Docke
 from a tag through Konflux. The daily GitHub Actions workflow creates that tag automatically:
 
 1. The `.github/workflows/tag-dockerfile-changes.yml` workflow runs daily at
-00:00 UTC. It checks `master` for commits touching `config/Dockerfile` since
-the newest reachable `image-v*` tag. When it finds one, it creates and pushes
-an annotated `image-vYYYYMMDD` tag at the current `master` commit. There is at
-most one generated tag per UTC day; use the workflow's manual-dispatch option
-to retry a missed run.
+   00:00 UTC. It checks `master` for commits touching `config/Dockerfile` since
+   the newest reachable `image-v*` tag. When it finds one, it creates and pushes
+   an annotated `image-vYYYYMMDD` tag at the current `master` commit.
+
+   To trigger a release without a Dockerfile change, use the workflow's manual
+   dispatch and enable the `force` input to skip the history check. At most one
+   generated tag is created per UTC day; a same-day retry remains a no-op rather
+   than replacing an existing tag.
 
    Publishing the Git tag starts the image release but does not make the image
    immediately available. Consuming repositories use the stable `latest` tag,
