@@ -78,7 +78,9 @@ The repository supports both Docker and Podman. The `CONTAINER_ENGINE` variable 
 For changes to the build image (`config/Dockerfile`):
 1. The daily `.github/workflows/tag-dockerfile-changes.yml` workflow detects
    commits touching `config/Dockerfile` since the newest `image-v*` tag and
-   creates `image-vYYYYMMDD` at the current `master` commit.
+   creates `image-vYYYYMMDD` at the current `master` commit. Manual dispatch
+   supports a `force` input to skip that history check; an existing same-day
+   tag remains idempotent.
 2. The tag-only Pipelines-as-Code build passes the tag into the image's
    `version` label.
 3. Konflux creates the `Release` automatically after the tagged snapshot passes
