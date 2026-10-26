@@ -93,6 +93,16 @@
           "area/dependency",
           "ok-to-test"
         ]
+      },
+      {
+        "description": "Disable major updates for indirect gomod dependencies. MintMaker enables indirect deps and runs gomodUpdateImportPaths, but that can only rewrite import paths in this repo's own source. A major bump of a purely transitive dependency changes it to a module path (e.g. /v2 -> /v3) that only an upstream consumer imports, so nothing in the graph uses the new path, go.sum can't be reconciled, and gomodTidy reverts the change - the PR can never go green. These update naturally when the parent dependency adopts the new major.",
+        "matchUpdateTypes": [
+          "major"
+        ],
+        "matchDepTypes": [
+          "indirect"
+        ],
+        "enabled": false
       }
     ]
   },
