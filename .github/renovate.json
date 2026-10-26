@@ -65,6 +65,8 @@
     ]
   },
   "gomod": {
+    "description": "Only propose updates compatible with the repo's own `go` directive: with constraintsFiltering strict, Renovate skips releases whose go.mod requires a newer Go than declared. Consumers can't raise Go until the shared boilerplate build/lint image does, so such updates can't merge (e.g. a dep that pulls the toolchain to go 1.27 while the image is 1.26). Requires Renovate >= 43.159.2 for correct minor-version matching (MintMaker's image ships 44.x).",
+    "constraintsFiltering": "strict",
     "packageRules": [
       {
         "description": "Grouped gomod minor/patch; batch Mon-Fri 9am-5pm EST — pre-label lgtm/approved; Tide merges after Prow + Konflux",
