@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -e
+
+repo_root="$(git rev-parse --show-toplevel)"
+source "${repo_root}/test/lib.sh"
+
+consumer="$(empty_repo)"
+add_cleanup "${consumer}"
+mkdir -p "${consumer}/boilerplate/openshift"
+rsync -a -r -L "${repo_root}/boilerplate/openshift/rosa-services" \
+  "${consumer}/boilerplate/openshift/"
+cp -R "${repo_root}/boilerplate/_lib" "${consumer}/boilerplate/"
+cat > "${consumer}/OWNERS" <<'EOF'
+reviewers:
+- rosa-staff-engineers
+EOF
+
+cd "${consumer}"
+export CONVENTION_ROOT="${consumer}/boilerplate"
+update="${CONVENTION_ROOT}/openshift/rosa-services/update"
+
+"${update}" PRE
+[[ ! -e "${consumer}/OWNERS_ALIASES" ]] || err "PRE must not copy OWNERS_ALIASES"
+
+"${update}" POST
+cmp "${repo_root}/OWNERS_ALIASES" "${consumer}/OWNERS_ALIASES" || err "OWNERS_ALIASES was not copied"
+grep -qx -- '- rosa-staff-engineers' "${consumer}/OWNERS" || err "OWNERS was changed"
+
+printf 'stale\n' > "${consumer}/OWNERS_ALIASES"
+"${update}" POST
+cmp "${repo_root}/OWNERS_ALIASES" "${consumer}/OWNERS_ALIASES" || err "OWNERS_ALIASES was not updated"
