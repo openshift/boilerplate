@@ -1,5 +1,5 @@
 FROM quay.io/konflux-ci/yq:latest@sha256:9b73d39c362692d0bc5787c2b5e955cd54713e6bb97195a0fb2e87a6557040ee AS yq
-FROM registry.access.redhat.com/ubi9:9.8-1793179168@sha256:5f08e80aa970ae77712e75e5e857ac0b396abc900823c4d041c1150a9538a13f AS builder
+FROM registry.access.redhat.com/ubi9:9.8-1793580630@sha256:8f989cc9270da6abec0144c22846ed1e6e92e462dc7768ce0981c4ac1d574733 AS builder
 
 ARG GH_VERSION="2.58.0"
 ARG GH_SHA256SUM="84feae3d143bc360ea1004b474f124c8cfd75363a5e197d3ce63fe23d9f3a2ea"
@@ -48,7 +48,7 @@ RUN set -eu; \
     install-release-artifact "${kubectl_package_location}" "${kubectl_package_sha256sum}" /usr/local/bin/kubectl-package; \
     install-release-artifact "${goreleaser_location}" "${goreleaser_sha256sum}" /usr/local/bin/goreleaser goreleaser
 
-FROM registry.access.redhat.com/ubi9:9.8-1793179168@sha256:5f08e80aa970ae77712e75e5e857ac0b396abc900823c4d041c1150a9538a13f
+FROM registry.access.redhat.com/ubi9:9.8-1793580630@sha256:8f989cc9270da6abec0144c22846ed1e6e92e462dc7768ce0981c4ac1d574733
 
 ARG VERSION=""
 LABEL version="${VERSION}"
