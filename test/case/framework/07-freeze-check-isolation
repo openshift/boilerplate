@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+"""Exercise freeze-check without contacting a registry or GitHub."""
+
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import unittest
+
+
+SOURCE = Path(__file__).resolve().parents[3] / "boilerplate/_lib/freeze-check"
+
+
+def git(root, *args):
+    return subprocess.check_output(["git", "-C", str(root), *args], text=True).strip()
+
+
+def init(root):
+    root.mkdir()
+    git(root, "init", "-b", "main")
+    git(root, "config", "user.name", "Test Boilerplate")
+    git(root, "config", "user.email", "test@example.com")
+
+
+def commit(root):
+    git(root, "add", "-A")
+    git(root, "commit", "-m", "fixture")
+
+
+class FreezeCheck(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix="boilerplate-freeze-")
+        self.addCleanup(self.temp.cleanup)
+        root = Path(self.temp.name)
+        upstream = root / "upstream"
+        init(upstream)
+        (upstream / "README").write_text("test source\n")
+        commit(upstream)
+        self.repo = root / "consumer"
+        init(self.repo)
+        (self.repo / "boilerplate/_data").mkdir(parents=True)
+        (self.repo / "boilerplate/_data/last-boilerplate-commit").write_text(
+            git(upstream, "rev-parse", "HEAD") + "\n"
+        )
+        update = self.repo / "boilerplate/update"
+        update.write_text("""#!/usr/bin/env bash
+set -e
+printf 'registry-refreshed\\n' > build/Dockerfile
+printf 'registry-refreshed\\n' > build/Dockerfile.olm-registry
+printf 'generated\\n' > managed.txt
+rm -rf "$BOILERPLATE_GIT_REPO"
+exit "${TEST_UPDATE_EXIT:-0}"
+""")
+        update.chmod(0o755)
+        (self.repo / "build").mkdir()
+        for name in ["Dockerfile", "Dockerfile.olm-registry"]:
+            (self.repo / "build" / name).write_text("production-pin\n")
+        (self.repo / "managed.txt").write_text("generated\n")
+        commit(self.repo)
+        self.env = dict(os.environ)
+        self.env.update({
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": f"url.{upstream}.insteadOf",
+            "GIT_CONFIG_VALUE_0": "https://github.com/openshift/boilerplate.git",
+        })
+
+    def run_check(self, expected):
+        before = git(self.repo, "status", "--porcelain")
+        files = {p: p.read_bytes() for p in self.repo.rglob("*")
+                 if p.is_file() and ".git" not in p.parts}
+        result = subprocess.run(["bash", str(SOURCE)], cwd=self.repo,
+                                env=self.env, capture_output=True, text=True)
+        self.assertEqual(result.returncode == 0, expected, result.stdout + result.stderr)
+        self.assertEqual(git(self.repo, "status", "--porcelain"), before)
+        for path, contents in files.items():
+            self.assertEqual(path.read_bytes(), contents)
+        worktrees = git(self.repo, "worktree", "list", "--porcelain")
+        self.assertEqual(worktrees.count("worktree "), 1)
+
+    def test_registry_refresh_preserves_clean_checkout(self):
+        self.run_check(True)
+
+    def test_preserves_existing_dockerfile_edits(self):
+        (self.repo / "build/Dockerfile").write_text("uncommitted user edit\n")
+        self.run_check(True)
+
+    def test_committed_generated_drift_still_fails(self):
+        (self.repo / "managed.txt").write_text("tampered\n")
+        commit(self.repo)
+        self.run_check(False)
+
+    def test_dirty_managed_checkout_still_fails(self):
+        (self.repo / "managed.txt").write_text("uncommitted user edit\n")
+        self.run_check(False)
+
+    def test_update_failure_cleans_worktree(self):
+        self.env["TEST_UPDATE_EXIT"] = "42"
+        self.run_check(False)
+
+
+if __name__ == "__main__":
+    unittest.main()

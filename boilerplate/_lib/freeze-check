@@ -50,6 +50,20 @@ if ! [[ -f "$LBCF" ]]; then
 fi
 LBC=$(cat $LBCF)
 
+# Updates may refresh Dockerfile image tags from the registry. Those files are
+# intentionally excluded from the freeze comparison, but changing them in the
+# caller's checkout makes a subsequent generate-check fail its clean-tree check.
+# Validate a detached worktree so neither successful nor failed checks leave
+# generated changes in the caller's checkout.
+SOURCE_ROOT=$REPO_ROOT
+CHECK_ROOT=$(mktemp -d)
+cleanup() {
+  git -C "$SOURCE_ROOT" worktree remove --force "$CHECK_ROOT"
+}
+git -C "$SOURCE_ROOT" worktree add --detach "$CHECK_ROOT" HEAD
+trap cleanup EXIT
+REPO_ROOT=$CHECK_ROOT
+
 # Download just that commit
 echo "Fetching $LBC from $BOILERPLATE_GIT_REPO"
 # boilerplate/update cleans up this temp dir
