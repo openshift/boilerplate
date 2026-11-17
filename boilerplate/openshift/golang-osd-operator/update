@@ -13,6 +13,8 @@ source $CONVENTION_ROOT/_lib/common.sh
 # Remove exact boilerplate-generated fips.go files. A FIPS-enabled build
 # regenerates the current assertion; customized files are left alone so an
 # update cannot discard consumer code.
+# Keep the recognized contents below in sync with previous_fips_template in
+# the convention's configure-fips.sh, which decides the same question.
 is_unmodified_boilerplate_fips_file() {
   local fips_file="$1"
 
@@ -101,6 +103,24 @@ import (
 
 func init() {
 	fmt.Println("***** Starting with FIPS crypto enabled *****")
+}
+EOF
+  ) || cmp -s "$fips_file" <(cat <<'EOF'
+//go:build fips_enabled
+// +build fips_enabled
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import (
+	_ "crypto/tls/fipsonly"
+	"fmt"
+)
+
+func init() {
+	_, _ = fmt.Println("***** Starting with FIPS crypto enabled *****")
 }
 EOF
   )
