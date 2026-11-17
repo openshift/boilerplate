@@ -1,0 +1,363 @@
+#!/usr/bin/env bash
+
+# Verifies that `make ensure-fips` (configure-fips.sh) migrates every fips.go
+# boilerplate has previously generated, and that it never touches a file it
+# does not recognize byte-for-byte.
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+# shellcheck disable=SC1091
+source "${REPO_ROOT}/test/lib.sh"
+
+CONVENTION_DIR="${REPO_ROOT}/boilerplate/openshift/golang-osd-operator"
+TEMPLATE="${CONVENTION_DIR}/fips.go.tmplt"
+
+## recognized_template INDEX
+#
+# Emits a fips.go content that configure-fips.sh must accept and replace.
+# Indices track the historical order in which boilerplate shipped them.
+recognized_template() {
+    case "$1" in
+    1)
+        # crypto/tls/fipsonly template, pre-'//go:build' syntax.
+        /bin/cat <<'EOF'
+// +build fips_enabled
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import (
+	_ "crypto/tls/fipsonly"
+	"fmt"
+)
+
+func init() {
+	fmt.Println("***** Starting with FIPS crypto enabled *****")
+}
+EOF
+        ;;
+    2)
+        # The same template once '//go:build' was added.
+        /bin/cat <<'EOF'
+//go:build fips_enabled
+// +build fips_enabled
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import (
+	_ "crypto/tls/fipsonly"
+	"fmt"
+)
+
+func init() {
+	fmt.Println("***** Starting with FIPS crypto enabled *****")
+}
+EOF
+        ;;
+    3)
+        # Template 2 with the fmt.Println results explicitly discarded.
+        /bin/cat <<'EOF'
+//go:build fips_enabled
+// +build fips_enabled
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import (
+	_ "crypto/tls/fipsonly"
+	"fmt"
+)
+
+func init() {
+	_, _ = fmt.Println("***** Starting with FIPS crypto enabled *****")
+}
+EOF
+        ;;
+    4)
+        # First crypto/fips140 assertion, on the boilerplate_fips_assertion tag.
+        /bin/cat <<'EOF'
+//go:build boilerplate_fips_assertion
+// +build boilerplate_fips_assertion
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import "crypto/fips140"
+
+func init() {
+	// Assert that FIPS mode is enabled via GODEBUG=fips140=on (or =only)
+	if !fips140.Enabled() {
+		panic("CRITICAL: Application startup aborted. FIPS 140 mode is NOT enabled!")
+	}
+}
+EOF
+        ;;
+    5)
+        # The same assertion back on the fips_enabled tag, before //go:debug.
+        /bin/cat <<'EOF'
+//go:build fips_enabled
+// +build fips_enabled
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import "crypto/fips140"
+
+func init() {
+	// Assert that FIPS mode is enabled via GODEBUG=fips140=on (or =only)
+	if !fips140.Enabled() {
+		panic("CRITICAL: Application startup aborted. FIPS 140 mode is NOT enabled!")
+	}
+}
+EOF
+        ;;
+    6)
+        # The current template is already in place; regenerating is a no-op.
+        /bin/cat "${TEMPLATE}"
+        ;;
+    *)
+        err "No recognized template numbered $1"
+        ;;
+    esac
+}
+RECOGNIZED_TEMPLATE_COUNT=6
+
+## protected_file NAME
+#
+# Emits a fips.go content configure-fips.sh must refuse to overwrite. These
+# are real shapes seen in consumer repositories plus hand-edited near misses.
+protected_file() {
+    case "$1" in
+    stderr-customization)
+        # Prints through os.Stderr instead of fmt.Println.
+        /bin/cat <<'EOF'
+//go:build fips_enabled
+// +build fips_enabled
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import (
+	_ "crypto/tls/fipsonly"
+	"fmt"
+	"os"
+)
+
+func init() {
+	fmt.Fprintf(os.Stderr, "***** Starting with FIPS crypto enabled *****\n")
+}
+EOF
+        ;;
+    dropped-fipsonly-import)
+        # The crypto/tls/fipsonly import was removed, so the file no longer
+        # enforces anything. Replacing it silently would hide that.
+        /bin/cat <<'EOF'
+//go:build fips_enabled
+// +build fips_enabled
+
+// BOILERPLATE GENERATED -- DO NOT EDIT
+// Run 'make ensure-fips' to regenerate
+
+package main
+
+import (
+	"fmt"
+)
+
+func init() {
+	fmt.Println("***** Starting with FIPS crypto enabled *****")
+}
+EOF
+        ;;
+    appended-comment)
+        recognized_template 2
+        /bin/echo
+        /bin/echo "// consumer customization"
+        ;;
+    altered-message)
+        recognized_template 2 | ${SED?} 's/FIPS crypto enabled/FIPS crypto ENABLED/'
+        ;;
+    trailing-whitespace)
+        recognized_template 3 | ${SED?} 's/^package main$/package main /'
+        ;;
+    truncated)
+        recognized_template 5 | head -n 8
+        ;;
+    empty)
+        : # deliberately empty file
+        ;;
+    *)
+        err "No protected file named $1"
+        ;;
+    esac
+}
+PROTECTED_FILES="stderr-customization dropped-fipsonly-import appended-comment altered-message trailing-whitespace truncated empty"
+
+## new_fixture TOPOLOGY
+#
+# Creates a git repo wired to this checkout's convention and outputs its path.
+# TOPOLOGY is "root" (fips.go beside main.go) or "cmd-manager" (pre-v1
+# operator-sdk layout, where configure-fips.sh targets cmd/manager/fips.go).
+# Callers must add_cleanup the directory themselves: this runs in a command
+# substitution, so registering it here would be lost with the subshell.
+new_fixture() {
+    local topology=$1 repo
+    repo="$(empty_repo)"
+    mkdir -p "${repo}/boilerplate/openshift/golang-osd-operator"
+    ln -s "${CONVENTION_DIR}/configure-fips.sh" \
+        "${repo}/boilerplate/openshift/golang-osd-operator/configure-fips.sh"
+    ln -s "${TEMPLATE}" \
+        "${repo}/boilerplate/openshift/golang-osd-operator/fips.go.tmplt"
+    if [[ "${topology}" == cmd-manager ]]; then
+        mkdir -p "${repo}/cmd/manager"
+    fi
+    /bin/echo "${repo}"
+}
+
+## fips_path REPO TOPOLOGY
+fips_path() {
+    if [[ "$2" == cmd-manager ]]; then
+        /bin/echo "$1/cmd/manager/fips.go"
+    else
+        /bin/echo "$1/fips.go"
+    fi
+}
+
+run_configure_fips() {
+    (cd "$1" && ./boilerplate/openshift/golang-osd-operator/configure-fips.sh)
+}
+
+for topology in root cmd-manager; do
+    hr
+    echo "Topology: ${topology}"
+
+    # A repository with no fips.go yet gets the current template.
+    repo="$(new_fixture "${topology}")"
+    add_cleanup "${repo}"
+    target="$(fips_path "${repo}" "${topology}")"
+    if ! run_configure_fips "${repo}" >/dev/null; then
+        err "[${topology}] configure-fips.sh failed on a repository with no fips.go"
+    fi
+    if ! cmp -s "${target}" "${TEMPLATE}"; then
+        err "[${topology}] configure-fips.sh did not create ${target} from the template"
+    fi
+
+    # Every content boilerplate has generated must migrate to the current
+    # template without manual intervention.
+    for index in $(seq 1 ${RECOGNIZED_TEMPLATE_COUNT}); do
+        repo="$(new_fixture "${topology}")"
+        add_cleanup "${repo}"
+        target="$(fips_path "${repo}" "${topology}")"
+        recognized_template "${index}" > "${target}"
+        if ! run_configure_fips "${repo}" >/dev/null; then
+            err "[${topology}] configure-fips.sh refused to migrate recognized template ${index}"
+        fi
+        if ! cmp -s "${target}" "${TEMPLATE}"; then
+            err "[${topology}] recognized template ${index} was not replaced by the current template"
+        fi
+        # Migration must be repeatable.
+        if ! run_configure_fips "${repo}" >/dev/null; then
+            err "[${topology}] configure-fips.sh is not idempotent after migrating template ${index}"
+        fi
+        if ! cmp -s "${target}" "${TEMPLATE}"; then
+            err "[${topology}] a second run changed the generated file for template ${index}"
+        fi
+    done
+
+    # Anything else must survive byte-for-byte, with a non-zero exit and the
+    # refusal message so FIPS builds fail loudly instead of silently.
+    for name in ${PROTECTED_FILES}; do
+        repo="$(new_fixture "${topology}")"
+        add_cleanup "${repo}"
+        target="$(fips_path "${repo}" "${topology}")"
+        protected_file "${name}" > "${target}"
+        cp "${target}" "${repo}/fips.go.before"
+        if run_configure_fips "${repo}" >"${repo}/configure.log" 2>&1; then
+            err "[${topology}] configure-fips.sh overwrote the '${name}' fips.go"
+        fi
+        if ! grep -Fq 'refusing to overwrite it' "${repo}/configure.log"; then
+            err "[${topology}] the '${name}' fips.go was rejected for an unexpected reason: $(<"${repo}/configure.log")"
+        fi
+        if ! cmp -s "${target}" "${repo}/fips.go.before"; then
+            err "[${topology}] configure-fips.sh modified the '${name}' fips.go"
+        fi
+    done
+done
+
+# The pre-v1 layout must be chosen over the repository root when cmd/manager
+# exists, so a root-level fips.go is neither read nor written.
+repo="$(new_fixture cmd-manager)"
+add_cleanup "${repo}"
+recognized_template 2 > "${repo}/fips.go"
+cp "${repo}/fips.go" "${repo}/root-fips.go.before"
+if ! run_configure_fips "${repo}" >/dev/null; then
+    err "configure-fips.sh failed for the cmd/manager layout"
+fi
+if ! cmp -s "${repo}/cmd/manager/fips.go" "${TEMPLATE}"; then
+    err "configure-fips.sh did not write cmd/manager/fips.go for the pre-v1 layout"
+fi
+if ! cmp -s "${repo}/fips.go" "${repo}/root-fips.go.before"; then
+    err "configure-fips.sh touched the root fips.go in the pre-v1 layout"
+fi
+
+hr
+echo "The convention 'update' script agrees about which files are disposable"
+
+# 'update' answers the same question with its own copy of the list; if the two
+# disagree, an update warns that a file needs manual review and the next FIPS
+# build replaces it anyway. Exercise its function directly.
+update_recognizer="$(mktemp)"
+add_cleanup "${update_recognizer}"
+# The heredoc bodies contain Go closing braces in column 1, so the extraction
+# has to skip over heredocs to find the function's own closing brace.
+awk '
+    /^is_unmodified_boilerplate_fips_file\(\) \{$/ { inside = 1 }
+    inside {
+        print
+        if (heredoc) { if ($0 == "EOF") heredoc = 0 }
+        else if (/<<.EOF.$/) heredoc = 1
+        else if ($0 == "}") exit
+    }
+' "${CONVENTION_DIR}/update" > "${update_recognizer}"
+if ! tail -n 1 "${update_recognizer}" | grep -qx '}'; then
+    err "Could not extract is_unmodified_boilerplate_fips_file from the update script"
+fi
+if ! bash -n "${update_recognizer}"; then
+    err "The extracted is_unmodified_boilerplate_fips_file is not valid bash"
+fi
+
+update_recognizes() {
+    HERE="${CONVENTION_DIR}" bash -c \
+        "source '${update_recognizer}'; is_unmodified_boilerplate_fips_file '$1'"
+}
+
+probe="$(mktemp)"
+add_cleanup "${probe}"
+for index in $(seq 1 ${RECOGNIZED_TEMPLATE_COUNT}); do
+    recognized_template "${index}" > "${probe}"
+    if ! update_recognizes "${probe}"; then
+        err "update does not recognize template ${index}, which configure-fips.sh replaces"
+    fi
+done
+for name in ${PROTECTED_FILES}; do
+    protected_file "${name}" > "${probe}"
+    if update_recognizes "${probe}"; then
+        err "update treats the '${name}' fips.go as disposable boilerplate output"
+    fi
+done
+
+colorprint "${GREEN}" "FIPS template migration tests passed!"
