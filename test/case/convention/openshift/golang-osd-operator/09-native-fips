@@ -211,9 +211,13 @@ fi
 assert_non_fips_binary() {
     local setting="$1"
     local info="$2"
-    # Red Hat Go toolsets may report v1.0.0 as their implicit module snapshot;
-    # FIPS_ENABLED must not inject the runtime mode or native-backend tag.
-    if grep -Eq 'DefaultGODEBUG=.*fips140=(on|auto)|no_openssl|fips_enabled|linkmode=external' <<< "${info}"; then
+    local fips_mode_pattern='fips140=(on|auto)'
+    # Red Hat Go 1.27 reports fips140=auto as a toolchain default; only an
+    # explicit fips140=on default indicates the convention enabled FIPS mode.
+    if [[ "${toolchain_version}" == *"(Red Hat "* ]]; then
+        fips_mode_pattern='fips140=on'
+    fi
+    if grep -Eq "DefaultGODEBUG=.*${fips_mode_pattern}|no_openssl|fips_enabled|linkmode=external" <<< "${info}"; then
         err "${setting} unexpectedly enabled native FIPS mode, the startup assertion, or external linking: ${info}"
     fi
 }
