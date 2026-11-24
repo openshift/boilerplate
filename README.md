@@ -380,8 +380,10 @@ from a tag through Konflux. The daily GitHub Actions workflow creates that tag a
    an annotated `image-vYYYYMMDD` tag at the current `master` commit.
 
    To trigger a release without a Dockerfile change, use the workflow's manual
-   dispatch and enable the `force` input to skip the history check. At most one
-   generated tag is created per UTC day; a same-day retry remains a no-op rather
+   dispatch and enable the `force` input to skip the history check. You can set
+   `tag_override` to use a custom tag instead of `image-vYYYYMMDD`. The tag must
+   still match `image-v*` for the tag-only Konflux build to run. At most one
+   generated tag is created per UTC day; a same-tag retry remains a no-op rather
    than replacing an existing tag.
 
    Publishing the Git tag starts the image release but does not make the image

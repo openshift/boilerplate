@@ -10,6 +10,10 @@ on:
         required: false
         default: false
         type: boolean
+      tag_override:
+        description: "Use this tag instead of the automatically generated image-vYYYYMMDD tag."
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -35,6 +39,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           FORCE_RELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
+          TAG_OVERRIDE: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_override || '' }}
         run: |
           set -euo pipefail
 
@@ -43,16 +48,17 @@ jobs:
           git checkout --detach origin/master
 
           today_tag="image-v$(date -u +%Y%m%d)"
+          release_tag="${TAG_OVERRIDE:-${today_tag}}"
 
           # A scheduled run and a manual retry on the same UTC date must be harmless.
-          if git show-ref --verify --quiet "refs/tags/${today_tag}"; then
-            tag_commit=$(git rev-parse "${today_tag}^{commit}")
+          if git show-ref --verify --quiet "refs/tags/${release_tag}"; then
+            tag_commit=$(git rev-parse "${release_tag}^{commit}")
             if git merge-base --is-ancestor "${tag_commit}" origin/master; then
-              echo "${today_tag} already exists on master; nothing to do."
+              echo "${release_tag} already exists on master; nothing to do."
               exit 0
             fi
 
-            echo "${today_tag} exists but does not point to master history." >&2
+            echo "${release_tag} exists but does not point to master history." >&2
             exit 1
           fi
 
@@ -74,8 +80,8 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag --annotate "${today_tag}" --message "Automated image release ${today_tag}" HEAD
-          git push origin "refs/tags/${today_tag}"
-          gh release create "${today_tag}" \
-            --title "${today_tag}" \
+          git tag --annotate "${release_tag}" --message "Automated image release ${release_tag}" HEAD
+          git push origin "refs/tags/${release_tag}"
+          gh release create "${release_tag}" \
+            --title "${release_tag}" \
             --generate-notes
