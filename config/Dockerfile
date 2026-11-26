@@ -19,6 +19,12 @@ ARG GORELEASER_SHA256SUM_ARM64="fa7011a7f8de3b504326b8552cf21c708ed3089519b01d37
 ARG GORELEASER_LOCATION=https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/goreleaser_Linux_x86_64.tar.gz
 ARG GORELEASER_LOCATION_ARM64=https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/goreleaser_Linux_arm64.tar.gz
 
+ARG PREK_VERSION="0.5.10"
+ARG PREK_SHA256SUM="c70a639cb98c90feafa213c23fb487644af73c906c5a6cee757403090f253c30"
+ARG PREK_SHA256SUM_ARM64="352b97c18cc1659786232f3fde9e75b5ec96279893563f6b31b36f2d43dca00f"
+ARG PREK_LOCATION=https://github.com/j178/prek/releases/download/v${PREK_VERSION}/prek-x86_64-unknown-linux-musl.tar.gz
+ARG PREK_LOCATION_ARM64=https://github.com/j178/prek/releases/download/v${PREK_VERSION}/prek-aarch64-unknown-linux-musl.tar.gz
+
 COPY config/install-release-artifact /usr/local/bin/install-release-artifact
 
 RUN set -eu; \
@@ -31,7 +37,10 @@ RUN set -eu; \
         kubectl_package_sha256sum="${KUBECTL_PACKAGE_SHA256SUM}"; \
         kubectl_package_location="${KUBECTL_PACKAGE_LOCATION}"; \
         goreleaser_sha256sum="${GORELEASER_SHA256SUM}"; \
-        goreleaser_location="${GORELEASER_LOCATION}" ;; \
+        goreleaser_location="${GORELEASER_LOCATION}"; \
+        prek_triple=x86_64-unknown-linux-musl; \
+        prek_sha256sum="${PREK_SHA256SUM}"; \
+        prek_location="${PREK_LOCATION}" ;; \
       aarch64) \
         arch=arm64; \
         gh_sha256sum="${GH_SHA256SUM_ARM64}"; \
@@ -39,14 +48,18 @@ RUN set -eu; \
         kubectl_package_sha256sum="${KUBECTL_PACKAGE_SHA256SUM_ARM64}"; \
         kubectl_package_location="${KUBECTL_PACKAGE_LOCATION_ARM64}"; \
         goreleaser_sha256sum="${GORELEASER_SHA256SUM_ARM64}"; \
-        goreleaser_location="${GORELEASER_LOCATION_ARM64}" ;; \
+        goreleaser_location="${GORELEASER_LOCATION_ARM64}"; \
+        prek_triple=aarch64-unknown-linux-musl; \
+        prek_sha256sum="${PREK_SHA256SUM_ARM64}"; \
+        prek_location="${PREK_LOCATION_ARM64}" ;; \
       *) \
         echo "Unsupported build architecture: ${machine}" >&2; \
         exit 1 ;; \
     esac; \
     install-release-artifact "${gh_location}" "${gh_sha256sum}" /usr/local/bin/gh "gh_${GH_VERSION}_linux_${arch}/bin/gh"; \
     install-release-artifact "${kubectl_package_location}" "${kubectl_package_sha256sum}" /usr/local/bin/kubectl-package; \
-    install-release-artifact "${goreleaser_location}" "${goreleaser_sha256sum}" /usr/local/bin/goreleaser goreleaser
+    install-release-artifact "${goreleaser_location}" "${goreleaser_sha256sum}" /usr/local/bin/goreleaser goreleaser; \
+    install-release-artifact "${prek_location}" "${prek_sha256sum}" /usr/local/bin/prek "prek-${prek_triple}/prek"
 
 FROM registry.access.redhat.com/ubi9:9.9-1795197514@sha256:6636b79fba9e5044360366f189333c30b5ce528efd92c40c68b074592b971fcd
 
@@ -90,6 +103,7 @@ RUN for bit in r x w; do find $(go env GOPATH) -perm -u+${bit} -a ! -perm -g+${b
 COPY --from=builder /usr/local/bin/gh /usr/local/bin
 COPY --from=builder /usr/local/bin/kubectl-package /usr/local/bin
 COPY --from=builder /usr/local/bin/goreleaser /usr/local/bin
+COPY --from=builder /usr/local/bin/prek /usr/local/bin
 COPY --from=yq /usr/bin/yq /usr/bin/yq
 
 COPY LICENSE .

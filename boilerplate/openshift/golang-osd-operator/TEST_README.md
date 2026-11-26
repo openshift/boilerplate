@@ -156,10 +156,10 @@ class TestManifestProcessing(unittest.TestCase):
         """Test description."""
         # Arrange
         manifest_str = "..."
-        
+
         # Act
         result = migration.some_function(manifest_str)
-        
+
         # Assert
         self.assertEqual(result, expected_value)
 ```

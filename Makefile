@@ -16,8 +16,12 @@ test: export GO_COMPLIANCE_INFO = 0
 test: ## Runs tests under the /case directory
 	test/driver $(CASE_GLOB)
 
+.PHONY: pre-commit-check
+pre-commit-check: ## Run the pre-commit hooks in .pre-commit-config.yaml against all files
+	prek run --all-files --show-diff-on-failure
+
 .PHONY: pr-check
-pr-check: test
+pr-check: pre-commit-check test
 
 .PHONY: container-pr-check
 container-pr-check: build-image-deep # Builds the boilerplate image from your local checkout, mounts boilerplate, then runs 'make pr-check' as it would run in Konflux.

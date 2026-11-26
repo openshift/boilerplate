@@ -28,8 +28,8 @@ An example of how to do this for the `staging` branch is below (`production` ste
 ```
 git checkout staging
 git pull upstream staging
-git reset --hard upstream/staging                
-git push origin staging --force                                                                            
+git reset --hard upstream/staging  
+git push origin staging --force  
 ```
 
 ## Set environment variables

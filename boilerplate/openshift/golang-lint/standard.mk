@@ -9,6 +9,6 @@ LINT_CONVENTION_DIR := boilerplate/openshift/golang-lint
 
 # lint: Perform static analysis.
 .PHONY: lint
-lint: 
+lint:
 	${LINT_CONVENTION_DIR}/ensure.sh golangci-lint
 	GOLANGCI_LINT_CACHE=${GOLANGCI_LINT_CACHE} golangci-lint run -c ${LINT_CONVENTION_DIR}/golangci.yml ./...
