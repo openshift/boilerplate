@@ -31,7 +31,7 @@ function build_catalog_image() {
   fi
 
   ${CONTAINER_ENGINE} pull ${bundle_image}
-  # some upstream bundles images are built specifying a "replaces" field, which means it builds on top of the 
+  # some upstream bundles images are built specifying a "replaces" field, which means it builds on top of the
   # previous minor version. we need to check if the build fails for that reason and use another method
   echo "building catalog image..."
 
@@ -44,20 +44,20 @@ function build_catalog_image() {
     --container-tool ${CONTAINER_ENGINE_SHORT} 2>&1 | tee /dev/fd/5; exit ${PIPESTATUS[0]})
   RC=$?
   ERR_COUNT=$(echo "$BUILD" | grep -c 'replaces nonexistent bundle')
-    
+
   if [[ ${RC} > 0 ]] && [[ ${ERR_COUNT} == 0 ]]; then
     echo "adding bundle failed"
     exit 1
   fi
-  
+
   if [[ ${ERR_COUNT} > 0 ]]; then
     echo "adding bundle failed -- bundle specifies a non-existent replacement"
     echo "re-attempting by using the previous catalog image as the index"
-    
+
     # grab the latest catalog image tag using skopeo in a container as the os level one is too old
     # this value is needed as an arg to --from-index
     CATALOG_LATEST_TAG=$(jq -r '.Tags[-1]' < <(${CONTAINER_ENGINE} run ${SKOPEO_IMAGE} -- skopeo list-tags docker://${BASE_IMAGE_PATH}))
-    if [[ ${?} > 0 ]]; then 
+    if [[ ${?} > 0 ]]; then
       echo "skopeo failed to fetch the latest image tag"
       echo "error: $CATALOG_LATEST_TAG"
       exit 1

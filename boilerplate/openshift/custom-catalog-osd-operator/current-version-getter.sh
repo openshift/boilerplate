@@ -33,7 +33,7 @@ function update_latest_version() {
 
     jq -c '.[]' <<< ${available_operator_versions} | while read i; do
       local upstream_operator_version=$( jq -r .operator_version <<< "${i}" )
-      
+
       compare_versions ${upstream_operator_version} ${version_in_repo}
       if [[ $? == 1 ]]; then
         echo "Found newer version upstream: ${upstream_operator_version}"
@@ -60,7 +60,7 @@ function create_cert_dir_files() {
 
 function channel_exists_in_repo() {
   local upstream_channel=${1}
-  for  f in ${VERSIONS_DIR}/* 
+  for  f in ${VERSIONS_DIR}/*
   do
     channel_name=$( cat ${f} | jq -r '.channel_name' )
     if [[ ${channel_name} == ${upstream_channel} ]]; then
@@ -74,7 +74,7 @@ function channel_exists_in_repo() {
 
 function update_version_files() {
   # For each major channel version, figure out the latest operator version
-  for  f in ${VERSIONS_DIR}/* 
+  for  f in ${VERSIONS_DIR}/*
   do
     channel_name=$( cat ${f} | jq -r '.channel_name' )
     version=$(cat ${f} | jq -r '.operator_version')
@@ -167,7 +167,7 @@ fi
 # update version files if a new operator version is available in the given channel
 update_version_files
 
-# if -p is set, stage and commit 
+# if -p is set, stage and commit
 if [[ ${git_commit} == "true" ]]; then
   commit_version_file_changes
 fi

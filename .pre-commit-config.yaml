@@ -1,0 +1,26 @@
+# Pre-commit hooks for the boilerplate repository itself.
+#
+# boilerplate/openshift/golang-osd-operator/pre-commit-config.yaml ships these
+# file hygiene hooks to consumers, who run them over their whole repository,
+# including the boilerplate/ files we copy into it. We run the same hooks, at
+# the same version and with the same args, so those files pass downstream.
+# Keep 'rev' and 'args' in sync with that template.
+#
+# The Go, RBAC and secrets hooks in the template need a Go module and deploy/
+# manifests, which this repository does not have, so they are not mirrored.
+#
+# Run locally:  prek run --all-files   (or: pre-commit run --all-files)
+# Run in CI:    make pr-check          (via the pre-commit-check target)
+
+# test/projects/ holds byte-for-byte fixtures for the convention tests; they
+# are not shipped to consumers.
+exclude: ^test/projects/
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0                          # keep in sync with the golang-osd-operator template
+    hooks:
+      - id: check-merge-conflict
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer

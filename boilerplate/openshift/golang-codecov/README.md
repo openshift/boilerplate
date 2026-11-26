@@ -18,4 +18,3 @@ run code coverage analysis per [this SOP](https://github.com/openshift/ops-sop/b
   [codecov.io](https://docs.codecov.io/docs/codecov-yaml). Note that
   this is copied into the repository root, because that's
   [where codecov.io expects it](https://docs.codecov.io/docs/codecov-yaml#can-i-name-the-file-codecovyml).
-

@@ -36,7 +36,7 @@ class TestGitOperations(unittest.TestCase):
                 stderr=''
             )
         ]
-        
+
         remotes = migration.get_remotes()
         self.assertEqual(remotes, ['git@github.com:openshift/my-operator.git'])
 
@@ -48,7 +48,7 @@ class TestGitOperations(unittest.TestCase):
             cmd=['git', 'rev-parse', '--git-dir'],
             stderr='fatal: not a git repository'
         )
-        
+
         with self.assertRaises(RuntimeError) as ctx:
             migration.get_remotes()
         self.assertIn('Not in a git repository', str(ctx.exception))
@@ -57,7 +57,7 @@ class TestGitOperations(unittest.TestCase):
     def test_get_github_url_ssh_format(self, mock_get_remotes):
         """Test GitHub URL extraction from SSH format."""
         mock_get_remotes.return_value = ['git@github.com:openshift/my-operator.git']
-        
+
         url = migration.get_github_url()
         self.assertEqual(url, 'https://github.com/openshift/my-operator')
 
@@ -65,7 +65,7 @@ class TestGitOperations(unittest.TestCase):
     def test_get_github_url_https_format(self, mock_get_remotes):
         """Test GitHub URL extraction from HTTPS format."""
         mock_get_remotes.return_value = ['https://github.com/openshift/my-operator.git']
-        
+
         url = migration.get_github_url()
         self.assertEqual(url, 'https://github.com/openshift/my-operator')
 
@@ -73,7 +73,7 @@ class TestGitOperations(unittest.TestCase):
     def test_get_github_url_no_openshift_remote(self, mock_get_remotes):
         """Test error when no openshift remote is found."""
         mock_get_remotes.return_value = ['https://github.com/other-org/repo.git']
-        
+
         with self.assertRaises(RuntimeError) as ctx:
             migration.get_github_url()
         self.assertIn('Could not find an', str(ctx.exception))
@@ -82,7 +82,7 @@ class TestGitOperations(unittest.TestCase):
     def test_get_operator_name_from_url(self, mock_get_remotes):
         """Test operator name extraction from git URL."""
         mock_get_remotes.return_value = ['https://github.com/openshift/my-operator.git']
-        
+
         name = migration.get_operator_name()
         self.assertEqual(name, 'my-operator')
 
@@ -90,7 +90,7 @@ class TestGitOperations(unittest.TestCase):
     def test_get_operator_name_ssh_format(self, mock_get_remotes):
         """Test operator name extraction from SSH format."""
         mock_get_remotes.return_value = ['git@github.com:openshift/test-operator.git']
-        
+
         name = migration.get_operator_name()
         self.assertEqual(name, 'test-operator')
 
@@ -103,7 +103,7 @@ class TestGitOperations(unittest.TestCase):
             # Second call: git symbolic-ref refs/remotes/origin/HEAD
             Mock(returncode=0, stdout='refs/remotes/origin/main\n', stderr='')
         ]
-        
+
         branch = migration.get_default_branch()
         self.assertEqual(branch, 'main')
 
@@ -116,7 +116,7 @@ class TestGitOperations(unittest.TestCase):
             # Second call: git symbolic-ref refs/remotes/origin/HEAD
             Mock(returncode=0, stdout='refs/remotes/origin/master\n', stderr='')
         ]
-        
+
         branch = migration.get_default_branch()
         self.assertEqual(branch, 'master')
 
@@ -131,7 +131,7 @@ class TestGitOperations(unittest.TestCase):
             # Third call: git branch --show-current
             Mock(returncode=0, stdout='main\n', stderr='')
         ]
-        
+
         branch = migration.get_default_branch()
         self.assertEqual(branch, 'main')
 
@@ -148,7 +148,7 @@ class TestGitOperations(unittest.TestCase):
             # Fourth call: git branch --list
             Mock(returncode=0, stdout='  feature-branch\n* main\n  develop\n', stderr='')
         ]
-        
+
         branch = migration.get_default_branch()
         self.assertEqual(branch, 'main')
 
@@ -165,7 +165,7 @@ class TestGitOperations(unittest.TestCase):
             # Fourth call: git branch --list (no main or master)
             Mock(returncode=0, stdout='  feature-branch\n  develop\n', stderr='')
         ]
-        
+
         branch = migration.get_default_branch()
         self.assertEqual(branch, 'main')
 
@@ -177,7 +177,7 @@ class TestGitOperations(unittest.TestCase):
             cmd=['git', 'rev-parse', '--git-dir'],
             stderr='fatal: not a git repository'
         )
-        
+
         with self.assertRaises(RuntimeError) as ctx:
             migration.get_default_branch()
         self.assertIn('Not in a git repository', str(ctx.exception))
@@ -193,9 +193,9 @@ class TestManifestAnnotation(unittest.TestCase):
             'kind': 'ServiceAccount',
             'metadata': {'name': 'test-sa'}
         }
-        
+
         result = migration.annotate(manifest, migration.PHASE_RBAC)
-        
+
         self.assertIn('annotations', result['metadata'])
         self.assertEqual(
             result['metadata']['annotations'][migration.PKO_PHASE_ANNOTATION],
@@ -214,9 +214,9 @@ class TestManifestAnnotation(unittest.TestCase):
                 'annotations': {'existing': 'value'}
             }
         }
-        
+
         result = migration.annotate(manifest, migration.PHASE_DEPLOY)
-        
+
         self.assertEqual(result['metadata']['annotations']['existing'], 'value')
         self.assertIn(migration.PKO_PHASE_ANNOTATION, result['metadata']['annotations'])
 
@@ -234,16 +234,16 @@ class TestManifestAnnotation(unittest.TestCase):
                 }
             }
         }
-        
+
         result = migration.set_image_template(manifest)
-        
+
         for container in result['spec']['template']['spec']['containers']:
             self.assertEqual(container['image'], '{{ .config.image }}')
 
     def test_set_image_template_handles_missing_containers(self):
         """Test that set_image_template handles manifests without containers."""
         manifest = {'spec': {}}
-        
+
         # Should not raise an exception
         result = migration.set_image_template(manifest)
         self.assertEqual(result, manifest)
@@ -262,9 +262,9 @@ metadata:
 spec:
   group: mygroup.com
 """
-        
+
         result = migration.annotate_manifests([manifest_str])
-        
+
         self.assertEqual(len(result), 1)
         self.assertEqual(
             result[0]['metadata']['annotations'][migration.PKO_PHASE_ANNOTATION],
@@ -293,9 +293,9 @@ metadata:
   name: test-role
 """,
         ]
-        
+
         results = migration.annotate_manifests(rbac_manifests)
-        
+
         self.assertEqual(len(results), 3)
         for result in results:
             self.assertEqual(
@@ -317,9 +317,9 @@ spec:
       - name: operator
         image: quay.io/openshift/test:v1.0
 """
-        
+
         result = migration.annotate_manifests([manifest_str])
-        
+
         self.assertEqual(len(result), 1)
         self.assertEqual(
             result[0]['metadata']['annotations'][migration.PKO_PHASE_ANNOTATION],
@@ -337,7 +337,7 @@ spec:
             "invalid: yaml: broken:",
             "another:\n  valid: manifest"
         ]
-        
+
         # Should not raise an exception
         result = migration.annotate_manifests(manifests)
         # Should process the valid ones
@@ -351,7 +351,7 @@ class TestFileDiscovery(unittest.TestCase):
         """Create a temporary directory structure for testing."""
         self.temp_dir: str = tempfile.mkdtemp()
         self.addCleanup(lambda: shutil.rmtree(self.temp_dir))
-        
+
         # Create test directory structure
         # temp_dir/
         #   ├── deploy/
@@ -360,17 +360,17 @@ class TestFileDiscovery(unittest.TestCase):
         #   │   └── crds/
         #   │       └── crd.yaml
         #   └── other.txt
-        
+
         deploy_dir = Path(self.temp_dir) / 'deploy'
         deploy_dir.mkdir()
-        
+
         (deploy_dir / 'deployment.yaml').write_text('apiVersion: apps/v1\nkind: Deployment')
         (deploy_dir / 'service.yml').write_text('apiVersion: v1\nkind: Service')
-        
+
         crds_dir = deploy_dir / 'crds'
         crds_dir.mkdir()
         (crds_dir / 'crd.yaml').write_text('apiVersion: apiextensions.k8s.io/v1')
-        
+
         (Path(self.temp_dir) / 'other.txt').write_text('not yaml')
 
     def test_get_manifest_files_recursive(self):
@@ -379,7 +379,7 @@ class TestFileDiscovery(unittest.TestCase):
             str(Path(self.temp_dir) / 'deploy'),
             recursive=True
         )
-        
+
         self.assertEqual(len(files), 3)
         filenames = {f.name for f in files}
         self.assertEqual(filenames, {'deployment.yaml', 'service.yml', 'crd.yaml'})
@@ -390,7 +390,7 @@ class TestFileDiscovery(unittest.TestCase):
             str(Path(self.temp_dir) / 'deploy'),
             recursive=False
         )
-        
+
         self.assertEqual(len(files), 2)
         filenames = {f.name for f in files}
         self.assertEqual(filenames, {'deployment.yaml', 'service.yml'})
@@ -406,7 +406,7 @@ class TestFileDiscovery(unittest.TestCase):
             str(Path(self.temp_dir) / 'deploy'),
             recursive=False
         )
-        
+
         self.assertEqual(len(manifests), 2)
         # Check that content was actually loaded
         for manifest in manifests:
@@ -420,13 +420,13 @@ class TestPKOManifestGeneration(unittest.TestCase):
     def test_get_pko_manifest_structure(self, mock_get_name):
         """Test that PKO PackageManifest has correct structure."""
         mock_get_name.return_value = 'test-operator'
-        
+
         manifest = migration.get_pko_manifest('test-operator')
-        
+
         self.assertEqual(manifest['apiVersion'], 'manifests.package-operator.run/v1alpha1')
         self.assertEqual(manifest['kind'], 'PackageManifest')
         self.assertEqual(manifest['metadata']['name'], 'test-operator')
-        
+
         # Check phases
         phase_names = [p['name'] for p in manifest['spec']['phases']]
         expected_phases = [
@@ -438,11 +438,11 @@ class TestPKOManifestGeneration(unittest.TestCase):
             migration.PHASE_CLEANUP_DEPLOY,
         ]
         self.assertEqual(phase_names, expected_phases)
-        
+
         # Check availability probes exist
         self.assertIn('availabilityProbes', manifest['spec'])
         self.assertGreater(len(manifest['spec']['availabilityProbes']), 0)
-        
+
         # Check config schema
         self.assertIn('config', manifest['spec'])
         self.assertIn('openAPIV3Schema', manifest['spec']['config'])
@@ -463,12 +463,12 @@ class TestFileWriting(unittest.TestCase):
             'kind': 'ServiceAccount',
             'metadata': {'name': 'test-sa'}
         }
-        
+
         migration.write_manifest(manifest, self.temp_dir)
-        
+
         expected_file = Path(self.temp_dir) / 'ServiceAccount-test-sa.yaml'
         self.assertTrue(expected_file.exists())
-        
+
         # Verify content is valid YAML
         with open(expected_file) as f:
             loaded = yaml.safe_load(f)
@@ -481,9 +481,9 @@ class TestFileWriting(unittest.TestCase):
             'kind': 'Deployment',
             'metadata': {'name': 'test-deploy'}
         }
-        
+
         migration.write_manifest(manifest, self.temp_dir)
-        
+
         expected_file = Path(self.temp_dir) / 'Deployment-test-deploy.yaml.gotmpl'
         self.assertTrue(expected_file.exists())
 
@@ -494,9 +494,9 @@ class TestFileWriting(unittest.TestCase):
             'kind': 'Service',
             'metadata': {'name': 'test'}
         }
-        
+
         migration.write_manifest(manifest, self.temp_dir, filename='custom.yaml')
-        
+
         expected_file = Path(self.temp_dir) / 'custom.yaml'
         self.assertTrue(expected_file.exists())
 
@@ -507,9 +507,9 @@ class TestFileWriting(unittest.TestCase):
             'kind': 'ClusterPackage',
             'metadata': {'name': 'test'}
         }
-        
+
         migration.write_manifest(manifest, self.temp_dir)
-        
+
         # Should not create any files
         files = list(Path(self.temp_dir).iterdir())
         self.assertEqual(len(files), 0)
@@ -521,9 +521,9 @@ class TestFileWriting(unittest.TestCase):
             'kind': 'PackageManifest',
             'metadata': {'name': 'test'}
         }
-        
+
         migration.write_manifest(manifest, self.temp_dir, filename='test.yaml', force=True)
-        
+
         expected_file = Path(self.temp_dir) / 'test.yaml'
         self.assertTrue(expected_file.exists())
 
@@ -535,11 +535,11 @@ class TestTemplateGeneration(unittest.TestCase):
         """Create a temporary directory structure."""
         self.temp_dir = tempfile.mkdtemp()
         self.addCleanup(lambda: shutil.rmtree(self.temp_dir))
-        
+
         # Change to temp dir for git operations
         self.original_dir = os.getcwd()
         os.chdir(self.temp_dir)
-        
+
         # Initialize git repo
         subprocess.run(['git', 'init', '-b', 'main'], check=True, capture_output=True)
         subprocess.run(['git', 'config', 'user.name', 'Test'], check=True, capture_output=True)
@@ -559,12 +559,12 @@ class TestTemplateGeneration(unittest.TestCase):
         # Create build directory
         build_dir = Path(self.temp_dir) / 'build'
         build_dir.mkdir()
-        
+
         migration.write_pko_dockerfile()
-        
+
         dockerfile = build_dir / 'Dockerfile.pko'
         self.assertTrue(dockerfile.exists())
-        
+
         content = dockerfile.read_text()
         self.assertIn('FROM scratch', content)
         self.assertIn('openshift-test-operator', content)
@@ -581,15 +581,15 @@ class TestTemplateGeneration(unittest.TestCase):
         # Create .tekton directory
         tekton_dir = Path(self.temp_dir) / '.tekton'
         tekton_dir.mkdir()
-        
+
         migration.write_tekton_pipelines()
-        
+
         push_pipeline = tekton_dir / 'test-operator-pko-push.yaml'
         pr_pipeline = tekton_dir / 'test-operator-pko-pull-request.yaml'
-        
+
         self.assertTrue(push_pipeline.exists())
         self.assertTrue(pr_pipeline.exists())
-        
+
         # Check push pipeline content
         push_content = push_pipeline.read_text()
         self.assertIn('apiVersion: tekton.dev/v1', push_content)
@@ -599,7 +599,7 @@ class TestTemplateGeneration(unittest.TestCase):
         self.assertIn('target_branch\n      == "main"', push_content)
         # Verify it uses master for boilerplate
         self.assertIn('value: master', push_content)
-        
+
         # Check PR pipeline content
         pr_content = pr_pipeline.read_text()
         self.assertIn('event == "pull_request"', pr_content)
@@ -717,11 +717,11 @@ class TestIntegration(unittest.TestCase):
         """Create a temporary directory with sample manifests."""
         self.temp_dir = tempfile.mkdtemp()
         self.addCleanup(lambda: shutil.rmtree(self.temp_dir))
-        
+
         # Change to temp dir
         self.original_dir = os.getcwd()
         os.chdir(self.temp_dir)
-        
+
         # Initialize git repo
         subprocess.run(['git', 'init', '-b', 'main'], check=True, capture_output=True)
         subprocess.run(['git', 'config', 'user.name', 'Test'], check=True, capture_output=True)
@@ -731,11 +731,11 @@ class TestIntegration(unittest.TestCase):
             check=True,
             capture_output=True
         )
-        
+
         # Create deploy directory with sample manifests
         deploy_dir = Path(self.temp_dir) / 'deploy'
         deploy_dir.mkdir()
-        
+
         # CRD
         (deploy_dir / 'crd.yaml').write_text("""
 apiVersion: apiextensions.k8s.io/v1
@@ -745,7 +745,7 @@ metadata:
 spec:
   group: example.com
 """)
-        
+
         # ServiceAccount
         (deploy_dir / 'serviceaccount.yaml').write_text("""
 apiVersion: v1
@@ -753,7 +753,7 @@ kind: ServiceAccount
 metadata:
   name: test-operator
 """)
-        
+
         # Deployment
         (deploy_dir / 'deployment.yaml').write_text("""
 apiVersion: apps/v1
@@ -775,26 +775,26 @@ spec:
     def test_modify_manifests_end_to_end(self):
         """Test complete manifest conversion process."""
         output_dir = 'deploy_pko'
-        
+
         migration.modify_manifests('deploy', output_dir=output_dir, recursive=True)
-        
+
         output_path = Path(self.temp_dir) / output_dir
-        
+
         # Check that output directory was created
         self.assertTrue(output_path.exists())
-        
+
         # Check for PackageManifest
         manifest_file = output_path / 'manifest.yaml'
         self.assertTrue(manifest_file.exists())
-        
+
         with open(manifest_file) as f:
             package_manifest = yaml.safe_load(f)
         self.assertEqual(package_manifest['kind'], 'PackageManifest')
-        
+
         # Check for converted manifests
         crd_file = output_path / 'CustomResourceDefinition-tests.example.com.yaml'
         self.assertTrue(crd_file.exists())
-        
+
         # Verify CRD has correct phase annotation
         with open(crd_file) as f:
             crd = yaml.safe_load(f)
@@ -802,18 +802,18 @@ spec:
             crd['metadata']['annotations'][migration.PKO_PHASE_ANNOTATION],
             migration.PHASE_CRDS
         )
-        
+
         # Check deployment has .gotmpl extension and templated image
         deployment_files = list(output_path.glob('Deployment-*.yaml.gotmpl'))
         self.assertEqual(len(deployment_files), 1)
-        
+
         with open(deployment_files[0]) as f:
             deployment = yaml.safe_load(f)
         self.assertEqual(
             deployment['spec']['template']['spec']['containers'][0]['image'],
             '{{ .config.image }}'
         )
-        
+
         # Check cleanup job was created
         cleanup_file = output_path / 'Cleanup-OLM-Job.yaml'
         self.assertTrue(cleanup_file.exists())

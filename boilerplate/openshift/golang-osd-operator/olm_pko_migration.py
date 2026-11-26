@@ -99,7 +99,7 @@ COPY * /package/
 CLEANUP_JOB_TEMPLATE = """---
 # This Job cleans up old OLM resources after migrating to PKO
 # IMPORTANT: Review and customize this template before deploying!
-# 
+#
 # Things to customize:
 # 1. Adjust the namespace if needed
 # 2. Modify resource filters (CSV names, labels, etc.)
@@ -183,7 +183,7 @@ spec:
               # CUSTOMIZE: Update the label selector for your operator
               # Example pattern: operators.coreos.com/OPERATOR_NAME.NAMESPACE
               oc -n openshift-{operator_name} delete csv -l "operators.coreos.com/{operator_name}.openshift-{operator_name}" || true
-              
+
               # CUSTOMIZE: Add any additional cleanup logic here
               # Examples:
               # - Delete subscriptions
@@ -257,7 +257,7 @@ def get_remotes() -> list[str]:
         raise RuntimeError(
             "Not in a git repository. This script must be run from within a git repository."
         )
-    
+
     try:
         result = subprocess.run(
             ["git", "remote", "-v"],
@@ -285,7 +285,7 @@ def get_github_url() -> str:
     for remote in remotes:
         if 'openshift' not in remote:
             continue
-        
+
         if remote.startswith('http'):
             return remote.removesuffix(".git")
         elif ":" in remote:
@@ -297,12 +297,12 @@ def get_github_url() -> str:
             raise RuntimeError(
                 f"Cannot parse git remote URL format: {remote}. Expected 'https://...' or 'git@github.com:...'"
             )
-    
+
     raise RuntimeError(
-        "Could not find an 'openshift' git remote. Available remotes: " + 
+        "Could not find an 'openshift' git remote. Available remotes: " +
         (", ".join(remotes) if remotes else "(none)")
     )
-            
+
 
 def get_operator_name() -> str:
     """Extract operator name from git remote URL."""
@@ -310,21 +310,21 @@ def get_operator_name() -> str:
         remotes = get_remotes()
         if not remotes:
             return "unknown-operator"
-        
+
         # Use the first remote URL
         url = remotes[0]
-        
+
         # Remove .git suffix if present
         if url.endswith(".git"):
             url = url[:-4]
-        
+
         # Extract the last part of the path
         # Works for both https://github.com/org/repo and git@github.com:org/repo
         if "/" in url:
             return url.split("/")[-1]
         elif ":" in url:
             return url.split(":")[-1].split("/")[-1]
-        
+
         return "unknown-operator"
     except Exception as e:
         print(f"Warning: Could not extract operator name: {e}", file=sys.stderr)
@@ -334,10 +334,10 @@ def get_operator_name() -> str:
 def get_default_branch() -> str:
     """
     Detect the default branch name for the current repository.
-    
+
     Returns:
         str: The default branch name ('main' or 'master')
-    
+
     Raises:
         RuntimeError: If not in a git repository or cannot determine default branch
     """
@@ -353,7 +353,7 @@ def get_default_branch() -> str:
         raise RuntimeError(
             "Not in a git repository. This script must be run from within a git repository."
         )
-    
+
     try:
         # Try to get the default branch from the remote
         result = subprocess.run(
@@ -362,13 +362,13 @@ def get_default_branch() -> str:
             text=True,
             check=False
         )
-        
+
         if result.returncode == 0:
             # Output format: "refs/remotes/origin/main" or "refs/remotes/origin/master"
             branch = result.stdout.strip().split("/")[-1]
             if branch in ("main", "master"):
                 return branch
-        
+
         # Fallback: check current branch
         result = subprocess.run(
             ["git", "branch", "--show-current"],
@@ -376,11 +376,11 @@ def get_default_branch() -> str:
             text=True,
             check=True
         )
-        
+
         current_branch = result.stdout.strip()
         if current_branch in ("main", "master"):
             return current_branch
-        
+
         # Last resort: check if main or master branches exist locally
         result = subprocess.run(
             ["git", "branch", "--list"],
@@ -388,17 +388,17 @@ def get_default_branch() -> str:
             text=True,
             check=True
         )
-        
+
         branches = [line.strip().lstrip("* ") for line in result.stdout.splitlines()]
         if "main" in branches:
             return "main"
         if "master" in branches:
             return "master"
-        
+
         # Default to 'main' if we can't determine
         print("Warning: Could not determine default branch, defaulting to 'main'", file=sys.stderr)
         return "main"
-        
+
     except subprocess.CalledProcessError as e:
         print(f"Warning: Error detecting default branch: {e.stderr if e.stderr else str(e)}", file=sys.stderr)
         print("Defaulting to 'main'", file=sys.stderr)
@@ -457,20 +457,20 @@ def get_pko_manifest(operator_name: str) -> dict[str, Any]:
 def get_manifest_files(path: str, recursive: bool = True) -> list[Path]:
     """
     Get all YAML/YML files from the given path.
-    
+
     Args:
         path: Directory path to search
         recursive: If True, search subdirectories recursively
-    
+
     Returns:
         list of Path objects for YAML files
     """
     path_obj = Path(path)
     if not path_obj.exists():
         return []
-    
+
     yaml_extensions = {'.yaml', '.yml'}
-    
+
     if recursive:
         # Recursively find all YAML files
         yaml_files = []
@@ -488,11 +488,11 @@ def get_manifest_files(path: str, recursive: bool = True) -> list[Path]:
 def load_manifests(path: str, recursive: bool = True) -> list[str]:
     """
     Load all manifest files as strings.
-    
+
     Args:
         path: Directory path containing manifests
         recursive: If True, search subdirectories recursively
-    
+
     Returns:
         list of manifest file contents as strings
     """
@@ -581,7 +581,7 @@ def write_manifest(
 ) -> None:
     """
     Write a manifest to a YAML file.
-    
+
     Args:
         manifest: The manifest dictionary to write
         directory: Target directory
@@ -709,7 +709,7 @@ def write_tekton_pipelines():
     operator_name = get_operator_name()
     operator_upstream = get_github_url()
     default_branch = get_default_branch()
-    
+
     tekton_folder = Path("./.tekton")
     if not tekton_folder.exists():
         raise RuntimeError(
@@ -717,11 +717,11 @@ def write_tekton_pipelines():
         )
     push_manifest = tekton_folder / (operator_name + "-pko-push.yaml")
     pr_manifest = tekton_folder / (operator_name + "-pko-pull-request.yaml")
-    
+
     # Detect boilerplate branch - try to use the same as the current repo, fallback to master
     # since the boilerplate repo still uses master as default
     boilerplate_branch = "master"  # boilerplate repo uses master
-    
+
     # Push pipeline - no additional params, standard revision tag
     with open(push_manifest, mode="w") as manifest:
         manifest.write(
@@ -737,12 +737,12 @@ def write_tekton_pipelines():
                 boilerplate_branch = boilerplate_branch
             )
         )
-    
+
     # Pull request pipeline - add image-expires-after param and prefix revision with 'on-pr-'
     pr_additional_params = """
   - name: image-expires-after
     value: 3d"""
-    
+
     with open(pr_manifest, mode="w") as manifest:
         manifest.write(
             TEKTON_PIPELINE_TEMPLATE.format(
@@ -762,7 +762,7 @@ def write_tekton_pipelines():
 def modify_manifests(path: str, output_dir: str = "deploy_pko", recursive: bool = True) -> None:
     """
     Main function to convert manifests from OLM to PKO format.
-    
+
     Args:
         path: Source directory containing manifests
         output_dir: Output directory for PKO manifests
@@ -776,14 +776,14 @@ def modify_manifests(path: str, output_dir: str = "deploy_pko", recursive: bool 
 
     # Load and process manifests
     manifests = load_manifests(path, recursive=recursive)
-    
+
     if not manifests:
         print(f"Warning: No YAML manifests found in {path}")
         return
-    
+
     print(f"\nProcessing {len(manifests)} manifest(s)...")
     print("-" * 60)
-    
+
     annotated = annotate_manifests(manifests)
 
     # Write processed manifests
@@ -794,7 +794,7 @@ def modify_manifests(path: str, output_dir: str = "deploy_pko", recursive: bool 
     print("-" * 60)
     pko_manifest = get_pko_manifest(operator_name)
     write_manifest(pko_manifest, str(pko_dir), "manifest.yaml", force=True)
-    
+
     # Write cleanup Job template
     cleanup_file = pko_dir / "Cleanup-OLM-Job.yaml"
     print(f"Writing cleanup Job template to {cleanup_file}")
